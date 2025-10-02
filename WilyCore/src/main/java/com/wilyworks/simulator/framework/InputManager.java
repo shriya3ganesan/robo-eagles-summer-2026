@@ -348,6 +348,7 @@ public class InputManager extends Thread {
         gamepad.right_trigger = getAxis(gamepadId, SDL.SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
         gamepad.updateButtonAliases();
+        gamepad.updateEdgeDetection();
     }
 
     // Get a string describing which gamepads the inputs correspond to.
