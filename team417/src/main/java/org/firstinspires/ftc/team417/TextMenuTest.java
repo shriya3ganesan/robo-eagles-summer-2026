@@ -3,7 +3,7 @@ package org.firstinspires.ftc.team417;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import net.valsei.java_text_menu.*;
+import org.firstinspires.ftc.team417.javatextmenu.*;
 
 @Autonomous(name = "Text Menu Test")
 public class TextMenuTest extends LinearOpMode {
@@ -31,8 +31,7 @@ public class TextMenuTest extends LinearOpMode {
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
 
-        menu.add(new MenuHeader("CHOOSE YOUR PLANTS!"))
-                .add("Shortcut?")
+        menu.add(new MenuHeader("AUTO SETUP"))
                 .add() // empty line for spacing
                 .add("Pick an alliance:")
                 .add("alliance-picker-1", Alliances.class) // enum selector shortcut
@@ -48,9 +47,9 @@ public class TextMenuTest extends LinearOpMode {
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
-        while (!menu.isCompleted()) {
+        while (!menu.isCompleted() && opModeIsActive()) {
             // get x,y (stick) and select (A) input from controller
-            menuInput.update(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.a);
+            menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
             menu.updateWithInput(menuInput);
             // display the updated menu
             for (String line : menu.toListOfStrings()) {
@@ -58,5 +57,26 @@ public class TextMenuTest extends LinearOpMode {
             }
             telemetry.update();
         }
+
+        // the first parameter is the type to return as
+        Alliances chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
+        Positions chosenPosition = menu.getResult(Positions.class, "position-picker-1");
+        Movements chosenMovement = menu.getResult(Movements.class, "movement-picker-1");
+        double waitTime = menu.getResult(Double.class, "wait-slider-1");
+
+        double startTime = System.currentTimeMillis();
+
+        while (opModeIsActive()) {
+            telemetry.update();
+            telemetry.addData("Time (s)", (System.currentTimeMillis() - startTime) / 1000.0);
+
+            telemetry.addData("Alliance", chosenAlliance);
+            telemetry.addData("Position", chosenPosition);
+            telemetry.addData("Movement", chosenMovement);
+            telemetry.addData("Wait time", waitTime);
+        }
+
+        telemetry.addLine("Opmode is stopped");
+        telemetry.update();
     }
 }
