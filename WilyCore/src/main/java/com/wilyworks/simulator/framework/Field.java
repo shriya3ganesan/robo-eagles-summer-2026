@@ -64,7 +64,7 @@ public class Field {
         InputStream compassStream = classLoader.getResourceAsStream(
                 "background/misc/compass-rose-white-text.png");
         InputStream fieldStream = classLoader.getResourceAsStream(
-                "background/season-2024-intothedeep/field-2024-juice-dark.png");
+                "background/season-2025-decode/field-2025-juice-dark.png");
 
         try {
             if (compassStream != null) {
