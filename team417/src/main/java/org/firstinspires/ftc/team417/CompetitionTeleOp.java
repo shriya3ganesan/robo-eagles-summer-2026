@@ -34,11 +34,15 @@ public class CompetitionTeleOp extends BaseOpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 2250;
+    final double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
     //was 1125
 
-    final double LAUNCHER_LOW_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
+    final double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
+    final double LAUNCHER_LOW_MIN_VELOCITY = 1075;
+
+    final double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
+
+    boolean doHighLaunch = false;
 
     // Declare OpMode members.
     private DcMotorEx launcher = null;
@@ -65,7 +69,8 @@ public class CompetitionTeleOp extends BaseOpMode {
      */
     private enum LaunchState {
         IDLE,
-        SPIN_UP,
+        SPIN_UP_HIGH,
+        SPIN_UP_LOW,
         LAUNCH,
         LAUNCHING,
     }
@@ -175,9 +180,10 @@ public class CompetitionTeleOp extends BaseOpMode {
             MecanumDrive.sendTelemetryPacket(packet);
 
             if (gamepad2.y) { //high speed
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                doHighLaunch = true;
             } else if (gamepad2.a) { //slow speed
-                launcher.setVelocity(LAUNCHER_LOW_VELOCITY);
+                launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
             } else if (gamepad2.b) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
             }
@@ -201,15 +207,24 @@ public class CompetitionTeleOp extends BaseOpMode {
         switch (launchState) {
             case IDLE:
                 if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
+                    if (doHighLaunch) {
+                        launchState = LaunchState.SPIN_UP_HIGH;
+                    } else {
+                        launchState = LaunchState.SPIN_UP_LOW;
+                    }
                 }
                 break;
-            case SPIN_UP:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+            case SPIN_UP_LOW:
+                launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+                if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
+            case SPIN_UP_HIGH:
+                launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
+                }
             case LAUNCH:
                 leftFeeder.setPower(FULL_SPEED);
                 rightFeeder.setPower(FULL_SPEED);
