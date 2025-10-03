@@ -25,13 +25,19 @@ public class CompetitionTeleOp extends BaseOpMode {
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
+    double FASTDRIVE_SPEED = 1.0;
+    double SLOWDRIVE_SPEED = 0.5;
+
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
      * to read the current speed of the motor and apply more or less power to keep it at a constant
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
+    final double LAUNCHER_TARGET_VELOCITY = 2250;
+    //was 1125
+
+    final double LAUNCHER_LOW_VELOCITY = 1125;
     final double LAUNCHER_MIN_VELOCITY = 1075;
 
     // Declare OpMode members.
@@ -142,10 +148,16 @@ public class CompetitionTeleOp extends BaseOpMode {
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x
+                            -gamepad1.left_stick_y * doSLOWMODE(),
+                            -gamepad1.left_stick_x * doSLOWMODE()
+
                     ),
                     -gamepad1.right_stick_x
+
+
+
+
+
             ));
 
             // Update the current pose:
@@ -162,16 +174,18 @@ public class CompetitionTeleOp extends BaseOpMode {
             Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
             MecanumDrive.sendTelemetryPacket(packet);
 
-            if (gamepad1.y) {
+            if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-            } else if (gamepad1.b) { // stop flywheel
+            } else if (gamepad2.a) { //slow speed
+                launcher.setVelocity(LAUNCHER_LOW_VELOCITY);
+            } else if (gamepad2.b) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
             }
 
             /*
              * Now we call our "Launch" function.
              */
-            launch(gamepad1.rightBumperWasPressed());
+            launch(gamepad2.rightBumperWasPressed());
 
             /*
              * Show the state and motor powers
@@ -209,6 +223,13 @@ public class CompetitionTeleOp extends BaseOpMode {
                     rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
+        }
+    }
+    public double doSLOWMODE(){
+        if (gamepad1.left_stick_button) {
+            return SLOWDRIVE_SPEED;
+        } else {
+            return FASTDRIVE_SPEED;
         }
     }
 }
