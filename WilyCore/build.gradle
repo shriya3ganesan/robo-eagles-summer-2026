@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
+    id 'application'
 }
 
 java {
@@ -14,6 +15,10 @@ kotlin {
         // definition:
         freeCompilerArgs.set(["-Xjvm-default=all"])
     }
+}
+
+application {
+    applicationDefaultJvmArgs = ["-XstartOnFirstThread"]
 }
 
 sourceSets {
