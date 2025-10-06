@@ -195,12 +195,17 @@ class GamepadInput {
     GLFWGamepadState gamepadState; // Gamepad input object, null if no controller is plugged in
 
     GamepadInput() {
-        if (!GLFW.glfwInit()) {
-            System.out.println("Failed to initialize GLFW!");
-            return;
-        }
-        if (GLFW.glfwJoystickIsGamepad(GLFW.GLFW_JOYSTICK_1)) {
-            gamepadState = GLFWGamepadState.create();
+        // Don't attempt to do gamepads on Macs because of -XstartOnFirstThread is required
+        // on Macs and that magical incantation isn't working:
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (!osName.contains("mac")) {
+            if (!GLFW.glfwInit()) {
+                System.out.println("Failed to initialize GLFW!");
+                return;
+            }
+            if (GLFW.glfwJoystickIsGamepad(GLFW.GLFW_JOYSTICK_1)) {
+                gamepadState = GLFWGamepadState.create();
+            }
         }
     }
 
