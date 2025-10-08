@@ -34,13 +34,16 @@ public class CompetitionTeleOp extends BaseOpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
-    //was 1125
 
+    final double LAUNCHER_HIGH_MAX_VELOCITY = 2300; //high target velocity + 50 (will need adjusting)
+    final double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
+    final double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
+
+    final double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
     final double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
     final double LAUNCHER_LOW_MIN_VELOCITY = 1075;
+    final double SORTING_VELOCITY
 
-    final double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
 
     boolean doHighLaunch = false;
 
@@ -216,13 +219,13 @@ public class CompetitionTeleOp extends BaseOpMode {
                 break;
             case SPIN_UP_LOW:
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY) {
+                if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
             case SPIN_UP_HIGH:
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY) {
+                if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
             case LAUNCH:
