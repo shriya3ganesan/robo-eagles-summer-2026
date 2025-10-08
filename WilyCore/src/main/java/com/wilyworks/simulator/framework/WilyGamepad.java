@@ -2,6 +2,8 @@ package com.wilyworks.simulator.framework;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.robotcore.internal.ui.GamepadUser;
+
 import java.util.ArrayList;
 
 /**
@@ -191,6 +193,10 @@ public class WilyGamepad {
                 return new RumbleEffect(new ArrayList<>());
             }
         }
+    }
+
+    public GamepadUser getUser() {
+        return GamepadUser.ONE;
     }
 
     /**
