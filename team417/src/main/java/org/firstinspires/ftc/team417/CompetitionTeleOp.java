@@ -47,9 +47,9 @@ public class CompetitionTeleOp extends BaseOpMode {
     boolean doHighLaunch = false;
 
     // Declare OpMode members.
-    private DcMotorEx launcher = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
+    private motLauncher launcher = null;
+    private servoBLaunchFeed leftFeeder = null;
+    private servoFLaunchFeed rightFeeder = null;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
