@@ -47,9 +47,9 @@ public class CompetitionTeleOp extends BaseOpMode {
     boolean doHighLaunch = false;
 
     // Declare OpMode members.
-    private motLauncher launcher = null;
-    private servoBLaunchFeed leftFeeder = null;
-    private servoFLaunchFeed rightFeeder = null;
+    private DcMotorEx launcher = null;
+    private CRServo leftFeeder = null;
+    private CRServo rightFeeder = null;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -95,9 +95,9 @@ public class CompetitionTeleOp extends BaseOpMode {
          */
         // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-        launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
-        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
+        launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
+        leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
+        rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
 
         /*
          * To drive forward, most robots need the motor on one side to be reversed,
