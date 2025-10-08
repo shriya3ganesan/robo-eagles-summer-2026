@@ -42,7 +42,6 @@ public class CompetitionTeleOp extends BaseOpMode {
     final double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
     final double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
     final double LAUNCHER_LOW_MIN_VELOCITY = 1075;
-    final double SORTING_VELOCITY
 
 
     boolean doHighLaunch = false;
