@@ -21,27 +21,26 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  */
 @TeleOp(name="TeleOp", group="Competition")
 public class CompetitionTeleOp extends BaseOpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
+    public static double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
+    public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
+    public static double FULL_SPEED = 1.0; //We send this power to the servos when we want them to feed an artifact to the launcher
 
     double FASTDRIVE_SPEED = 1.0;
     double SLOWDRIVE_SPEED = 0.5;
 
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
+     * to read the current speed of the motor and apply more or less power to keep it at a constant velocity.
+     * Here we are setting the target, minimum, and maximum velocity that the launcher should run at for both our
+     * far(high) and near(low) launches. The minimum and maximum velocities are thresholds for determining when to launch.
      */
+    public static double LAUNCHER_HIGH_MAX_VELOCITY = 2300; //high target velocity + 50 (will need adjusting)
+    public static double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
+    public static double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
 
-    final double LAUNCHER_HIGH_MAX_VELOCITY = 2300; //high target velocity + 50 (will need adjusting)
-    final double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
-    final double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
-
-    final double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
-    final double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_LOW_MIN_VELOCITY = 1075;
+    public static double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
+    public static double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
+    public static double LAUNCHER_LOW_MIN_VELOCITY = 1075;
 
 
     boolean doHighLaunch = false;
