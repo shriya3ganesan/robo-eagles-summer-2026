@@ -196,7 +196,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                 sort = true;
             }
 
-
             /*
              * Now we call our "Launch" function.
              */
