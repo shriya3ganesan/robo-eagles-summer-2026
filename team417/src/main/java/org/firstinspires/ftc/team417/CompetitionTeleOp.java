@@ -221,7 +221,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                     } else {
                         if (doHighLaunch) {
                             launchState = LaunchState.SPIN_UP_HIGH;
-                        } else if (!doHighLaunch) {
+                        } else {
                             launchState = LaunchState.SPIN_UP_LOW;
                         }
                     }
