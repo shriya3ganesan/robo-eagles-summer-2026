@@ -34,24 +34,16 @@ public class CompetitionTeleOp extends BaseOpMode {
      * Here we are setting the target, minimum, and maximum velocity that the launcher should run at for both our
      * far(high) and near(low) launches. The minimum and maximum velocities are thresholds for determining when to launch.
      */
+    public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
+    public static double LAUNCHER_HIGH_TARGET_VELOCITY = 1950;
+    public static double LAUNCHER_HIGH_MIN_VELOCITY = 1900;
 
-    //Launcher fast launch (from far) velocities - need to be adjusted
-    public static double LAUNCHER_HIGH_MAX_VELOCITY = 2300;
-    public static double LAUNCHER_HIGH_TARGET_VELOCITY = 2250;
-    public static double LAUNCHER_HIGH_MIN_VELOCITY = 2200;
-
-    //Launcher slow launch (from closer) velocities - need to be adjusted
-    public static double LAUNCHER_LOW_MAX_VELOCITY = 1175;
+    public static double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
     public static double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
     public static double LAUNCHER_LOW_MIN_VELOCITY = 1075;
 
-    //Sorting velocities - need to be adjusted
-    public static double LAUNCHER_SORT_MAX_VELOCITY = 1000;
-    public static double LAUNCHER_SORT_TARGET_VELOCITY = 950;
-    public static double LAUNCHER_SORT_MIN_VELOCITY = 900;
 
     boolean doHighLaunch = false;
-    boolean sort = false;
 
     // Declare OpMode members.
     private DcMotorEx launcher = null;
@@ -80,7 +72,6 @@ public class CompetitionTeleOp extends BaseOpMode {
         IDLE,
         SPIN_UP_HIGH,
         SPIN_UP_LOW,
-        SORT,
         LAUNCH,
         LAUNCHING,
     }
@@ -168,6 +159,11 @@ public class CompetitionTeleOp extends BaseOpMode {
 
                     ),
                     -gamepad1.right_stick_x
+
+
+
+
+
             ));
 
             // Update the current pose:
@@ -185,15 +181,12 @@ public class CompetitionTeleOp extends BaseOpMode {
             MecanumDrive.sendTelemetryPacket(packet);
 
             if (gamepad2.y) { //high speed
-                sort = false;
+                launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 doHighLaunch = true;
             } else if (gamepad2.a) { //slow speed
-                sort = false;
-                doHighLaunch = false;
+                launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
             } else if (gamepad2.b) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
-            } else if (gamepad2.x) { //sorting
-                sort = true;
             }
 
             /*
@@ -215,14 +208,10 @@ public class CompetitionTeleOp extends BaseOpMode {
         switch (launchState) {
             case IDLE:
                 if (shotRequested) {
-                    if (sort) {
-                        launchState = LaunchState.SORT;
+                    if (doHighLaunch) {
+                        launchState = LaunchState.SPIN_UP_HIGH;
                     } else {
-                        if (doHighLaunch) {
-                            launchState = LaunchState.SPIN_UP_HIGH;
-                        } else {
-                            launchState = LaunchState.SPIN_UP_LOW;
-                        }
+                        launchState = LaunchState.SPIN_UP_LOW;
                     }
                 }
                 break;
@@ -237,13 +226,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
-                break;
-            case SORT:
-                launcher.setVelocity(LAUNCHER_SORT_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_SORT_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORT_MAX_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
             case LAUNCH:
                 leftFeeder.setPower(FULL_SPEED);
                 rightFeeder.setPower(FULL_SPEED);
@@ -256,8 +238,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
                 }
-                doHighLaunch = false;
-                sort = false;
                 break;
         }
     }
