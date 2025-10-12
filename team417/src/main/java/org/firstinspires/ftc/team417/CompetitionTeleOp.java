@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.team417;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
 @TeleOp(name="TeleOp", group="Competition")
+@Config
 public class CompetitionTeleOp extends BaseOpMode {
     public static double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
@@ -47,8 +49,13 @@ public class CompetitionTeleOp extends BaseOpMode {
     public static double LAUNCHER_SORTER_TARGET_VELOCITY = 500;
     public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
+
+    public static double LAUNCHER_REV_MAX_VELOCITY = 250;
+    public static double LAUNCHER_REV_TARGET_VELOCITY = 250;
+    public static double LAUNCHER_REV_MIN_VELOCITY = 250;
     boolean doHighLaunch = false;
     boolean doSort = false;
+    boolean doReverse = false;
 
     // Declare OpMode members.
     private DcMotorEx launcher = null;
@@ -78,6 +85,7 @@ public class CompetitionTeleOp extends BaseOpMode {
         SPIN_UP_HIGH,
         SPIN_UP_LOW,
         SPIN_UP_SORT,
+        SPIN_UP_REV,
         LAUNCH,
         LAUNCHING,
     }
@@ -187,15 +195,23 @@ public class CompetitionTeleOp extends BaseOpMode {
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 doHighLaunch = true;
                 doSort = false;
+                doReverse = false;
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 doHighLaunch = false;
                 doSort = false;
+                doReverse = false;
             } else if (gamepad2.x) { // sort speed
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 doHighLaunch = false;
                 doSort = true;
-            } else if (gamepad2.b) { // stop flywheel
+                doReverse = false;
+            } else if (gamepad2.b) { // reverse
+                launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                doHighLaunch = false;
+                doSort = false;
+                doReverse = true;
+            } else if (gamepad2.left_bumper) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
             }
 
@@ -220,8 +236,10 @@ public class CompetitionTeleOp extends BaseOpMode {
                 if (shotRequested) {
                     if (doHighLaunch) {
                         launchState = LaunchState.SPIN_UP_HIGH;
-                    } else if (doSort){
+                    } else if (doSort) {
                         launchState = LaunchState.SPIN_UP_SORT;
+                    } else if (doReverse) {
+                        launchState = LaunchState.SPIN_UP_REV;
                     } else {
                         launchState = LaunchState.SPIN_UP_LOW;
                     }
@@ -231,6 +249,12 @@ public class CompetitionTeleOp extends BaseOpMode {
             case SPIN_UP_SORT:
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
+                }
+                break;
+            case SPIN_UP_REV:
+                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
+                if (launcher.getVelocity() > LAUNCHER_REV_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_REV_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
