@@ -213,7 +213,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                 doSort = true;
                 doReverse = false;
             } else if (gamepad2.b) { // reverse
-                launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 doHighLaunch = false;
                 doSort = false;
                 doReverse = true;
