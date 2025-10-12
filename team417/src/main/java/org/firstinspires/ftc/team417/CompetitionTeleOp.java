@@ -32,7 +32,8 @@ public class CompetitionTeleOp extends BaseOpMode {
      * When we control our launcher motor, we are using encoders. These allow the control system
      * to read the current speed of the motor and apply more or less power to keep it at a constant velocity.
      * Here we are setting the target, minimum, and maximum velocity that the launcher should run at for both our
-     * far(high) and near(low) launches. The minimum and maximum velocities are thresholds for determining when to launch.
+     * far(high) and near(low) launches, as well as our sorting velocity.
+     * The minimum and maximum velocities are thresholds for determining when to launch.
      */
     public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
     public static double LAUNCHER_HIGH_TARGET_VELOCITY = 1950;
@@ -42,8 +43,12 @@ public class CompetitionTeleOp extends BaseOpMode {
     public static double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
     public static double LAUNCHER_LOW_MIN_VELOCITY = 1075;
 
+    public static double LAUNCHER_SORTER_MAX_VELOCITY = 550; //sorter target velocity + 50 (will need adjusting)
+    public static double LAUNCHER_SORTER_TARGET_VELOCITY = 500;
+    public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
     boolean doHighLaunch = false;
+    boolean doSort = false;
 
     // Declare OpMode members.
     private DcMotorEx launcher = null;
@@ -72,6 +77,7 @@ public class CompetitionTeleOp extends BaseOpMode {
         IDLE,
         SPIN_UP_HIGH,
         SPIN_UP_LOW,
+        SPIN_UP_SORT,
         LAUNCH,
         LAUNCHING,
     }
@@ -161,9 +167,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                     -gamepad1.right_stick_x
 
 
-
-
-
             ));
 
             // Update the current pose:
@@ -183,8 +186,15 @@ public class CompetitionTeleOp extends BaseOpMode {
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 doHighLaunch = true;
+                doSort = false;
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+                doHighLaunch = false;
+                doSort = false;
+            } else if (gamepad2.x) { // sort speed
+                launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                doHighLaunch = false;
+                doSort = true;
             } else if (gamepad2.b) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
             }
@@ -210,9 +220,18 @@ public class CompetitionTeleOp extends BaseOpMode {
                 if (shotRequested) {
                     if (doHighLaunch) {
                         launchState = LaunchState.SPIN_UP_HIGH;
+                    } else if (doSort){
+                        launchState = LaunchState.SPIN_UP_SORT;
                     } else {
                         launchState = LaunchState.SPIN_UP_LOW;
                     }
+                }
+                break;
+
+            case SPIN_UP_SORT:
+                launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
                 }
                 break;
             case SPIN_UP_LOW:
