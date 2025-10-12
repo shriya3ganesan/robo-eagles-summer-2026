@@ -164,6 +164,7 @@ public class CompetitionTeleOp extends BaseOpMode {
          */
         telemetry.addData("Status", "Initialized");
 
+
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
 
@@ -231,6 +232,9 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("State", launchState);
             // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("motorSpeed", launcher.getVelocity());
+            telemetry.addData("reverse", doReverse);
+            telemetry.addData("highLaunch", doHighLaunch);
+            telemetry.addData("sort", doSort);
 
             telemetry.update();
         }
