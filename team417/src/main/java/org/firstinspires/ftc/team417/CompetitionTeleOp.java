@@ -50,9 +50,9 @@ public class CompetitionTeleOp extends BaseOpMode {
     public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
 
-    public static double LAUNCHER_REV_MAX_VELOCITY = -250;
+    public static double LAUNCHER_REV_MAX_VELOCITY = -300;
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
-    public static double LAUNCHER_REV_MIN_VELOCITY = -250;
+    public static double LAUNCHER_REV_MIN_VELOCITY = -200;
     boolean doHighLaunch = false;
     boolean doSort = false;
     boolean doReverse = false;
