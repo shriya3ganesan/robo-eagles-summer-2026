@@ -50,9 +50,9 @@ public class CompetitionTeleOp extends BaseOpMode {
     public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
 
-    public static double LAUNCHER_REV_MAX_VELOCITY = 250;
-    public static double LAUNCHER_REV_TARGET_VELOCITY = 250;
-    public static double LAUNCHER_REV_MIN_VELOCITY = 250;
+    public static double LAUNCHER_REV_MAX_VELOCITY = -250;
+    public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
+    public static double LAUNCHER_REV_MIN_VELOCITY = -250;
     boolean doHighLaunch = false;
     boolean doSort = false;
     boolean doReverse = false;
@@ -111,6 +111,11 @@ public class CompetitionTeleOp extends BaseOpMode {
         launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
         leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
         rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
+
+        // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
+        if (MecanumDrive.isDevBot) {
+            launcher.setDirection(DcMotorEx.Direction.REVERSE);
+        }
 
         /*
          * To drive forward, most robots need the motor on one side to be reversed,
