@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -61,6 +62,8 @@ public class CompetitionTeleOp extends BaseOpMode {
     private DcMotorEx launcher = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
+    private LED redLed;
+    private LED greenLed;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -115,6 +118,16 @@ public class CompetitionTeleOp extends BaseOpMode {
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
         if (MecanumDrive.isDevBot) {
             launcher.setDirection(DcMotorEx.Direction.REVERSE);
+
+            redLed = null;
+            greenLed = null;
+
+        }
+        if (false) {
+            redLed = hardwareMap.get(LED.class, "redLed");
+            greenLed = hardwareMap.get(LED.class, "greenLed");
+            redLed.on();
+            greenLed.off();
         }
 
         /*
@@ -270,13 +283,23 @@ public class CompetitionTeleOp extends BaseOpMode {
             case SPIN_UP_LOW:
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
+                    if (redLed != null && greenLed != null) {
+                        redLed.off();
+                        greenLed.on();
+                    }
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
             case SPIN_UP_HIGH:
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
+                    if (redLed != null && greenLed != null) {
+                        redLed.off();
+                        greenLed.on();
+                    }
                     launchState = LaunchState.LAUNCH;
+
+                break;
                 }
             case LAUNCH:
                 leftFeeder.setPower(FULL_SPEED);
@@ -289,6 +312,10 @@ public class CompetitionTeleOp extends BaseOpMode {
                     launchState = LaunchState.IDLE;
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
+                }
+                if (redLed != null && greenLed != null) {
+                    redLed.off();
+                    greenLed.on();
                 }
                 break;
         }
