@@ -8,6 +8,11 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 
+import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
+import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
+import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
+import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
+import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 /**
@@ -16,18 +21,92 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  */
 @Autonomous(name="Auto", group="Competition", preselectTeleOp="CompetitionTeleOp")
 public class CompetitionAuto extends BaseOpMode {
+    enum Alliances {
+        RED,
+        BLUE,
+    }
+
+    enum Movements {
+        NEAR,
+        FAR,
+        FAR_MINIMAL,
+    }
+
+    double minWaitTime = 0.0;
+    double maxWaitTime = 15.0;
+    
     @Override
     public void runOpMode() {
-        Pose2d beginPose = new Pose2d(0, 0, 0);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
+        Pose2d beginPoseNear = new Pose2d(-50, 50, Math.toRadians(41));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPoseNear);
+
+        Pose2d beginPoseFar = new Pose2d(56, 12, Math.toRadians(135));
+        MecanumDrive drive1 = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPoseFar);
 
         // Build the trajectory *before* the start button is pressed because Road Runner
         // can take multiple seconds for this operation. We wouldn't want to have to wait
         // as soon as the Start button is pressed!
-        Action trajectoryAction = drive.actionBuilder(beginPose)
-                            .splineTo(new Vector2d(30, 30), Math.PI / 2)
-                            .splineTo(new Vector2d(0, 60), Math.PI)
-                            .build();
+        Action near = drive.actionBuilder(beginPoseNear)
+                .splineTo(new Vector2d(-20, 51), 0)
+                .build();
+
+        Action far = drive1.actionBuilder(beginPoseFar)
+                .splineTo(new Vector2d(-50, 50), Math.toRadians(41))
+                .splineTo(new Vector2d(-20, 51), 0)
+                .build();
+
+        Action farMinimal = drive1.actionBuilder(beginPoseFar)
+                .setTangent(Math.PI/2)
+                .splineTo(new Vector2d(56, 35), Math.PI/2)
+                .build();
+        
+        TextMenu menu = new TextMenu();
+        MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
+
+        menu.add(new MenuHeader("AUTO SETUP"))
+                .add() // empty line for spacing
+                .add("Pick an alliance:")
+                .add("alliance-picker-1", Alliances.class) // enum selector shortcut
+                .add()
+                .add("Pick a movement:")
+                .add("movement-picker-1", Movements.class) // enum selector shortcut
+                .add()
+                .add("Wait time:")
+                .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
+                .add()
+                .add("finish-button-1", new MenuFinishedButton());
+
+        while (!menu.isCompleted() && opModeIsActive()) {
+            // get x,y (stick) and select (A) input from controller
+            menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
+            menu.updateWithInput(menuInput);
+            // display the updated menu
+            for (String line : menu.toListOfStrings()) {
+                telemetry.addLine(line); // but with appropriate printing method
+            }
+            telemetry.update();
+        }
+
+        // the first parameter is the type to return as
+        Alliances chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
+        Movements chosenMovement = menu.getResult(Movements.class, "movement-picker-1");
+        double waitTime = menu.getResult(Double.class, "wait-slider-1");
+
+        Action trajectoryAction;
+
+        switch (chosenMovement) {
+            case NEAR:
+                trajectoryAction = near;
+                break;
+            case FAR:
+                trajectoryAction = far;
+                break;
+            case FAR_MINIMAL:
+                trajectoryAction = farMinimal;
+                break;
+            default:
+                trajectoryAction = near;
+        }
 
         // Get a preview of the trajectory's path:
         Canvas previewCanvas = new Canvas();
