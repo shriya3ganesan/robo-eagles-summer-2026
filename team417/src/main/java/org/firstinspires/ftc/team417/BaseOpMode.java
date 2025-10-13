@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -42,6 +43,10 @@ abstract public class BaseOpMode extends LinearOpMode {
     boolean doHighLaunch = false;
     boolean doSort = false;
     boolean doReverse = false;
+
+    public LED redLed;
+    public LED greenLed;
+
     ElapsedTime feederTimer = new ElapsedTime();
 
     public enum LaunchState {
@@ -70,6 +75,15 @@ abstract public class BaseOpMode extends LinearOpMode {
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
         if (MecanumDrive.isDevBot) {
             launcher.setDirection(DcMotorEx.Direction.REVERSE);
+            redLed = null;
+            greenLed = null;
+
+        }
+        if (false) {
+            redLed = hardwareMap.get(LED.class, "redLed");
+            greenLed = hardwareMap.get(LED.class, "greenLed");
+            redLed.on();
+            greenLed.off();
         }
 
         /*
@@ -152,12 +166,21 @@ abstract public class BaseOpMode extends LinearOpMode {
             case SPIN_UP_LOW:
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
+                    if (redLed != null && greenLed != null) {
+                        redLed.off();
+                        greenLed.on();
+                    }
                     launchState = LaunchState.LAUNCH;
+
                 }
                 break;
             case SPIN_UP_HIGH:
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
+                    if (redLed != null && greenLed != null) {
+                        redLed.off();
+                        greenLed.on();
+                    }
                     launchState = LaunchState.LAUNCH;
                 }
             case LAUNCH:
@@ -171,6 +194,10 @@ abstract public class BaseOpMode extends LinearOpMode {
                     launchState = LaunchState.IDLE;
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
+                }
+                if (redLed != null && greenLed != null) {
+                    redLed.off();
+                    greenLed.on();
                 }
                 break;
         }
