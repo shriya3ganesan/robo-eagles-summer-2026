@@ -94,7 +94,8 @@ public class CompetitionAuto extends BaseOpMode {
                 .add("finish-button-1", new MenuFinishedButton());
 
         while (!menu.isCompleted() && opModeIsActive()) {
-            // get x,y (stick) and select (A) input from controller
+            // get x, y (stick) and select (A) input from controller
+            // on wilyworks, this is x, y (wasd) and select (enter) on the keyboard
             menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
             menu.updateWithInput(menuInput);
             // display the updated menu
