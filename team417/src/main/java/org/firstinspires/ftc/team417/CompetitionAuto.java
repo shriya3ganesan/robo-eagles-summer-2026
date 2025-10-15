@@ -46,18 +46,35 @@ public class CompetitionAuto extends BaseOpMode {
         // Build the trajectory *before* the start button is pressed because Road Runner
         // can take multiple seconds for this operation. We wouldn't want to have to wait
         // as soon as the Start button is pressed!
-        Action near = drive.actionBuilder(beginPoseNear)
+
+        // Red alliance auto paths
+        Action redNear = drive.actionBuilder(beginPoseNear)
                 .splineTo(new Vector2d(-20, 51), 0)
                 .build();
 
-        Action far = drive1.actionBuilder(beginPoseFar)
+        Action redFar = drive1.actionBuilder(beginPoseFar)
                 .splineTo(new Vector2d(-50, 50), Math.toRadians(41))
                 .splineTo(new Vector2d(-20, 51), 0)
                 .build();
 
-        Action farMinimal = drive1.actionBuilder(beginPoseFar)
+        Action redFarMinimal = drive1.actionBuilder(beginPoseFar)
                 .setTangent(Math.PI/2)
                 .splineTo(new Vector2d(56, 35), Math.PI/2)
+                .build();
+
+        // Blue alliance auto paths
+        Action blueNear = drive.actionBuilder(beginPoseNear)
+                .splineTo(new Vector2d(-20, -51), 0)
+                .build();
+
+        Action blueFar = drive1.actionBuilder(beginPoseFar)
+                .splineTo(new Vector2d(-50, -50), Math.toRadians(41))
+                .splineTo(new Vector2d(-20, -51), 0)
+                .build();
+
+        Action blueFarMinimal = drive1.actionBuilder(beginPoseFar)
+                .setTangent(Math.PI/2)
+                .splineTo(new Vector2d(56, -35), Math.PI/2)
                 .build();
         
         TextMenu menu = new TextMenu();
@@ -92,20 +109,35 @@ public class CompetitionAuto extends BaseOpMode {
         Movements chosenMovement = menu.getResult(Movements.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
 
-        Action trajectoryAction;
+        Action trajectoryAction = null;
+        switch (chosenAlliance) {
+            case RED:
+                switch (chosenMovement) {
+                    case NEAR:
+                        trajectoryAction = redNear;
+                        break;
+                    case FAR:
+                        trajectoryAction = redFar;
+                        break;
+                    case FAR_MINIMAL:
+                        trajectoryAction = redFarMinimal;
+                        break;
+                }
+                break;
 
-        switch (chosenMovement) {
-            case NEAR:
-                trajectoryAction = near;
+            case BLUE:
+                switch (chosenMovement) {
+                    case NEAR:
+                        trajectoryAction = blueNear;
+                        break;
+                    case FAR:
+                        trajectoryAction = blueFar;
+                        break;
+                    case FAR_MINIMAL:
+                        trajectoryAction = blueFarMinimal;
+                        break;
+                }
                 break;
-            case FAR:
-                trajectoryAction = far;
-                break;
-            case FAR_MINIMAL:
-                trajectoryAction = farMinimal;
-                break;
-            default:
-                trajectoryAction = near;
         }
 
         // Get a preview of the trajectory's path:
