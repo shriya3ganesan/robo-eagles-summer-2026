@@ -37,46 +37,16 @@ public class CompetitionAuto extends BaseOpMode {
     
     @Override
     public void runOpMode() {
-        Pose2d beginPoseNear = new Pose2d(-50, 50, Math.toRadians(41));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPoseNear);
+        Pose2d startPose = new Pose2d(0, 0, 0);
 
-        Pose2d beginPoseFar = new Pose2d(56, 12, Math.toRadians(135));
-        MecanumDrive drive1 = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPoseFar);
+        Pose2d redNearStartPose = new Pose2d(-48, 48, Math.toRadians(41));
+        Pose2d redFarStartPose = new Pose2d(56, 12, Math.toRadians(180));
 
-        // Build the trajectory *before* the start button is pressed because Road Runner
-        // can take multiple seconds for this operation. We wouldn't want to have to wait
-        // as soon as the Start button is pressed!
+        Pose2d blueNearStartPose = new Pose2d(-48, -48, Math.toRadians(139));
+        Pose2d blueFarStartPose = new Pose2d(56, -12, Math.toRadians(180));
 
-        // Red alliance auto paths
-        Action redNear = drive.actionBuilder(beginPoseNear)
-                .splineTo(new Vector2d(-20, 51), 0)
-                .build();
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
-        Action redFar = drive1.actionBuilder(beginPoseFar)
-                .splineTo(new Vector2d(-50, 50), Math.toRadians(41))
-                .splineTo(new Vector2d(-20, 51), 0)
-                .build();
-
-        Action redFarMinimal = drive1.actionBuilder(beginPoseFar)
-                .setTangent(Math.PI/2)
-                .splineTo(new Vector2d(56, 35), Math.PI/2)
-                .build();
-
-        // Blue alliance auto paths
-        Action blueNear = drive.actionBuilder(beginPoseNear)
-                .splineTo(new Vector2d(-20, -51), 0)
-                .build();
-
-        Action blueFar = drive1.actionBuilder(beginPoseFar)
-                .splineTo(new Vector2d(-50, -50), Math.toRadians(41))
-                .splineTo(new Vector2d(-20, -51), 0)
-                .build();
-
-        Action blueFarMinimal = drive1.actionBuilder(beginPoseFar)
-                .setTangent(Math.PI/2)
-                .splineTo(new Vector2d(56, -35), Math.PI/2)
-                .build();
-        
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
 
@@ -93,7 +63,7 @@ public class CompetitionAuto extends BaseOpMode {
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
-        while (!menu.isCompleted() && opModeIsActive()) {
+        while (!menu.isCompleted()) {
             // get x, y (stick) and select (A) input from controller
             // on wilyworks, this is x, y (wasd) and select (enter) on the keyboard
             menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
@@ -110,17 +80,50 @@ public class CompetitionAuto extends BaseOpMode {
         Movements chosenMovement = menu.getResult(Movements.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
 
+        // Red alliance auto paths
+        Action redNear = drive.actionBuilder(redNearStartPose)
+                .splineTo(new Vector2d(-20, 51), Math.toRadians(0))
+                .build();
+
+        Action redFar = drive.actionBuilder(redFarStartPose)
+                .splineTo(new Vector2d(-50, 50), Math.toRadians(41))
+                .splineTo(new Vector2d(-20, 51), 0)
+                .build();
+
+        Action redFarMinimal = drive.actionBuilder(redFarStartPose)
+                .setTangent(Math.PI/2)
+                .splineTo(new Vector2d(-56, 35), Math.PI/2)
+                .build();
+
+        // Blue alliance auto paths
+        Action blueNear = drive.actionBuilder(blueNearStartPose)
+                .splineTo(new Vector2d(-20, -51), Math.toRadians(135))
+                .build();
+
+        Action blueFar = drive.actionBuilder(blueFarStartPose)
+                .splineTo(new Vector2d(-50, -50), Math.toRadians(41))
+                .build();
+
+        Action blueFarMinimal = drive.actionBuilder(blueFarStartPose)
+                .setTangent(Math.PI/2)
+                .splineTo(new Vector2d(-56, 35), Math.PI/2)
+                .build();
+
+
         Action trajectoryAction = null;
         switch (chosenAlliance) {
             case RED:
                 switch (chosenMovement) {
                     case NEAR:
+                        drive.setPose(redNearStartPose);
                         trajectoryAction = redNear;
                         break;
                     case FAR:
+                        drive.setPose(redFarStartPose);
                         trajectoryAction = redFar;
                         break;
                     case FAR_MINIMAL:
+                        drive.setPose(redFarStartPose);
                         trajectoryAction = redFarMinimal;
                         break;
                 }
@@ -129,12 +132,15 @@ public class CompetitionAuto extends BaseOpMode {
             case BLUE:
                 switch (chosenMovement) {
                     case NEAR:
+                        drive.setPose(blueNearStartPose);
                         trajectoryAction = blueNear;
                         break;
                     case FAR:
+                        drive.setPose(blueFarStartPose);
                         trajectoryAction = blueFar;
                         break;
                     case FAR_MINIMAL:
+                        drive.setPose(blueFarStartPose);
                         trajectoryAction = blueFarMinimal;
                         break;
                 }
@@ -149,6 +155,12 @@ public class CompetitionAuto extends BaseOpMode {
         TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
         packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
         MecanumDrive.sendTelemetryPacket(packet);
+
+
+        // Build the trajectory *before* the start button is pressed because Road Runner
+        // can take multiple seconds for this operation. We wouldn't want to have to wait
+        // as soon as the Start button is pressed!
+
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
