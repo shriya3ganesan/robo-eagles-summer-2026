@@ -24,6 +24,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     public static double FEED_TIME_SECONDS = 0.15; //The feeder servos run this long when a shot is requested.
 
     public static double FULL_SPEED = 1.0; //We send this power to the servos when we want them to feed an artifact to the launcher
+    public static double SLOW_REVERSE_SPEED = -0.5;
     public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
     public static double LAUNCHER_HIGH_TARGET_VELOCITY = 1950;
     public static double LAUNCHER_HIGH_MIN_VELOCITY = 1900;
