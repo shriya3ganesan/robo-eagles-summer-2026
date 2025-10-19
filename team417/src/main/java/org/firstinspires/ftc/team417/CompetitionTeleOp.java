@@ -106,14 +106,19 @@ public class CompetitionTeleOp extends BaseOpMode {
                 doHighLaunch = false;
                 doSort = true;
                 doReverse = false;
-            } else if (gamepad2.b) { // reverse
-                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
+                } else if(gamepad2.b) { //reverse
+                        launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
+                leftFeeder.setPower(REV_SPEED);
+                rightFeeder.setPower(REV_SPEED);
                 doHighLaunch = false;
                 doSort = false;
                 doReverse = true;
-            } else if (gamepad2.left_bumper) { // stop flywheel
-                launcher.setVelocity(STOP_SPEED);
-            }
+                } else if (gamepad2.left_bumper) { // stop flywheel
+                    launcher.setVelocity(STOP_SPEED);
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
+                }
+
 
             /*
              * Now we call our "Launch" function.
@@ -122,8 +127,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                 launch(gamepad2.rightBumperWasPressed());
                 rightBumperTimer.reset();
             }
-
-            launch(gamepad2.rightBumperWasPressed());
 
             /*
              * Show the state and motor powers
@@ -134,6 +137,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("reverse", doReverse);
             telemetry.addData("highLaunch", doHighLaunch);
             telemetry.addData("sort", doSort);
+            telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
 
             telemetry.update();
         }
