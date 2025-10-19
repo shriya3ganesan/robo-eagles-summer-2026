@@ -21,9 +21,17 @@ abstract public class BaseOpMode extends LinearOpMode {
     public CRServo leftFeeder = null;
     public CRServo rightFeeder = null;
     public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    public static double FEED_TIME_SECONDS = 0.15; //The feeder servos run this long when a shot is requested.
+    public static double FEED_TIME_SECONDS = 0; //The feeder servos run this long when a shot is requested.
 
-    public static double FULL_SPEED = 1.0; //We send this power to the servos when we want them to feed an artifact to the launcher
+    public static double FEED_TIME_LOW = 0.15;
+    public static double FEED_TIME_HIGH = 0.04;
+    public static double FEED_TIME_SORT = 0.07;
+
+
+    public static double rememberVelocity = 0;
+
+    public static double FULL_SPEED = 1.0;//We send this power to the servos when we want them to feed an artifact to the launcher
+    public static double REV_SPEED = -1.0;
     public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
     public static double LAUNCHER_HIGH_TARGET_VELOCITY = 1950;
     public static double LAUNCHER_HIGH_MIN_VELOCITY = 1900;
@@ -37,9 +45,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
 
-    public static double LAUNCHER_REV_MAX_VELOCITY = -300;
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
-    public static double LAUNCHER_REV_MIN_VELOCITY = -200;
     boolean doHighLaunch = false;
     boolean doSort = false;
     boolean doReverse = false;
@@ -54,9 +60,9 @@ abstract public class BaseOpMode extends LinearOpMode {
         SPIN_UP_HIGH,
         SPIN_UP_LOW,
         SPIN_UP_SORT,
-        SPIN_UP_REV,
         LAUNCH,
         LAUNCHING,
+
     }
 
     public LaunchState launchState;
@@ -141,30 +147,28 @@ abstract public class BaseOpMode extends LinearOpMode {
                 if (shotRequested) {
                     if (doHighLaunch) {
                         launchState = LaunchState.SPIN_UP_HIGH;
+                        FEED_TIME_SECONDS = FEED_TIME_HIGH;
                     } else if (doSort) {
                         launchState = LaunchState.SPIN_UP_SORT;
-                    } else if (doReverse) {
-                        launchState = LaunchState.SPIN_UP_REV;
+                        FEED_TIME_SECONDS = FEED_TIME_SORT;
                     } else {
                         launchState = LaunchState.SPIN_UP_LOW;
+                        FEED_TIME_SECONDS = FEED_TIME_LOW;
                     }
                 }
                 break;
 
             case SPIN_UP_SORT:
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                rememberVelocity = LAUNCHER_SORTER_TARGET_VELOCITY;
                 if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
-            case SPIN_UP_REV:
-                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_REV_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_REV_MAX_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
+
             case SPIN_UP_LOW:
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+                rememberVelocity = LAUNCHER_LOW_TARGET_VELOCITY;
                 if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
                         redLed.off();
@@ -176,6 +180,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                 break;
             case SPIN_UP_HIGH:
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                rememberVelocity = LAUNCHER_HIGH_TARGET_VELOCITY;
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
                         redLed.off();
@@ -189,6 +194,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
+
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
@@ -200,6 +206,8 @@ abstract public class BaseOpMode extends LinearOpMode {
                     greenLed.on();
                 }
                 break;
+
+
         }
     }
 }
