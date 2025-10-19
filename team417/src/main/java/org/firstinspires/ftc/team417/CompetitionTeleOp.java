@@ -46,8 +46,6 @@ public class CompetitionTeleOp extends BaseOpMode {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
 
-        launchState = LaunchState.IDLE;
-
         // Initialize motors, servos, LEDs
         initHardware();
 
