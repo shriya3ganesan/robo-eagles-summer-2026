@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
@@ -20,6 +21,8 @@ public class CompetitionTeleOp extends BaseOpMode {
 
     double FASTDRIVE_SPEED = 1.0;
     double SLOWDRIVE_SPEED = 0.5;
+
+    ElapsedTime rightBumperTimer = new ElapsedTime();
 
     /*
      * TECH TIP: State Machines
@@ -107,6 +110,11 @@ public class CompetitionTeleOp extends BaseOpMode {
             /*
              * Now we call our "Launch" function.
              */
+            if (rightBumperTimer.seconds() > 0.25) {
+                launch(gamepad2.rightBumperWasPressed());
+                rightBumperTimer.reset();
+            }
+
             launch(gamepad2.rightBumperWasPressed());
 
             /*

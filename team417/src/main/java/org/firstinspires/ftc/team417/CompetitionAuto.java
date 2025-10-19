@@ -34,7 +34,7 @@ public class CompetitionAuto extends BaseOpMode {
 
     double minWaitTime = 0.0;
     double maxWaitTime = 15.0;
-    
+
     @Override
     public void runOpMode() {
         Pose2d startPose = new Pose2d(0, 0, 0);
@@ -97,7 +97,10 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Blue alliance auto paths
         Action blueNear = drive.actionBuilder(blueNearStartPose)
-                .splineTo(new Vector2d(-20, -51), Math.toRadians(135))
+                .setTangent(Math.toRadians(49))
+                .splineTo(new Vector2d(-44, -44), Math.toRadians(49))
+                .setTangent(Math.toRadians(139))
+                .splineTo(new Vector2d(-54,-38), Math.toRadians(139))
                 .build();
 
         Action blueFar = drive.actionBuilder(blueFarStartPose)

@@ -21,7 +21,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     public CRServo leftFeeder = null;
     public CRServo rightFeeder = null;
     public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    public static double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
+    public static double FEED_TIME_SECONDS = 0.15; //The feeder servos run this long when a shot is requested.
 
     public static double FULL_SPEED = 1.0; //We send this power to the servos when we want them to feed an artifact to the launcher
     public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
