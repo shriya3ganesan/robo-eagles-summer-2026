@@ -146,12 +146,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     class LaunchAction extends RobotAction {
         public boolean run(double ElapsedTime) {
             launch(true);
-            if (ElapsedTime < .2) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return ElapsedTime < 1;
         }
 
 
