@@ -30,8 +30,8 @@ abstract public class BaseOpMode extends LinearOpMode {
     public static double rememberVelocity = 0;
 
     public static double FULL_SPEED = 1.0; //We send this power to the servos when we want them to feed an artifact to the launcher
-    public static double SLOW_REVERSE_SPEED = -0.5;
-    public static double REV_SPEED = -1.0;
+    public static double SLOW_REV_SPEED = -0.15; //speed for the constant reverse rotation
+    public static double REV_SPEED = -1.0;//speed used for the reverse launch function
     public static double LAUNCHER_HIGH_MAX_VELOCITY = 2000; //high target velocity + 50 (will need adjusting)
     public static double LAUNCHER_HIGH_TARGET_VELOCITY = 1950;
     public static double LAUNCHER_HIGH_MIN_VELOCITY = 1900;
@@ -66,13 +66,11 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public LaunchState launchState;
     public void initHardware() {
-        /*
-        * Initialize the hardware variables. Note that the strings used here as parameters
-        * to 'get' must correspond to the names assigned during the robot configuration
-        * step.
-        */
+
         // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+
+        // initialize flywheel motor and feeder servos
         launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
         leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
         rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
@@ -91,15 +89,6 @@ abstract public class BaseOpMode extends LinearOpMode {
             greenLed.off();
         }
 
-        /*
-         * To drive forward, most robots need the motor on one side to be reversed,
-         * because the axles point in opposite directions. Pushing the left stick forward
-         * MUST make robot go forward. So adjust these two lines based on your first test drive.
-         * Note: The settings here assume direct drive on left and right wheels. Gear
-         * Reduction or 90 Deg drives may require direction flips
-         */
-        // leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        // rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         /*
          * Here we set our launcher to the RUN_USING_ENCODER runmode.
@@ -110,39 +99,27 @@ abstract public class BaseOpMode extends LinearOpMode {
          */
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        /*
-         * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
-         * slow down much faster when it is coasting. This creates a much more controllable
-         * drivetrain. As the robot stops much quicker.
-         */
-        // leftDrive.setZeroPowerBehavior(BRAKE);
-        // rightDrive.setZeroPowerBehavior(BRAKE);
+        // set the flywheel to a braking behavior so it slows down faster when left trigger is pressed
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        /*
-         * set Feeders to an initial value to initialize the servo controller
-         */
+        // set the feeder servos to an initial value to init the servo controller
         leftFeeder.setPower(STOP_SPEED);
         rightFeeder.setPower(STOP_SPEED);
 
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
-        /*
-         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
-         * both work to feed the ball into the robot.
-         */
+        //set the left feeder servo to rotate in reverse, so that the servos spin in the same relative direction
         leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        /*
-         * Tell the driver that initialization is complete.
-         */
+
+        //  Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
 
 
     public void launch(boolean shotRequested) {
         switch (launchState) {
-            case IDLE:
+            case IDLE: // The default launch state. When a launchmode is selected, the flywheel revs up and waits here for shotRequested
                 if (shotRequested) {
                     if (doHighLaunch) {
                         launchState = LaunchState.SPIN_UP_HIGH;
@@ -156,14 +133,14 @@ abstract public class BaseOpMode extends LinearOpMode {
                 }
                 break;
 
-            case SPIN_UP_SORT:
+            case SPIN_UP_SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
 
-            case SPIN_UP_LOW:
+            case SPIN_UP_LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
@@ -174,7 +151,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
                 }
                 break;
-            case SPIN_UP_HIGH:
+            case SPIN_UP_HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
@@ -183,13 +160,13 @@ abstract public class BaseOpMode extends LinearOpMode {
                     }
                     launchState = LaunchState.LAUNCH;
                 }
-            case LAUNCH:
+            case LAUNCH: //when shotRequested, start the feeder servos to init launch
                 leftFeeder.setPower(FULL_SPEED);
                 rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
-            case LAUNCHING:
+            case LAUNCHING: //wait until feedTimer surpasses FEED_TIME_SECONDS, then stop the feeder servos.
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
                     leftFeeder.setPower(STOP_SPEED);

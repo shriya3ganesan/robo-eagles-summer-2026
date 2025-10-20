@@ -88,6 +88,8 @@ public class CompetitionTeleOp extends BaseOpMode {
             packet.fieldOverlay().setStroke("#3F51B5");
             Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
             MecanumDrive.sendTelemetryPacket(packet);
+            leftFeeder.setPower(SLOW_REV_SPEED);
+            rightFeeder.setPower(SLOW_REV_SPEED);
 
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
@@ -96,8 +98,6 @@ public class CompetitionTeleOp extends BaseOpMode {
                 doReverse = false;
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                leftFeeder.setPower(SLOW_REVERSE_SPEED);
-                rightFeeder.setPower(SLOW_REVERSE_SPEED);
                 doHighLaunch = false;
                 doSort = false;
                 doReverse = false;
@@ -106,18 +106,21 @@ public class CompetitionTeleOp extends BaseOpMode {
                 doHighLaunch = false;
                 doSort = true;
                 doReverse = false;
-                } else if(gamepad2.b) { //reverse
-                        launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
+            } else if(gamepad2.b) { //reverse
+                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
                 rightFeeder.setPower(REV_SPEED);
                 doHighLaunch = false;
                 doSort = false;
                 doReverse = true;
-                } else if (gamepad2.left_bumper) { // stop flywheel
+            } else if (gamepad2.left_bumper) { // stop flywheel
                     launcher.setVelocity(STOP_SPEED);
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
-                }
+            } else {
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
+            }
 
 
             /*
@@ -138,6 +141,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("highLaunch", doHighLaunch);
             telemetry.addData("sort", doSort);
             telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
+            telemetry.addData("feederSpeed", leftFeeder.getPower());
 
             telemetry.update();
         }
