@@ -94,18 +94,15 @@ public class CompetitionTeleOp extends BaseOpMode {
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 launchState = LaunchState.HIGH;
-                leftFeeder.setPower(STOP_SPEED);
-                rightFeeder.setPower(STOP_SPEED);
+
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 launchState = LaunchState.LOW;
-                leftFeeder.setPower(STOP_SPEED);
-                rightFeeder.setPower(STOP_SPEED);
+
             } else if (gamepad2.x) { // sort speed
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 launchState = LaunchState.SORT;
-                leftFeeder.setPower(STOP_SPEED);
-                rightFeeder.setPower(STOP_SPEED);
+
             } else if (gamepad2.b) { //reverse
                 launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
@@ -115,11 +112,11 @@ public class CompetitionTeleOp extends BaseOpMode {
                 launcher.setVelocity(STOP_SPEED);
                 leftFeeder.setPower(STOP_SPEED);
                 rightFeeder.setPower(STOP_SPEED);
-            } else if (launchState == LaunchState.IDLE) {
+            }
+            while (launchState == LaunchState.IDLE) {
                 leftFeeder.setPower(SLOW_REV_SPEED);
                 rightFeeder.setPower(SLOW_REV_SPEED);
             }
-
 
             /*
              * Now we call our "Launch" function.
