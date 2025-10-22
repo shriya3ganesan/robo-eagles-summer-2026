@@ -116,8 +116,8 @@ public final class MecanumDrive {
                 pinpoint.ticksPerMm = 71.665;
                 pinpoint.xReversed = true;
                 pinpoint.yReversed = false;
-                pinpoint.xOffset = 199.4;
-                pinpoint.yOffset = 120.2;
+                pinpoint.xOffset = -199.4;
+                pinpoint.yOffset = -120.2;
             } else {
                 // Your competition robot Loony Tune configuration is here:
                 logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
