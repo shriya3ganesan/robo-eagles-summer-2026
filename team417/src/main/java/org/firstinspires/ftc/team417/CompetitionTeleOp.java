@@ -93,26 +93,18 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
-                doHighLaunch = true;
-                doSort = false;
-                doReverse = false;
+                launchState = LaunchState.HIGH;
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                doHighLaunch = false;
-                doSort = false;
-                doReverse = false;
+                launchState = LaunchState.LOW;
             } else if (gamepad2.x) { // sort speed
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
-                doHighLaunch = false;
-                doSort = true;
-                doReverse = false;
+                launchState = LaunchState.SORT;
             } else if(gamepad2.b) { //reverse
                 launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
                 rightFeeder.setPower(REV_SPEED);
-                doHighLaunch = false;
-                doSort = false;
-                doReverse = true;
+                launchState = LaunchState.REVERSE;
             } else if (gamepad2.left_bumper) { // stop flywheel
                     launcher.setVelocity(STOP_SPEED);
                     leftFeeder.setPower(STOP_SPEED);
@@ -137,9 +129,6 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("State", launchState);
             // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("motorSpeed", launcher.getVelocity());
-            telemetry.addData("reverse", doReverse);
-            telemetry.addData("highLaunch", doHighLaunch);
-            telemetry.addData("sort", doSort);
             telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
             telemetry.addData("feederSpeed", leftFeeder.getPower());
 

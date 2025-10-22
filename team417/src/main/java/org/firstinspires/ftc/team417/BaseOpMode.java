@@ -46,9 +46,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
 
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
-    boolean doHighLaunch = false;
-    boolean doSort = false;
-    boolean doReverse = false;
+
 
     public LED redLed;
     public LED greenLed;
@@ -57,14 +55,16 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public enum LaunchState {
         IDLE,
-        SPIN_UP_HIGH,
-        SPIN_UP_LOW,
-        SPIN_UP_SORT,
+        HIGH,
+        LOW,
+        SORT,
+        REVERSE,
         LAUNCH,
         LAUNCHING,
     }
 
     public LaunchState launchState;
+
     public void initHardware() {
 
         // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
@@ -118,29 +118,17 @@ abstract public class BaseOpMode extends LinearOpMode {
 
 
     public void launch(boolean shotRequested) {
+        if (shotRequested) {
         switch (launchState) {
-            case IDLE: // The default launch state. When a launchmode is selected, the flywheel revs up and waits here for shotRequested
-                if (shotRequested) {
-                    if (doHighLaunch) {
-                        launchState = LaunchState.SPIN_UP_HIGH;
-                    } else if (doSort) {
-                        launchState = LaunchState.SPIN_UP_SORT;
-                        FEED_TIME_SECONDS = FEED_TIME_SORT;
-                    } else {
-                        launchState = LaunchState.SPIN_UP_LOW;
-                        FEED_TIME_SECONDS = FEED_TIME_LOW;
-                    }
-                }
-                break;
-
-            case SPIN_UP_SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
+            case SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
 
-            case SPIN_UP_LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
+            case LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
+            case REVERSE:
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
@@ -151,7 +139,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
                 }
                 break;
-            case SPIN_UP_HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
+            case HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                     if (redLed != null && greenLed != null) {
@@ -177,6 +165,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                     greenLed.on();
                 }
                 break;
+            }
         }
     }
 }
