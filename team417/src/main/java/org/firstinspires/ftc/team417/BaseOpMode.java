@@ -145,8 +145,16 @@ abstract public class BaseOpMode extends LinearOpMode {
     }
     class LaunchAction extends RobotAction {
         public boolean run(double ElapsedTime) {
-            launch(true);
-            return ElapsedTime < 1;
+            leftFeeder.setPower(FULL_SPEED);
+            rightFeeder.setPower(FULL_SPEED);
+            if (ElapsedTime < 1) {
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
+                return false;
+            }
+            else {
+                return true;
+            }
         }
 
 
