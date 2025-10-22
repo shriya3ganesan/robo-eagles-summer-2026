@@ -15,7 +15,7 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  * This class exposes the competition version of TeleOp. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
-@TeleOp(name="TeleOp", group="Competition")
+@TeleOp(name = "TeleOp", group = "Competition")
 @Config
 public class CompetitionTeleOp extends BaseOpMode {
 
@@ -77,8 +77,8 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             // send telemetry to FTC dashboard to graph
             packet.put("FlyWheel Speed:", launcher.getVelocity());
-            packet.put("Right bumper press:", gamepad2.right_bumper? 0:1000);
-            packet.put("Feeder wheels:", rightFeeder.getPower()*100);
+            packet.put("Right bumper press:", gamepad2.right_bumper ? 0 : 1000);
+            packet.put("Feeder wheels:", rightFeeder.getPower() * 100);
 
 
             // Do the work now for all active Road Runner actions, if any:
@@ -94,22 +94,28 @@ public class CompetitionTeleOp extends BaseOpMode {
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                 launchState = LaunchState.HIGH;
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
             } else if (gamepad2.a) { //slow speed
                 launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                 launchState = LaunchState.LOW;
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
             } else if (gamepad2.x) { // sort speed
                 launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                 launchState = LaunchState.SORT;
-            } else if(gamepad2.b) { //reverse
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
+            } else if (gamepad2.b) { //reverse
                 launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
                 rightFeeder.setPower(REV_SPEED);
                 launchState = LaunchState.REVERSE;
             } else if (gamepad2.left_bumper) { // stop flywheel
-                    launcher.setVelocity(STOP_SPEED);
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
-            } else {
+                launcher.setVelocity(STOP_SPEED);
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
+            } else if (launchState == LaunchState.IDLE) {
                 leftFeeder.setPower(SLOW_REV_SPEED);
                 rightFeeder.setPower(SLOW_REV_SPEED);
             }
@@ -136,7 +142,7 @@ public class CompetitionTeleOp extends BaseOpMode {
         }
     }
 
-    public double doSLOWMODE(){
+    public double doSLOWMODE() {
         if (gamepad1.left_stick_button) {
             return SLOWDRIVE_SPEED;
         } else {
