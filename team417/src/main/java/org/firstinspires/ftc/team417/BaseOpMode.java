@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
 /**
  * This class contains all of the base logic that is shared between all of the TeleOp and
@@ -44,6 +45,8 @@ abstract public class BaseOpMode extends LinearOpMode {
     public static double LAUNCHER_SORTER_TARGET_VELOCITY = 500;
     public static double LAUNCHER_SORTER_MIN_VELOCITY = 450;
 
+    public double ROBOT_WIDTH = 0;
+    public double ROBOT_LENGTH = 0;
 
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
 
@@ -66,7 +69,13 @@ abstract public class BaseOpMode extends LinearOpMode {
     public LaunchState launchState;
 
     public void initHardware() {
+        launchState = LaunchState.IDLE;
 
+        /*
+        * Initialize the hardware variables. Note that the strings used here as parameters
+        * to 'get' must correspond to the names assigned during the robot configuration
+        * step.
+        */
         // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
@@ -78,15 +87,19 @@ abstract public class BaseOpMode extends LinearOpMode {
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
         if (MecanumDrive.isDevBot) {
             launcher.setDirection(DcMotorEx.Direction.REVERSE);
+            ROBOT_LENGTH = 18.5;
+            ROBOT_WIDTH = 18;
             redLed = null;
             greenLed = null;
 
         }
-        if (false) {
-            redLed = hardwareMap.get(LED.class, "redLed");
-            greenLed = hardwareMap.get(LED.class, "greenLed");
-            redLed.on();
-            greenLed.off();
+        else if(MecanumDrive.isFastBot) {
+            ROBOT_WIDTH = 16;
+            ROBOT_LENGTH = 17;
+            //redLed = hardwareMap.get(LED.class, "redLed");   Uncomment one we get LEDs
+            //greenLed = hardwareMap.get(LED.class, "greenLed");
+            //redLed.on();
+            //greenLed.off();
         }
 
 
@@ -115,7 +128,33 @@ abstract public class BaseOpMode extends LinearOpMode {
         //  Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
+    class LaunchAction extends RobotAction {
+        public boolean run(double ElapsedTime) {
+            leftFeeder.setPower(FULL_SPEED);
+            rightFeeder.setPower(FULL_SPEED);
+            if (ElapsedTime < 1) {
+                leftFeeder.setPower(STOP_SPEED);
+                rightFeeder.setPower(STOP_SPEED);
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
 
+
+    }
+    class SpinUpAction extends RobotAction {
+        public boolean run(double ElapsedTime) {
+            launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+            if(ElapsedTime < 1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
 
     public void launch(boolean shotRequested) {
         if (shotRequested) {

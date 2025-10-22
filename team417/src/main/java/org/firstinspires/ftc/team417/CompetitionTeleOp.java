@@ -46,8 +46,6 @@ public class CompetitionTeleOp extends BaseOpMode {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
 
-        launchState = LaunchState.IDLE;
-
         // Initialize motors, servos, LEDs
         initHardware();
 
@@ -70,6 +68,74 @@ public class CompetitionTeleOp extends BaseOpMode {
             ));
 
             // Update the current pose:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             drive.updatePoseEstimate();
 
             // 'packet' is the object used to send data to FTC Dashboard:

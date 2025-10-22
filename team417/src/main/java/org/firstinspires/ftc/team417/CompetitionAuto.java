@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -37,12 +38,13 @@ public class CompetitionAuto extends BaseOpMode {
 
     @Override
     public void runOpMode() {
+        initHardware();
         Pose2d startPose = new Pose2d(0, 0, 0);
 
-        Pose2d redNearStartPose = new Pose2d(-48, 48, Math.toRadians(41));
+        Pose2d redNearStartPose = new Pose2d(-50, 50.5, Math.toRadians(41));
         Pose2d redFarStartPose = new Pose2d(56, 12, Math.toRadians(180));
 
-        Pose2d blueNearStartPose = new Pose2d(-48, -48, Math.toRadians(139));
+        Pose2d blueNearStartPose = new Pose2d(-50, -50.5, Math.toRadians(139));
         Pose2d blueFarStartPose = new Pose2d(56, -12, Math.toRadians(180));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
@@ -82,7 +84,12 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Red alliance auto paths
         Action redNear = drive.actionBuilder(redNearStartPose)
-                .splineTo(new Vector2d(-20, 51), Math.toRadians(0))
+                .setTangent(Math.toRadians(131))
+                .stopAndAdd(new SpinUpAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .splineTo(new Vector2d(-54,38), Math.toRadians(41))
                 .build();
 
         Action redFar = drive.actionBuilder(redFarStartPose)
@@ -98,8 +105,15 @@ public class CompetitionAuto extends BaseOpMode {
         // Blue alliance auto paths
         Action blueNear = drive.actionBuilder(blueNearStartPose)
                 .setTangent(Math.toRadians(49))
-                .splineTo(new Vector2d(-44, -44), Math.toRadians(49))
-                .setTangent(Math.toRadians(139))
+                .stopAndAdd(new SpinUpAction())
+                .stopAndAdd(new SleepAction(2))
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new SleepAction(2))
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new SleepAction(2))
+                .stopAndAdd(new LaunchAction())
+//                .splineTo(new Vector2d(-44, -44), Math.toRadians(49))
+//                .setTangent(Math.toRadians(139))
                 .splineTo(new Vector2d(-54,-38), Math.toRadians(139))
                 .build();
 
