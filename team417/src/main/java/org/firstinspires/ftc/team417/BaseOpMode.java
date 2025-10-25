@@ -61,7 +61,6 @@ abstract public class BaseOpMode extends LinearOpMode {
         HIGH,
         LOW,
         SORT,
-        REVERSE,
         LAUNCH,
         LAUNCHING,
     }
@@ -157,29 +156,49 @@ abstract public class BaseOpMode extends LinearOpMode {
     }
 
     public void launch(boolean shotRequested) {
-        if (shotRequested) {
-            switch (launchState) {
-                case SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
+
+
+
+        switch (launchState) {
+
+            case IDLE:
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
+            break;
+
+            case SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
+                if (shotRequested) {
                     launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
                     if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
                         launchState = LaunchState.LAUNCH;
-                    }
-                    break;
 
-                case LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
-                case REVERSE:
+                    }
+                }
+                break;
+
+            case LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
+                if (shotRequested) {
                     launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                     if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
+                        leftFeeder.setPower(STOP_SPEED);
+                        rightFeeder.setPower(STOP_SPEED);
                         if (redLed != null && greenLed != null) {
                             redLed.off();
                             greenLed.on();
                         }
                         launchState = LaunchState.LAUNCH;
-
                     }
-                    break;
-                case HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
+                }
+            break;
+
+            case HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
+                if (shotRequested) {
+
                     launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
                     if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
                         if (redLed != null && greenLed != null) {
                             redLed.off();
@@ -187,24 +206,26 @@ abstract public class BaseOpMode extends LinearOpMode {
                         }
                         launchState = LaunchState.LAUNCH;
                     }
-                case LAUNCH: //when shotRequested, start the feeder servos to init launch
-                    leftFeeder.setPower(FULL_SPEED);
-                    rightFeeder.setPower(FULL_SPEED);
-                    feederTimer.reset();
-                    launchState = LaunchState.LAUNCHING;
-                    break;
-                case LAUNCHING: //wait until feedTimer surpasses FEED_TIME_SECONDS, then stop the feeder servos.
-                    if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                        launchState = LaunchState.IDLE;
-                        leftFeeder.setPower(STOP_SPEED);
-                        rightFeeder.setPower(STOP_SPEED);
-                    }
-                    if (redLed != null && greenLed != null) {
-                        redLed.off();
-                        greenLed.on();
-                    }
-                    break;
-            }
+                }
+                break;
+            case LAUNCH: //when shotRequested, start the feeder servos to init launch
+                leftFeeder.setPower(FULL_SPEED);
+                rightFeeder.setPower(FULL_SPEED);
+                feederTimer.reset();
+                launchState = LaunchState.LAUNCHING;
+                break;
+            case LAUNCHING: //wait until feedTimer surpasses FEED_TIME_SECONDS, then stop the feeder servos.
+                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
+                    launchState = LaunchState.IDLE;
+
+                }
+                if (redLed != null && greenLed != null) {
+                    redLed.off();
+                    greenLed.on();
+                }
+                break;
         }
     }
 }

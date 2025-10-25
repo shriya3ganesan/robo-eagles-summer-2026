@@ -87,8 +87,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             packet.fieldOverlay().setStroke("#3F51B5");
             Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
             MecanumDrive.sendTelemetryPacket(packet);
-            leftFeeder.setPower(SLOW_REV_SPEED);
-            rightFeeder.setPower(SLOW_REV_SPEED);
+
 
             if (gamepad2.y) { //high speed
                 launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
@@ -106,16 +105,12 @@ public class CompetitionTeleOp extends BaseOpMode {
                 launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
                 rightFeeder.setPower(REV_SPEED);
-                launchState = LaunchState.REVERSE;
             } else if (gamepad2.left_bumper) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
                 leftFeeder.setPower(STOP_SPEED);
                 rightFeeder.setPower(STOP_SPEED);
             }
-            while (launchState == LaunchState.IDLE) {
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-            }
+
 
             /*
              * Now we call our "Launch" function.
