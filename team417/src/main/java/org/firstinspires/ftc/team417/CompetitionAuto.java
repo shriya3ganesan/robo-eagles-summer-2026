@@ -41,11 +41,11 @@ public class CompetitionAuto extends BaseOpMode {
         initHardware();
         Pose2d startPose = new Pose2d(0, 0, 0);
 
-        Pose2d redNearStartPose = new Pose2d(-50, 50.5, Math.toRadians(41));
-        Pose2d redFarStartPose = new Pose2d(56, 12, Math.toRadians(180));
+        Pose2d redNearStartPose = new Pose2d(-60, 48, Math.toRadians(41));
+        Pose2d redFarStartPose = new Pose2d(64, 16, Math.toRadians(0));
 
         Pose2d blueNearStartPose = new Pose2d(-50, -50.5, Math.toRadians(139));
-        Pose2d blueFarStartPose = new Pose2d(56, -12, Math.toRadians(180));
+        Pose2d blueFarStartPose = new Pose2d(64, -16, Math.toRadians(180));
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
@@ -84,46 +84,57 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Red alliance auto paths
         Action redNear = drive.actionBuilder(redNearStartPose)
-                .setTangent(Math.toRadians(131))
+                .setTangent(Math.toRadians(-49))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
-                .splineTo(new Vector2d(-54,38), Math.toRadians(41))
+
+                .splineToLinearHeading(new Pose2d(-32,54,Math.toRadians(0)), Math.toRadians(90))
                 .build();
 
         Action redFar = drive.actionBuilder(redFarStartPose)
-                .splineTo(new Vector2d(-50, 50), Math.toRadians(41))
-                .splineTo(new Vector2d(-20, 51), 0)
+                .setTangent(Math.toRadians(135))
+                .splineToLinearHeading(new Pose2d(-57, 36, Math.toRadians(0)), Math.toRadians(90))
+                .stopAndAdd(new SpinUpAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-56, 12, Math.toRadians(0)), Math.toRadians(-90))
                 .build();
 
         Action redFarMinimal = drive.actionBuilder(redFarStartPose)
                 .setTangent(Math.PI/2)
-                .splineTo(new Vector2d(-56, 35), Math.PI/2)
+                .splineTo(new Vector2d(56, 35), Math.PI/2)
                 .build();
 
         // Blue alliance auto paths
         Action blueNear = drive.actionBuilder(blueNearStartPose)
                 .setTangent(Math.toRadians(49))
                 .stopAndAdd(new SpinUpAction())
-                .stopAndAdd(new SleepAction(2))
                 .stopAndAdd(new LaunchAction())
-                .stopAndAdd(new SleepAction(2))
                 .stopAndAdd(new LaunchAction())
-                .stopAndAdd(new SleepAction(2))
                 .stopAndAdd(new LaunchAction())
 //                .splineTo(new Vector2d(-44, -44), Math.toRadians(49))
 //                .setTangent(Math.toRadians(139))
-                .splineTo(new Vector2d(-54,-38), Math.toRadians(139))
+                .splineToLinearHeading(new Pose2d(-32,-54,Math.toRadians(180)), Math.toRadians(-90))
                 .build();
 
         Action blueFar = drive.actionBuilder(blueFarStartPose)
-                .splineTo(new Vector2d(-50, -50), Math.toRadians(41))
+                .setTangent(Math.toRadians(-135))
+                .splineToLinearHeading(new Pose2d(-57, -36, Math.toRadians(180)), Math.toRadians(-90))
+                .stopAndAdd(new SpinUpAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(-56, -12, Math.toRadians(180)), Math.toRadians(90))
                 .build();
 
         Action blueFarMinimal = drive.actionBuilder(blueFarStartPose)
                 .setTangent(Math.PI/2)
-                .splineTo(new Vector2d(-56, 35), Math.PI/2)
+                .splineTo(new Vector2d(56, -35), Math.PI/2)
                 .build();
 
 
