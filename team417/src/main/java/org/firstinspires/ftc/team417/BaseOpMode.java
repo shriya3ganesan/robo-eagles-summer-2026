@@ -18,6 +18,7 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
  */
 abstract public class BaseOpMode extends LinearOpMode {
 
+
     public DcMotorEx launcher = null;
     public CRServo leftFeeder = null;
     public CRServo rightFeeder = null;
@@ -83,6 +84,7 @@ abstract public class BaseOpMode extends LinearOpMode {
         launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
         leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
         rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
+
 
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
         if (MecanumDrive.isDevBot) {
@@ -163,7 +165,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     public void launch(boolean shotRequested) {
 
 
-
+        double launcherVelocity = launcher.getVelocity();
         switch (launchState) {
 
             case IDLE:
@@ -180,7 +182,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                     launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
-                    if (launcher.getVelocity() > LAUNCHER_SORTER_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_SORTER_MAX_VELOCITY) {
+                    if (launcherVelocity > LAUNCHER_SORTER_MIN_VELOCITY && launcherVelocity < LAUNCHER_SORTER_MAX_VELOCITY) {
                         launchState = LaunchState.LAUNCH;
 
                     }
@@ -193,7 +195,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                 if (shotRequested) {
                     CURRENT_LAUNCHSTATE = "LOW";
                     launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                    if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
+                    if (launcherVelocity > LAUNCHER_LOW_MIN_VELOCITY && launcherVelocity < LAUNCHER_LOW_MAX_VELOCITY) {
                         leftFeeder.setPower(STOP_SPEED);
                         rightFeeder.setPower(STOP_SPEED);
                         if (redLed != null && greenLed != null) {
@@ -213,7 +215,7 @@ abstract public class BaseOpMode extends LinearOpMode {
                     launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
-                    if (launcher.getVelocity() > LAUNCHER_HIGH_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_HIGH_MAX_VELOCITY) {
+                    if (launcherVelocity > LAUNCHER_HIGH_MIN_VELOCITY && launcherVelocity < LAUNCHER_HIGH_MAX_VELOCITY) {
                         if (redLed != null && greenLed != null) {
                             redLed.off();
                             greenLed.on();
