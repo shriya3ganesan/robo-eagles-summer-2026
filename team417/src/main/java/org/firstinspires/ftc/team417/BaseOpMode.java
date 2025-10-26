@@ -56,6 +56,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
+    public String CURRENT_LAUNCHSTATE = "IDLE";
     public enum LaunchState {
         IDLE,
         HIGH,
@@ -164,10 +165,14 @@ abstract public class BaseOpMode extends LinearOpMode {
             case IDLE:
                 leftFeeder.setPower(SLOW_REV_SPEED);
                 rightFeeder.setPower(SLOW_REV_SPEED);
+                CURRENT_LAUNCHSTATE = "IDLE";
             break;
 
             case SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
                 if (shotRequested) {
+                    CURRENT_LAUNCHSTATE = "SORT";
                     launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
@@ -179,7 +184,10 @@ abstract public class BaseOpMode extends LinearOpMode {
                 break;
 
             case LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
                 if (shotRequested) {
+                    CURRENT_LAUNCHSTATE = "LOW";
                     launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
                     if (launcher.getVelocity() > LAUNCHER_LOW_MIN_VELOCITY && launcher.getVelocity() < LAUNCHER_LOW_MAX_VELOCITY) {
                         leftFeeder.setPower(STOP_SPEED);
@@ -194,8 +202,10 @@ abstract public class BaseOpMode extends LinearOpMode {
             break;
 
             case HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
                 if (shotRequested) {
-
+                    CURRENT_LAUNCHSTATE = "HIGH";
                     launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
@@ -218,12 +228,23 @@ abstract public class BaseOpMode extends LinearOpMode {
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
-                    launchState = LaunchState.IDLE;
 
                 }
+                leftFeeder.setPower(SLOW_REV_SPEED);
+                rightFeeder.setPower(SLOW_REV_SPEED);
                 if (redLed != null && greenLed != null) {
                     redLed.off();
                     greenLed.on();
+                }
+                if (CURRENT_LAUNCHSTATE.equals("LOW") ) {
+                   launchState = LaunchState.LOW;
+                } else if (CURRENT_LAUNCHSTATE.equals("HIGH")) {
+                    launchState = LaunchState.HIGH;
+
+                } else if (CURRENT_LAUNCHSTATE.equals("SORT")) {
+                    launchState = LaunchState.SORT;
+                } else {
+                    launchState = LaunchState.IDLE;
                 }
                 break;
         }

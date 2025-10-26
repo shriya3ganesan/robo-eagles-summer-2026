@@ -105,10 +105,13 @@ public class CompetitionTeleOp extends BaseOpMode {
                 launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
                 leftFeeder.setPower(REV_SPEED);
                 rightFeeder.setPower(REV_SPEED);
+
             } else if (gamepad2.left_bumper) { // stop flywheel
                 launcher.setVelocity(STOP_SPEED);
                 leftFeeder.setPower(STOP_SPEED);
                 rightFeeder.setPower(STOP_SPEED);
+                launchState = LaunchState.IDLE;
+                CURRENT_LAUNCHSTATE = "IDLE";
             }
 
 
