@@ -74,66 +74,71 @@ public class CompetitionTeleOp extends BaseOpMode {
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
 
-            // send telemetry to FTC dashboard to graph
-            packet.put("FlyWheel Speed:", launcher.getVelocity());
-            packet.put("Right bumper press:", gamepad2.right_bumper ? 0 : 1000);
-            packet.put("Feeder wheels:", rightFeeder.getPower() * 100);
+            if (MecanumDrive.isFastBot) {
+                // send telemetry to FTC dashboard to graph
+                packet.put("FlyWheel Speed:", launcher.getVelocity());
+                packet.put("Right bumper press:", gamepad2.right_bumper ? 0 : 1000);
+                packet.put("Feeder wheels:", rightFeeder.getPower() * 100);
 
 
-            // Do the work now for all active Road Runner actions, if any:
-            drive.doActionsWork(packet);
+                // Do the work now for all active Road Runner actions, if any:
+                drive.doActionsWork(packet);
 
-            // Draw the robot and field:
-            packet.fieldOverlay().setStroke("#3F51B5");
-            Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
-            MecanumDrive.sendTelemetryPacket(packet);
+                // Draw the robot and field:
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
+                MecanumDrive.sendTelemetryPacket(packet);
 
 
-            if (gamepad2.y) { //high speed
-                launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
-                launchState = LaunchState.HIGH;
+                if (gamepad2.y) { //high speed
+                    launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                    launchState = LaunchState.HIGH;
 
-            } else if (gamepad2.a) { //slow speed
-                launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                launchState = LaunchState.LOW;
+                } else if (gamepad2.a) { //slow speed
+                    launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+                    launchState = LaunchState.LOW;
 
-            } else if (gamepad2.x) { // sort speed
-                launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
-                launchState = LaunchState.SORT;
+                } else if (gamepad2.x) { // sort speed
+                    launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
+                    launchState = LaunchState.SORT;
 
-            } else if (gamepad2.b) { //reverse
-                launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
-                leftFeeder.setPower(REV_SPEED);
-                rightFeeder.setPower(REV_SPEED);
+                } else if (gamepad2.b) { //reverse
+                    launcher.setVelocity(LAUNCHER_REV_TARGET_VELOCITY);
+                    leftFeeder.setPower(REV_SPEED);
+                    rightFeeder.setPower(REV_SPEED);
 
-            } else if (gamepad2.left_bumper) { // stop flywheel
-                launcher.setVelocity(STOP_SPEED);
-                leftFeeder.setPower(STOP_SPEED);
-                rightFeeder.setPower(STOP_SPEED);
-                launchState = LaunchState.IDLE;
-                CURRENT_LAUNCHSTATE = "IDLE";
+                } else if (gamepad2.left_bumper) { // stop flywheel
+                    launcher.setVelocity(STOP_SPEED);
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
+                    launchState = LaunchState.IDLE;
+                    CURRENT_LAUNCHSTATE = "IDLE";
+                }
+
+
+                /*
+                 * Now we call our "Launch" function.
+                 */
+                if (rightBumperTimer.seconds() > 0.25) {
+                    launch(gamepad2.rightBumperWasPressed());
+                    rightBumperTimer.reset();
+                }
+
+                /*
+                 * Show the state and motor powers
+                 */
+                telemetry.addData("State", launchState);
+                // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+                telemetry.addData("motorSpeed", launcher.getVelocity());
+                telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
+                telemetry.addData("leftFeeder", leftFeeder.getPower());
+                telemetry.addData("rightFeeder", rightFeeder.getPower());
+
+                telemetry.update();
+
+            } else if (MecanumDrive.isSlowBot) {
+                //add slowbot teleop controls here
             }
-
-
-            /*
-             * Now we call our "Launch" function.
-             */
-            if (rightBumperTimer.seconds() > 0.25) {
-                launch(gamepad2.rightBumperWasPressed());
-                rightBumperTimer.reset();
-            }
-
-            /*
-             * Show the state and motor powers
-             */
-            telemetry.addData("State", launchState);
-            // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("motorSpeed", launcher.getVelocity());
-            telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
-            telemetry.addData("leftFeeder", leftFeeder.getPower());
-            telemetry.addData("rightFeeder", rightFeeder.getPower());
-
-            telemetry.update();
         }
     }
 

@@ -70,21 +70,6 @@ abstract public class BaseOpMode extends LinearOpMode {
     public LaunchState launchState;
 
     public void initHardware() {
-        launchState = LaunchState.IDLE;
-
-        /*
-        * Initialize the hardware variables. Note that the strings used here as parameters
-        * to 'get' must correspond to the names assigned during the robot configuration
-        * step.
-        */
-        // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-        // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-
-        // initialize flywheel motor and feeder servos
-        launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
-        leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
-        rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
-
 
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
         if (MecanumDrive.isDevBot) {
@@ -102,29 +87,45 @@ abstract public class BaseOpMode extends LinearOpMode {
             //greenLed = hardwareMap.get(LED.class, "greenLed");
             //redLed.on();
             //greenLed.off();
+
+            launchState = LaunchState.IDLE;
+
+            /*
+             * Initialize the hardware variables. Note that the strings used here as parameters
+             * to 'get' must correspond to the names assigned during the robot configuration
+             * step.
+             */
+            // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
+            // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+
+            // initialize flywheel motor and feeder servos
+            launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
+            leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
+            rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
+
+            /*
+             * Here we set our launcher to the RUN_USING_ENCODER runmode.
+             * If you notice that you have no control over the velocity of the motor, it just jumps
+             * right to a number much higher than your set point, make sure that your encoders are plugged
+             * into the port right beside the motor itself. And that the motors polarity is consistent
+             * through any wiring.
+             */
+            launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            // set the flywheel to a braking behavior so it slows down faster when left trigger is pressed
+            launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            // set the feeder servos to an initial value to init the servo controller
+            leftFeeder.setPower(STOP_SPEED);
+            rightFeeder.setPower(STOP_SPEED);
+
+            launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+
+            //set the left feeder servo to rotate in reverse, so that the servos spin in the same relative direction
+            leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+        } else if (MecanumDrive.isSlowBot) {
+            //add slowbot initialization code here
         }
-
-
-        /*
-         * Here we set our launcher to the RUN_USING_ENCODER runmode.
-         * If you notice that you have no control over the velocity of the motor, it just jumps
-         * right to a number much higher than your set point, make sure that your encoders are plugged
-         * into the port right beside the motor itself. And that the motors polarity is consistent
-         * through any wiring.
-         */
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        // set the flywheel to a braking behavior so it slows down faster when left trigger is pressed
-        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        // set the feeder servos to an initial value to init the servo controller
-        leftFeeder.setPower(STOP_SPEED);
-        rightFeeder.setPower(STOP_SPEED);
-
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-
-        //set the left feeder servo to rotate in reverse, so that the servos spin in the same relative direction
-        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         //  Tell the driver that initialization is complete.
