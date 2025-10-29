@@ -130,7 +130,8 @@ public class CompetitionTeleOp extends BaseOpMode {
             // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.addData("motorSpeed", launcher.getVelocity());
             telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
-            telemetry.addData("feederSpeed", leftFeeder.getPower());
+            telemetry.addData("leftFeeder", leftFeeder.getPower());
+            telemetry.addData("rightFeeder", rightFeeder.getPower());
 
             telemetry.update();
         }
