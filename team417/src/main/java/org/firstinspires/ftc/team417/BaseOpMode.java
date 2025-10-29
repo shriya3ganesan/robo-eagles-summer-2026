@@ -20,6 +20,8 @@ abstract public class BaseOpMode extends LinearOpMode {
 
 
     public DcMotorEx launcher = null;
+
+    public DcMotorEx drum = null;
     public CRServo leftFeeder = null;
     public CRServo rightFeeder = null;
     public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
@@ -100,6 +102,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
             // initialize flywheel motor and feeder servos
             launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
+            drum = hardwareMap.get(DcMotorEx.class, "drum");
             leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
             rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
 

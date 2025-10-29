@@ -22,6 +22,12 @@ public class CompetitionTeleOp extends BaseOpMode {
     double FASTDRIVE_SPEED = 1.0;
     double SLOWDRIVE_SPEED = 0.5;
 
+    int moveOnePosition = 0; //change meeeeeeeee (should be 120 degrees ish)
+    double drumVelocity = 0; //change meeeeeeeee (needs to be fast)
+
+    double intakeSpeed = gamepad2.left_stick_x;
+    double Multiply = 0; //need to change, placeholder
+
     ElapsedTime rightBumperTimer = new ElapsedTime();
 
     /*
@@ -138,35 +144,58 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             } else if (MecanumDrive.isSlowBot) {
                 //add slowbot teleop controls here
-                if (gamepad2.y) { //high speed
+
+                if (gamepad2.y) { //rotate drum to purple
 
 
-                } else if (gamepad2.a) { //slow speed
+                } else if (gamepad2.a) { //rotate drum to green
+
+                    }
 
 
                 } else if (gamepad2.x) { // sort speed
+                    drum.setTargetPosition(moveOnePosition);
+                    drum.setVelocity(drumVelocity);
 
 
-                } else if (gamepad2.b) { //reverse
+                }
 
-                } else if (gamepad2.left_bumper) { // stop launcher
+                /* launcher exclusive block
+                -----------------------------
+                 */
+                if (gamepad2.left_bumper) { // stop launcher
                     launcher.setVelocity(STOP_SPEED);
 
                 } else if (gamepad2.right_bumper) { //launch +  transfer
-                    launcher.setVelocity();
+                    launcher.setVelocity(0/*variable*/);
+                    //transfer stuff goes here
+                } else if (gamepad2.dpad_up) {
+                    launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
+                    launchState = LaunchState.HIGH;
+                    //values will need change, possibly new enum for slowbot launch
+                } else if (gamepad2.dpad_down) {
+                    launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
+                    launchState = LaunchState.LOW;
+                    //values will need change, possibly new enum for slowbot launch
+                }
+
+                if (gamepad2.left_stick_x == 0 /*change meeeee */){
+                    launcher.setVelocity(intakeSpeed * Multiply);
+
+                }
             }
         }
-    }
 
-    public double doSLOWMODE() {
-        if (gamepad1.right_trigger != 0) {
-            return -gamepad1.right_trigger + 1.1;
-        } else {
-            return 1;
+        public double doSLOWMODE () {
+            if (gamepad1.right_trigger != 0) {
+                return -gamepad1.right_trigger + 1.1;
+            } else {
+                return 1;
+            }
+        }
+
+        public static double halfLinearHalfCubic ( double input){
+            return (Math.pow(input, 3) + input) / 2;
         }
     }
 
-    public static double halfLinearHalfCubic(double input) {
-        return (Math.pow(input, 3) + input) / 2;
-    }
-}
