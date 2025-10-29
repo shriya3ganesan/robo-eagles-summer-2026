@@ -138,6 +138,22 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             } else if (MecanumDrive.isSlowBot) {
                 //add slowbot teleop controls here
+                if (gamepad2.y) { //high speed
+
+
+                } else if (gamepad2.a) { //slow speed
+
+
+                } else if (gamepad2.x) { // sort speed
+
+
+                } else if (gamepad2.b) { //reverse
+
+                } else if (gamepad2.left_bumper) { // stop launcher
+                    launcher.setVelocity(STOP_SPEED);
+
+                } else if (gamepad2.right_bumper) { //launch +  transfer
+                    launcher.setVelocity();
             }
         }
     }

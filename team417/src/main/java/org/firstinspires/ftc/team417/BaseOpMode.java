@@ -125,6 +125,8 @@ abstract public class BaseOpMode extends LinearOpMode {
             leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
         } else if (MecanumDrive.isSlowBot) {
             //add slowbot initialization code here
+            launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
+
         }
 
 
