@@ -95,13 +95,13 @@ public class CompetitionAuto extends BaseOpMode {
 
         Action redFar = drive.actionBuilder(redFarStartPose)
                 .setTangent(Math.toRadians(135))
-                .splineToLinearHeading(new Pose2d(-57, 36, Math.toRadians(0)), Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(-56, 40, Math.toRadians(0)), Math.toRadians(90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
                 .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(-56, 12, Math.toRadians(0)), Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-57, 12, Math.toRadians(0)), Math.toRadians(-90))
                 .build();
 
         Action redFarMinimal = drive.actionBuilder(redFarStartPose)
@@ -118,18 +118,18 @@ public class CompetitionAuto extends BaseOpMode {
                 .stopAndAdd(new LaunchAction())
 //                .splineTo(new Vector2d(-44, -44), Math.toRadians(49))
 //                .setTangent(Math.toRadians(139))
-                .splineToLinearHeading(new Pose2d(-32,-54,Math.toRadians(180)), Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-32,-54 ,Math.toRadians(180)), Math.toRadians(-90))
                 .build();
 
         Action blueFar = drive.actionBuilder(blueFarStartPose)
                 .setTangent(Math.toRadians(-135))
-                .splineToLinearHeading(new Pose2d(-57, -36, Math.toRadians(180)), Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-56, -40, Math.toRadians(180)), Math.toRadians(-90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
                 .setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(-56, -12, Math.toRadians(180)), Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(-57, -12, Math.toRadians(180)), Math.toRadians(90))
                 .build();
 
         Action blueFarMinimal = drive.actionBuilder(blueFarStartPose)

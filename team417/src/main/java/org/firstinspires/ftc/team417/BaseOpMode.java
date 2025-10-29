@@ -39,7 +39,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public static double LAUNCHER_LOW_MAX_VELOCITY = 1175; //low target velocity + 50 (will need adjusting)
     public static double LAUNCHER_LOW_TARGET_VELOCITY = 1125;
-    public static double LAUNCHER_LOW_MIN_VELOCITY = 1075;
+    public static double LAUNCHER_LOW_MIN_VELOCITY = 1075;// jonathan was here
 
     public static double LAUNCHER_SORTER_MAX_VELOCITY = 550; //sorter target velocity + 50 (will need adjusting)
     public static double LAUNCHER_SORTER_TARGET_VELOCITY = 500;
@@ -130,7 +130,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     }
     class LaunchAction extends RobotAction {
         public boolean run(double ElapsedTime) {
-            if (ElapsedTime < 0.15) {
+            if (ElapsedTime < 0.25) {
                 leftFeeder.setPower(FULL_SPEED);
                 rightFeeder.setPower(FULL_SPEED);
 
