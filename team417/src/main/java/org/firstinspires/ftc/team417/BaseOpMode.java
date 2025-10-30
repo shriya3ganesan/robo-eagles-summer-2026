@@ -130,6 +130,17 @@ abstract public class BaseOpMode extends LinearOpMode {
         //  Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
+    class WaitAction extends RobotAction {
+        RobotAction actionToWaitOn;
+        WaitAction(RobotAction actionToWaitOn) {
+            this.actionToWaitOn = actionToWaitOn;
+        }
+
+        @Override
+        public boolean run(double elapsedTime) {
+            return actionToWaitOn.isRunning();
+        }
+    }
     class LaunchAction extends RobotAction {
         public boolean run(double ElapsedTime) {
             if (ElapsedTime < 0.25) {

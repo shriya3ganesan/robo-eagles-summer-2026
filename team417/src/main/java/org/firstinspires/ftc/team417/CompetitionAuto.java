@@ -84,7 +84,9 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Red alliance auto paths
         Action redNear = drive.actionBuilder(redNearStartPose)
+
                 .setTangent(Math.toRadians(-49))
+                .splineToLinearHeading(new Pose2d(-48,-48, Math.toRadians(41)),Math.toRadians(-49))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -95,7 +97,7 @@ public class CompetitionAuto extends BaseOpMode {
 
         Action redFar = drive.actionBuilder(redFarStartPose)
                 .setTangent(Math.toRadians(135))
-                .splineToLinearHeading(new Pose2d(-56, 40, Math.toRadians(0)), Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(-55, 43, Math.toRadians(41)), Math.toRadians(90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -112,6 +114,7 @@ public class CompetitionAuto extends BaseOpMode {
         // Blue alliance auto paths
         Action blueNear = drive.actionBuilder(blueNearStartPose)
                 .setTangent(Math.toRadians(49))
+                .splineToLinearHeading(new Pose2d(-48,-48, Math.toRadians(139)),Math.toRadians(49))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -123,7 +126,7 @@ public class CompetitionAuto extends BaseOpMode {
 
         Action blueFar = drive.actionBuilder(blueFarStartPose)
                 .setTangent(Math.toRadians(-135))
-                .splineToLinearHeading(new Pose2d(-56, -40, Math.toRadians(180)), Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-49, -49, Math.toRadians(139)), Math.toRadians(-90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -192,7 +195,7 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
-
+        sleep((long)waitTime*1000);
         boolean more = true;
         while (opModeIsActive() && more) {
             telemetry.addLine("Running Auto!");
