@@ -86,7 +86,7 @@ public class CompetitionAuto extends BaseOpMode {
         Action redNear = drive.actionBuilder(redNearStartPose)
 
                 .setTangent(Math.toRadians(-49))
-                .splineToLinearHeading(new Pose2d(-48,-48, Math.toRadians(41)),Math.toRadians(-49))
+                //.splineToLinearHeading(new Pose2d(-54,46, Math.toRadians(41)),Math.toRadians(-49))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -96,8 +96,18 @@ public class CompetitionAuto extends BaseOpMode {
                 .build();
 
         Action redFar = drive.actionBuilder(redFarStartPose)
-                .setTangent(Math.toRadians(135))
-                .splineToLinearHeading(new Pose2d(-55, 43, Math.toRadians(41)), Math.toRadians(90))
+                /*.setTangent(Math.toRadians(135))
+                .splineToLinearHeading(new Pose2d(-60, 48, Math.toRadians(41)), Math.toRadians(90))
+                .stopAndAdd(new SpinUpAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .stopAndAdd(new LaunchAction())
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(-57, 12, Math.toRadians(0)), Math.toRadians(-90))
+                .build();*/
+
+                .setTangent(Math.toRadians(45))
+                .splineToLinearHeading(new Pose2d(-49, 49, Math.toRadians(41)), Math.toRadians(90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
                 .stopAndAdd(new LaunchAction())
@@ -136,8 +146,8 @@ public class CompetitionAuto extends BaseOpMode {
                 .build();
 
         Action blueFarMinimal = drive.actionBuilder(blueFarStartPose)
-                .setTangent(Math.PI/2)
-                .splineTo(new Vector2d(56, -35), Math.PI/2)
+                .setTangent(3*Math.PI/2)
+                .splineTo(new Vector2d(56, -35), 3*Math.PI/2)
                 .build();
 
 
@@ -160,7 +170,7 @@ public class CompetitionAuto extends BaseOpMode {
                 }
                 break;
 
-            case BLUE:
+            default:
                 switch (chosenMovement) {
                     case NEAR:
                         drive.setPose(blueNearStartPose);
@@ -170,7 +180,7 @@ public class CompetitionAuto extends BaseOpMode {
                         drive.setPose(blueFarStartPose);
                         trajectoryAction = blueFar;
                         break;
-                    case FAR_MINIMAL:
+                    default:
                         drive.setPose(blueFarStartPose);
                         trajectoryAction = blueFarMinimal;
                         break;
