@@ -163,7 +163,7 @@ public class CompetitionAuto extends BaseOpMode {
                         drive.setPose(redFarStartPose);
                         trajectoryAction = redFar;
                         break;
-                    case FAR_MINIMAL:
+                    default:
                         drive.setPose(redFarStartPose);
                         trajectoryAction = redFarMinimal;
                         break;
