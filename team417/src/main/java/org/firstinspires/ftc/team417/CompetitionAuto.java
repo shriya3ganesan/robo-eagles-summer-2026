@@ -106,7 +106,7 @@ public class CompetitionAuto extends BaseOpMode {
                 .splineToLinearHeading(new Pose2d(-57, 12, Math.toRadians(0)), Math.toRadians(-90))
                 .build();*/
 
-                .setTangent(Math.toRadians(45))
+                .setTangent(Math.toRadians(180))
                 .splineToLinearHeading(new Pose2d(-49, 49, Math.toRadians(41)), Math.toRadians(90))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
