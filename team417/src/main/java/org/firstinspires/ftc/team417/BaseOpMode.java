@@ -149,7 +149,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
                 return true;
             }
-            else if(ElapsedTime < 1) {
+            else if(ElapsedTime < 2) {
                 leftFeeder.setPower(STOP_SPEED);
                 rightFeeder.setPower(STOP_SPEED);
                 return true;
@@ -164,7 +164,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     class SpinUpAction extends RobotAction {
         public boolean run(double ElapsedTime) {
             launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-            if(ElapsedTime < 1) {
+            if(ElapsedTime < 2) {
                 return true;
             }
             else {
