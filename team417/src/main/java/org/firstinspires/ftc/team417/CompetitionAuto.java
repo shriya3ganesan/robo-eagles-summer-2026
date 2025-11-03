@@ -34,7 +34,7 @@ public class CompetitionAuto extends BaseOpMode {
     }
 
     double minWaitTime = 0.0;
-    double maxWaitTime = 15.0;
+    double maxWaitTime = 20.0;
 
     @Override
     public void runOpMode() {
@@ -209,6 +209,14 @@ public class CompetitionAuto extends BaseOpMode {
         boolean more = true;
         while (opModeIsActive() && more) {
             telemetry.addLine("Running Auto!");
+
+            telemetry.addData("State", launchState);
+            // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            telemetry.addData("motorSpeed", launcher.getVelocity());
+            telemetry.addData("FEED_TIME_SECONDS", FEED_TIME_SECONDS);
+            telemetry.addData("leftFeeder", leftFeeder.getPower());
+            telemetry.addData("rightFeeder", rightFeeder.getPower());
+
 
             // 'packet' is the object used to send data to FTC Dashboard:
             packet = MecanumDrive.getTelemetryPacket();
