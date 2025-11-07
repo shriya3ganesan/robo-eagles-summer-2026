@@ -59,6 +59,7 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
 
+
     public LED redLed;
     public LED greenLed;
 
@@ -156,6 +157,7 @@ abstract public class BaseOpMode extends LinearOpMode {
         } else if (MecanumDrive.isSlowBot) {
             //add slowbot initialization code here
             drum = hardwareMap.get(Servo.class, "drum");
+            //launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
 
         }
 

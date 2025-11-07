@@ -104,10 +104,6 @@ public class CompetitionAuto extends BaseOpMode {
         FastBotMovements chosenMovement = menu.getResult(FastBotMovements.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
 
-        PathFactory redPathFactory = new PathFactory(drive, false);
-
-        PathFactory bluePathFactory = new PathFactory(drive, true);
-
         // Red alliance FastBot auto paths
         Action redNearFastBot = drive.actionBuilder(redFBNearStartPose)
                 .setTangent(Math.toRadians(-49))
@@ -167,10 +163,10 @@ public class CompetitionAuto extends BaseOpMode {
 
         switch (chosenAlliance) {
             case RED:
-                pathFactory = redPathFactory;
+                pathFactory = new PathFactory(drive, false);
                 break;
             case BLUE:
-                pathFactory = bluePathFactory;
+                pathFactory = new PathFactory(drive, true);
                 break;
             default:
                 throw new IllegalArgumentException("Alliance must be red or blue");
@@ -314,8 +310,6 @@ class PathFactory {
     }
 
     Pose2d mirrorPose(Pose2d pose) {
-
-
         return new Pose2d(pose.position.x, -pose.position.y, -pose.heading.log());
     }
 
@@ -330,30 +324,28 @@ class PathFactory {
 
     public PathFactory setTangent(double tangent) {
         if (mirror) {
-            builder.setTangent(-tangent);
+            builder = builder.setTangent(-tangent);
         } else {
-            builder.setTangent(tangent);
+            builder = builder.setTangent(tangent);
         }
         return this;
     }
 
     public PathFactory splineToLinearHeading(Pose2d pose, double tangent) {
-
         if (mirror) {
-            builder.splineToLinearHeading(mirrorPose(pose), -tangent);
+            builder = builder.splineToLinearHeading(mirrorPose(pose), -tangent);
         } else {
-            builder.splineToLinearHeading(pose, tangent);
+            builder = builder.splineToLinearHeading(pose, tangent);
         }
         return this;
     }
 
+    public PathFactory stopAndAdd(Action a) {
+        builder = builder.stopAndAdd(a);
+        return this;
+    }
 
     public Action build() {
         return builder.build();
-    }
-
-    public PathFactory stopAndAdd(Action a) {
-        builder.stopAndAdd(a);
-        return this;
     }
 }
