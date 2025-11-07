@@ -7,10 +7,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class contains all of the base logic that is shared between all of the TeleOp and
@@ -18,12 +23,13 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
  */
 abstract public class BaseOpMode extends LinearOpMode {
 
-
+    //fastbot hardware variables
     public DcMotorEx launcher = null;
 
-    public DcMotorEx drum = null;
     public CRServo leftFeeder = null;
     public CRServo rightFeeder = null;
+
+    //fastbot constants
     public static final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     public static double FEED_TIME_SECONDS = 0; //The feeder servos run this long when a shot is requested.
 
@@ -53,7 +59,6 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public static double LAUNCHER_REV_TARGET_VELOCITY = -250;
 
-
     public LED redLed;
     public LED greenLed;
 
@@ -71,6 +76,29 @@ abstract public class BaseOpMode extends LinearOpMode {
 
     public LaunchState launchState;
 
+    /*---------------------------------------------------------------*/
+    //slowbot hardware
+
+    public Servo drum = null;
+
+    //slowbot constants
+    int moveOnePosition = 0; //change meeeeeeeee (should be 120 degrees ish)
+
+    final double intakeslot0 = -1;
+    final double intakeslot1 = -0.2;
+    final double intakeslot2 = 0.6;
+    final double launcherslot0 = 0.2;
+    final double launcherslot1 = 1;
+    final double launcherslot2 = -0.6;
+
+    int [] intakePositions = {0, 1, 2};
+
+    ArrayList<Double> blah;
+    final List<Double> INTAKE_POSITIONS
+            = new ArrayList<>(Arrays.asList(-1.0, -0.2, 0.6));
+    int [] launcherPositions = {0, 1, 2};
+    double intakeSpeed = gamepad2.left_stick_x;
+    double Multiply = 0; //need to change, placeholder
     public void initHardware() {
 
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
@@ -102,7 +130,6 @@ abstract public class BaseOpMode extends LinearOpMode {
 
             // initialize flywheel motor and feeder servos
             launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
-            drum = hardwareMap.get(DcMotorEx.class, "drum");
             leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
             rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
 
@@ -128,7 +155,7 @@ abstract public class BaseOpMode extends LinearOpMode {
             leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
         } else if (MecanumDrive.isSlowBot) {
             //add slowbot initialization code here
-            launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
+            drum = hardwareMap.get(Servo.class, "drum");
 
         }
 
@@ -260,6 +287,10 @@ abstract public class BaseOpMode extends LinearOpMode {
                 }
                 break;
         }
+    }
+
+    public void drumLogic () {
+
     }
 }
 

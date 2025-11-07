@@ -22,11 +22,7 @@ public class CompetitionTeleOp extends BaseOpMode {
     double FASTDRIVE_SPEED = 1.0;
     double SLOWDRIVE_SPEED = 0.5;
 
-    int moveOnePosition = 0; //change meeeeeeeee (should be 120 degrees ish)
-    double drumVelocity = 0; //change meeeeeeeee (needs to be fast)
 
-    double intakeSpeed = gamepad2.left_stick_x;
-    double Multiply = 0; //need to change, placeholder
 
     ElapsedTime rightBumperTimer = new ElapsedTime();
 
@@ -154,8 +150,8 @@ public class CompetitionTeleOp extends BaseOpMode {
 
 
                 } else if (gamepad2.x) { // sort speed
-                    drum.setTargetPosition(moveOnePosition);
-                    drum.setVelocity(drumVelocity);
+//                    drum.setTargetPosition(moveOnePosition);
+//                    drum.setVelocity(drumVelocity);
 
 
                 }
