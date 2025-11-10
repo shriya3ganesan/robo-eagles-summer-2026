@@ -230,8 +230,6 @@ public class CompetitionAuto extends BaseOpMode {
             }
         }
 
-        waitForStart();
-
         sleep((long)waitTime*1000);
         boolean more = true;
         while (opModeIsActive() && more) {
