@@ -4,11 +4,11 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-
+import org.firstinspires.ftc.team417.apriltags.AprilTagDetector;
+import org.firstinspires.ftc.team417.apriltags.Pattern;
 import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
 import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
@@ -22,19 +22,19 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  */
 @Autonomous(name="Auto", group="Competition", preselectTeleOp="CompetitionTeleOp")
 public class CompetitionAuto extends BaseOpMode {
-    enum Alliances {
+    public enum Alliance {
         RED,
         BLUE,
     }
 
-    enum Movements {
+    enum Movement {
         NEAR,
         FAR,
         FAR_MINIMAL,
     }
 
     double minWaitTime = 0.0;
-    double maxWaitTime = 20.0;
+    double maxWaitTime = 30.0;
 
     @Override
     public void runOpMode() {
@@ -49,16 +49,21 @@ public class CompetitionAuto extends BaseOpMode {
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
+        // Test to make sure the camera is there, and then immediately close the detector object
+        try (AprilTagDetector detector = new AprilTagDetector()) {
+            detector.initAprilTag(hardwareMap);
+        }
+
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
 
         menu.add(new MenuHeader("AUTO SETUP"))
                 .add() // empty line for spacing
                 .add("Pick an alliance:")
-                .add("alliance-picker-1", Alliances.class) // enum selector shortcut
+                .add("alliance-picker-1", Alliance.class) // enum selector shortcut
                 .add()
                 .add("Pick a movement:")
-                .add("movement-picker-1", Movements.class) // enum selector shortcut
+                .add("movement-picker-1", Movement.class) // enum selector shortcut
                 .add()
                 .add("Wait time:")
                 .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
@@ -78,8 +83,8 @@ public class CompetitionAuto extends BaseOpMode {
         }
 
         // the first parameter is the type to return as
-        Alliances chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
-        Movements chosenMovement = menu.getResult(Movements.class, "movement-picker-1");
+        Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
+        Movement chosenMovement = menu.getResult(Movement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
 
         // Red alliance auto paths
@@ -202,9 +207,29 @@ public class CompetitionAuto extends BaseOpMode {
         // can take multiple seconds for this operation. We wouldn't want to have to wait
         // as soon as the Start button is pressed!
 
+        // Assume unknown pattern unless detected otherwise.
+        Pattern pattern = Pattern.UNKNOWN;
 
+        // Detect the pattern with the AprilTags from the camera!
         // Wait for Start to be pressed on the Driver Hub!
-        waitForStart();
+        try (AprilTagDetector detector = new AprilTagDetector()) {
+            detector.initAprilTag(hardwareMap);
+
+            while (opModeInInit()) {
+                Pattern last = detector.detectPattern(chosenAlliance);
+                if (last != Pattern.UNKNOWN) {
+                    pattern = last;
+                }
+
+                telemetry.addData("Chosen alliance: ", chosenAlliance);
+                telemetry.addData("Chosen movement: ", chosenMovement);
+                telemetry.addData("Chosen wait time: ", waitTime);
+                telemetry.addData("Last valid pattern: ", pattern);
+
+                telemetry.update();
+            }
+        }
+
         sleep((long)waitTime*1000);
         boolean more = true;
         while (opModeIsActive() && more) {
