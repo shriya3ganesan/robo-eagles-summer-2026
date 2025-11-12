@@ -83,7 +83,6 @@ abstract public class BaseOpMode extends LinearOpMode {
     public Servo drum = null;
 
     //slowbot constants
-    int moveOnePosition = 0; //change meeeeeeeee (should be 120 degrees ish)
 
     final double intakeslot0 = -1;
     final double intakeslot1 = -0.2;
