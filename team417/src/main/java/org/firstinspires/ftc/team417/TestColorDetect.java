@@ -6,10 +6,10 @@ public class TestColorDetect extends LinearOpMode {
     CoolColorDetector detector;
     @Override
     public void runOpMode() {
-        detector = new CoolColorDetector(hardwareMap);
+        detector = new CoolColorDetector(hardwareMap, telemetry);
         waitForStart();
         while (opModeIsActive()) {
-            detector.showTelemetry(telemetry);
+            detector.showTelemetry();
         }
     }
 }
