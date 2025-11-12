@@ -1,23 +1,11 @@
 package org.firstinspires.ftc.team417;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
-import android.graphics.Color;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-//import com.qualcomm.robotcore.hardware.ColorSensor;
-//import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-//import android.graphics.Color;
-//import com.qualcomm.robotcore.hardware.SwitchableLight;
 
-enum PixelColor {
-    GREEN,
-    PURPLE,
-    NONE
-}
  public class CoolColorDetector {
     private ColorSensor sensor1;
     private ColorSensor sensor2;
@@ -27,6 +15,7 @@ enum PixelColor {
         sensor1 = map.get(ColorSensor.class, "cs1");
         //sensor2 = map.get(ColorSensor.class, "sensor2");
     }
+
     // --- Convert a sensor to ONE PixelColor ---
     private PixelColor detectSingle(ColorSensor sensor1) {
         // Get raw values
@@ -35,7 +24,7 @@ enum PixelColor {
         float r = sensor1.red();
         float g = sensor1.green();
         float b = sensor1.blue();
-        Color.RGBToHSV((int)r, (int)g, (int)b, hsv);
+        hsv = rgbToHsv((int)r, (int)g, (int)b);
         float hue = hsv[0];
         // GREEN Range: 145 - 165
         if (hue >= 145 && hue <= 185) {
@@ -50,6 +39,42 @@ enum PixelColor {
         }
 
     }
+
+     public static float[] rgbToHsv(int r, int g, int b) {
+         float[] hsv = new float[3];
+
+         // Normalize R, G, B values to the range 0-1
+         float red = r / 255.0f;
+         float green = g / 255.0f;
+         float blue = b / 255.0f;
+
+         float cmax = Math.max(red, Math.max(green, blue)); // Maximum of R, G, B
+         float cmin = Math.min(red, Math.min(green, blue)); // Minimum of R, G, B
+         float delta = cmax - cmin; // Delta of max and min
+
+         // Calculate Hue (H)
+         if (delta == 0) {
+             hsv[0] = 0; // Hue is undefined for achromatic colors (grays)
+         } else if (cmax == red) {
+             hsv[0] = (60 * ((green - blue) / delta) + 360) % 360;
+         } else if (cmax == green) {
+             hsv[0] = (60 * ((blue - red) / delta) + 120);
+         } else { // cmax == blue
+             hsv[0] = (60 * ((red - green) / delta) + 240);
+         }
+
+         // Calculate Saturation (S)
+         if (cmax == 0) {
+             hsv[1] = 0; // Saturation is 0 for black
+         } else {
+             hsv[1] = delta / cmax;
+         }
+
+         // Calculate Value (V)
+         hsv[2] = cmax;
+
+         return hsv;
+     }
 
     // --- Use logic comparing both sensors ---
      /*PixelColor detectPixelPosition() {

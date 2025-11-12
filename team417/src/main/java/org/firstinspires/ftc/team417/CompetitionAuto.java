@@ -17,8 +17,6 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
-import java.nio.file.Path;
-
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
@@ -96,13 +94,10 @@ public class CompetitionAuto extends BaseOpMode {
             telemetry.update();
         }
 
-        Alliance chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
-        SlowBotMovement chosenMovement = menu.getResult(SlowBotMovements.class, "movement-picker-1");
+        Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
+        SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
-
-
-
 
         PathFactory pathFactory;
 
