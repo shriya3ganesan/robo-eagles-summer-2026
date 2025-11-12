@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.team417;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -7,37 +9,43 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
  public class CoolColorDetector {
+     Telemetry telemetry;
     private ColorSensor sensor1;
     private ColorSensor sensor2;
-    private float gain = 4f; // adjust for brightness
+    private float gain = 50f; // adjust for brightness
     private float[] hsv = new float[3];
-    public CoolColorDetector(HardwareMap map) {
+    public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
         sensor1 = map.get(ColorSensor.class, "cs1");
-        //sensor2 = map.get(ColorSensor.class, "sensor2");
+        sensor2 = map.get(ColorSensor.class, "cs2");
+        this.telemetry = telemetry;
     }
 
     // --- Convert a sensor to ONE PixelColor ---
-    private PixelColor detectSingle(ColorSensor sensor1) {
+    @SuppressLint("DefaultLocale")
+    private PixelColor detectSingle(ColorSensor sensor) {
         // Get raw values
-        ((NormalizedColorSensor)sensor1).setGain(gain);
+        ((NormalizedColorSensor)sensor).setGain(gain);
         //Just tried something new with the setGain
-        float r = sensor1.red();
-        float g = sensor1.green();
-        float b = sensor1.blue();
+        float r = sensor.red();
+        float g = sensor.green();
+        float b = sensor.blue();
         hsv = rgbToHsv((int)r, (int)g, (int)b);
+
+        telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
         float hue = hsv[0];
+        float value = hsv[2];
+        //
         // GREEN Range: 145 - 165
-        if (hue >= 145 && hue <= 185) {
+        if(value < 0.45) {
+            return PixelColor.NONE;
+        }
+        else if (hue >= 10 && hue <= 190) {
             return PixelColor.GREEN;
         }
         // PURPLE Range: 215 - 245
-        else if (hue >= 215 && hue <= 245) {
+        else{
             return PixelColor.PURPLE;
         }
-        else {
-            return PixelColor.NONE;
-        }
-
     }
 
      public static float[] rgbToHsv(int r, int g, int b) {
@@ -77,7 +85,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
      }
 
     // --- Use logic comparing both sensors ---
-     /*PixelColor detectPixelPosition() {
+     PixelColor detectPixelPosition() {
         PixelColor s1 = detectSingle(sensor1);
         PixelColor s2 = detectSingle(sensor2);
         // Rule 1: If both detect something different → return sensor2
@@ -96,12 +104,11 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
             // Otherwise no decision → return none
             return PixelColor.NONE;
         }
-    }*/
-    public void showTelemetry(Telemetry telemetry) {
+    }
+    public void showTelemetry() {
         telemetry.addData("Sensor 1", detectSingle(sensor1));
-        //telemetry.addData("Sensor 1");
-        //telemetry.addData("Sensor 2", detectSingle(sensor2));
-        //telemetry.addData("Chosen Position", detectPixelPosition());
+        telemetry.addData("Sensor 2", detectSingle(sensor2));
+        telemetry.addData("Chosen Position", detectPixelPosition());
         telemetry.update();
     }
 }
