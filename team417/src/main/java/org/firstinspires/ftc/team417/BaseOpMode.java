@@ -103,193 +103,20 @@ abstract public class BaseOpMode extends LinearOpMode {
     public void initHardware() {
 
         // Reversed direction of launcher for DevBot because motor is on the other side (compared to FastBot)
-        if (MecanumDrive.isDevBot) {
-            launcher.setDirection(DcMotorEx.Direction.REVERSE);
-            ROBOT_LENGTH = 18.5;
-            ROBOT_WIDTH = 18;
-            redLed = null;
-            greenLed = null;
 
-        }
-        else if(MecanumDrive.isFastBot) {
-            ROBOT_WIDTH = 16;
-            ROBOT_LENGTH = 17;
-            //redLed = hardwareMap.get(LED.class, "redLed");   Uncomment one we get LEDs
-            //greenLed = hardwareMap.get(LED.class, "greenLed");
-            //redLed.on();
-            //greenLed.off();
 
-            launchState = LaunchState.IDLE;
-
-            /*
-             * Initialize the hardware variables. Note that the strings used here as parameters
-             * to 'get' must correspond to the names assigned during the robot configuration
-             * step.
-             */
-            // leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-            // rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-
-            // initialize flywheel motor and feeder servos
-            launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
-            leftFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeed");
-            rightFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeed");
-
-            /*
-             * Here we set our launcher to the RUN_USING_ENCODER runmode.
-             * If you notice that you have no control over the velocity of the motor, it just jumps
-             * right to a number much higher than your set point, make sure that your encoders are plugged
-             * into the port right beside the motor itself. And that the motors polarity is consistent
-             * through any wiring.
-             */
-            launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            // set the flywheel to a braking behavior so it slows down faster when left trigger is pressed
-            launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            // set the feeder servos to an initial value to init the servo controller
-            leftFeeder.setPower(STOP_SPEED);
-            rightFeeder.setPower(STOP_SPEED);
-
-            launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-
-            //set the left feeder servo to rotate in reverse, so that the servos spin in the same relative direction
-            leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
-        } else if (MecanumDrive.isSlowBot) {
             //add slowbot initialization code here
             drum = hardwareMap.get(Servo.class, "drum");
             //launcher = hardwareMap.get(DcMotorEx.class, "motLauncher");
 
-        }
+
 
 
         //  Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
-    class LaunchAction extends RobotAction {
-        public boolean run(double ElapsedTime) {
-            if (ElapsedTime < 0.15) {
-                leftFeeder.setPower(FULL_SPEED);
-                rightFeeder.setPower(FULL_SPEED);
-
-                return true;
-            }
-            else if(ElapsedTime < 1) {
-                leftFeeder.setPower(STOP_SPEED);
-                rightFeeder.setPower(STOP_SPEED);
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
 
 
-    }
-    class SpinUpAction extends RobotAction {
-        public boolean run(double ElapsedTime) {
-            launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-            if(ElapsedTime < 1) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    }
-
-    public void launch(boolean shotRequested) {
-
-
-        double launcherVelocity = launcher.getVelocity();
-        switch (launchState) {
-
-            case IDLE:
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-                CURRENT_LAUNCHSTATE = "IDLE";
-            break;
-
-            case SORT: //if sorting launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (450 - 500 rpm)
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-                if (shotRequested) {
-                    CURRENT_LAUNCHSTATE = "SORT";
-                    launcher.setVelocity(LAUNCHER_SORTER_TARGET_VELOCITY);
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
-                    if (launcherVelocity > LAUNCHER_SORTER_MIN_VELOCITY && launcherVelocity < LAUNCHER_SORTER_MAX_VELOCITY) {
-                        launchState = LaunchState.LAUNCH;
-
-                    }
-                }
-                break;
-
-            case LOW: //if low launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1075 - 1175 rpm)
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-                if (shotRequested) {
-                    CURRENT_LAUNCHSTATE = "LOW";
-                    launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-                    if (launcherVelocity > LAUNCHER_LOW_MIN_VELOCITY && launcherVelocity < LAUNCHER_LOW_MAX_VELOCITY) {
-                        leftFeeder.setPower(STOP_SPEED);
-                        rightFeeder.setPower(STOP_SPEED);
-                        if (redLed != null && greenLed != null) {
-                            redLed.off();
-                            greenLed.on();
-                        }
-                        launchState = LaunchState.LAUNCH;
-                    }
-                }
-            break;
-
-            case HIGH: //if high launchmode is selected and shotRequested is true, check that the flywheel is in the correct velocity range (1900 - 2000 rpm)
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-                if (shotRequested) {
-                    CURRENT_LAUNCHSTATE = "HIGH";
-                    launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
-                    if (launcherVelocity > LAUNCHER_HIGH_MIN_VELOCITY && launcherVelocity < LAUNCHER_HIGH_MAX_VELOCITY) {
-                        if (redLed != null && greenLed != null) {
-                            redLed.off();
-                            greenLed.on();
-                        }
-                        launchState = LaunchState.LAUNCH;
-                    }
-                }
-                break;
-            case LAUNCH: //when shotRequested, start the feeder servos to init launch
-                leftFeeder.setPower(FULL_SPEED);
-                rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING: //wait until feedTimer surpasses FEED_TIME_SECONDS, then stop the feeder servos.
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
-
-                }
-                leftFeeder.setPower(SLOW_REV_SPEED);
-                rightFeeder.setPower(SLOW_REV_SPEED);
-                if (redLed != null && greenLed != null) {
-                    redLed.off();
-                    greenLed.on();
-                }
-                if (CURRENT_LAUNCHSTATE.equals("LOW") ) {
-                   launchState = LaunchState.LOW;
-                } else if (CURRENT_LAUNCHSTATE.equals("HIGH")) {
-                    launchState = LaunchState.HIGH;
-
-                } else if (CURRENT_LAUNCHSTATE.equals("SORT")) {
-                    launchState = LaunchState.SORT;
-                } else {
-                    launchState = LaunchState.IDLE;
-                }
-                break;
-        }
-    }
 
     public void drumLogic () {
 
