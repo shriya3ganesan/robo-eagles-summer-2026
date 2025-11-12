@@ -19,12 +19,6 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 @Config
 public class CompetitionTeleOp extends BaseOpMode {
 
-    double FASTDRIVE_SPEED = 1.0;
-    double SLOWDRIVE_SPEED = 0.5;
-
-
-    ElapsedTime rightBumperTimer = new ElapsedTime();
-
     /*
      * TECH TIP: State Machines
      * We use a "state machine" to control our launcher motor and feeder servos in this program.
@@ -77,41 +71,6 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             //add slowbot teleop controls here
 
-
-        }
-        if (gamepad2.y) { //rotate drum to purple
-
-
-        } else if (gamepad2.a) { //rotate drum to green
-
-        } else if (gamepad2.x) { // sort speed
-//                    drum.setTargetPosition(moveOnePosition);
-//                    drum.setVelocity(drumVelocity);
-
-
-        }
-
-                /* launcher exclusive block
-                -----------------------------
-                 */
-        if (gamepad2.left_bumper) { // stop launcher
-            launcher.setVelocity(STOP_SPEED);
-
-        } else if (gamepad2.right_bumper) { //launch +  transfer
-            launcher.setVelocity(0/*variable*/);
-            //transfer stuff goes here
-        } else if (gamepad2.dpad_up) {
-            launcher.setVelocity(LAUNCHER_HIGH_TARGET_VELOCITY);
-            launchState = LaunchState.HIGH;
-            //values will need change, possibly new enum for slowbot launch
-        } else if (gamepad2.dpad_down) {
-            launcher.setVelocity(LAUNCHER_LOW_TARGET_VELOCITY);
-            launchState = LaunchState.LOW;
-            //values will need change, possibly new enum for slowbot launch
-        }
-
-        if (gamepad2.left_stick_x == 0 /*change meeeee */) {
-            //launcher.setVelocity(intakeSpeed * Multiply);
 
         }
     }
