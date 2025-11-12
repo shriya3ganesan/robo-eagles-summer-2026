@@ -1,9 +1,22 @@
 package org.firstinspires.ftc.team417;
 
 
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.ams.AMSColorSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.swerverobotics.ftc.GoBildaPinpointDriver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,8 +57,19 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 
 }
 
-//
+@Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
+    //constants for tuning via FTC Dashboard:
+    static double FEEDER_POWER = 1;
+    static double UPPER_FLYWHEEL_VELOCITY = 1500;
+    static double LOWER_FLYWHEEL_VELOCITY = 1500;
+    static double TRANSFER_INACTIVE_POSITION = 0;
+    static double TRANSFER_ACTIVE_POSITION = 1;
+    static double REVERSE_INTAKE_SPEED = -1;
+    static double INTAKE_SPEED = 1;
+
+
+
     double userIntakeSpeed;
     double drumServoPosition; //the last position the servo went to
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
@@ -59,15 +83,31 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         IDLE, //waiting for input when the drum is full
 
     }
+    WaitState waitState = WaitState.IDLE;
     // arrays with placeholder values for servo positions and voltages relative to intake and launch
     final double [] INTAKE_POSITIONS = {0, 1, 2};
     final double [] INTAKE_VOLTS = {0, 1, 2};
     final double [] LAUNCH_POSITIONS = {0, 1, 2};
     final double [] LAUNCH_VOLTS = {0, 1, 2};
-    double lastQueuedPosition; //variable remembering where the servo was told to go last
+    double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
+    double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
+
     HardwareMap hardwareMap;
     Telemetry telemetry;
 
+    //hardware objects
+    Servo servoDrum;
+    Servo servoTransfer;
+    AnalogInput analogDrum;
+    DcMotorEx motLLauncher;
+    DcMotorEx motULauncher;
+    DcMotorEx motIntake;
+    CRServo servoBLaunchFeeder;
+    CRServo servoFLaunchFeeder;
+    NormalizedColorSensor sensorColor1;
+    NormalizedColorSensor sensorColor2;
+
+    CoolColorDetector coolColorDetector;
 
     class DrumRequest {
         double position;
@@ -81,6 +121,39 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+
+        servoDrum = hardwareMap.get(Servo.class, "servoDrum");
+        servoTransfer = hardwareMap.get(Servo.class, "servoTransfer");
+        analogDrum = hardwareMap.get(AnalogInput.class, "analogDrum");
+        motLLauncher = hardwareMap.get(DcMotorEx.class, "motLLauncher");
+        motULauncher = hardwareMap.get(DcMotorEx.class, "motULauncher");
+        motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
+        servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
+        servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
+        coolColorDetector = new CoolColorDetector(hardwareMap);
+
+        /*
+         * Here we set our flywheels to the RUN_USING_ENCODER runmode.
+         * If you notice that you have no control over the velocity of the motor, it just jumps
+         * right to a number much higher than your set point, make sure that your encoders are plugged
+         * into the port right beside the motor itself. And that the motors polarity is consistent
+         * through any wiring.
+         */
+        motLLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motULauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // set the motors to a braking behavior so it slows down faster when left trigger is pressed
+        motLLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+
+        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoBLaunchFeeder.setDirection(CRServo.Direction.REVERSE);
+
+
     }
 
     //the position argument denotes whether we are using intake or launch positions
@@ -134,7 +207,27 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
     void update () {
+        double intakePower = 0;
+        double transferPosition = TRANSFER_INACTIVE_POSITION;
 
+        if (userIntakeSpeed < 0) {
+            intakePower = REVERSE_INTAKE_SPEED;
+        } else if (userIntakeSpeed > 0) {
+            if (waitState == WaitState.INTAKE) {
+                intakePower = INTAKE_SPEED;
+            } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
+                intakePower = INTAKE_SPEED;
+            }
+        }
+
+
+        servoDrum.setPosition(hwDrumPosition);
+        servoTransfer.setPosition(transferPosition);
+        motLLauncher.setVelocity(LOWER_FLYWHEEL_VELOCITY);
+        motULauncher.setVelocity(UPPER_FLYWHEEL_VELOCITY);
+        motIntake.setPower(intakePower);
+        servoBLaunchFeeder.setPower(FEEDER_POWER);
+        servoFLaunchFeeder.setPower((FEEDER_POWER));
     }
 }
 
