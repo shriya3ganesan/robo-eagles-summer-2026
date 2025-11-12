@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.team417;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -24,14 +26,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         // Get raw values
         ((NormalizedColorSensor)sensor).setGain(gain);
         //Just tried something new with the setGain
-        float r = sensor1.red();
-        float g = sensor1.green();
-        float b = sensor1.blue();
-        hsv = rgbToHsv((int)r, (int)g, (int)b);
         float r = sensor.red();
         float g = sensor.green();
         float b = sensor.blue();
-        Color.RGBToHSV((int)r, (int)g, (int)b, hsv);
+        hsv = rgbToHsv((int)r, (int)g, (int)b);
 
         telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
         float hue = hsv[0];
