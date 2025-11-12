@@ -1,24 +1,10 @@
 package org.firstinspires.ftc.team417;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
-import android.annotation.SuppressLint;
-import android.graphics.Color;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-//import com.qualcomm.robotcore.hardware.ColorSensor;
-//import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-//import android.graphics.Color;
-//import com.qualcomm.robotcore.hardware.SwitchableLight;
-
-//enum PixelColor {
-  //  GREEN,
- //   PURPLE,
-  //  NONE
-//}
 
  public class CoolColorDetector {
      Telemetry telemetry;
@@ -31,12 +17,17 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         sensor2 = map.get(ColorSensor.class, "cs2");
         this.telemetry = telemetry;
     }
+
     // --- Convert a sensor to ONE PixelColor ---
     @SuppressLint("DefaultLocale")
     private PixelColor detectSingle(ColorSensor sensor) {
         // Get raw values
         ((NormalizedColorSensor)sensor).setGain(gain);
         //Just tried something new with the setGain
+        float r = sensor1.red();
+        float g = sensor1.green();
+        float b = sensor1.blue();
+        hsv = rgbToHsv((int)r, (int)g, (int)b);
         float r = sensor.red();
         float g = sensor.green();
         float b = sensor.blue();
@@ -58,6 +49,42 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
             return PixelColor.PURPLE;
         }
     }
+
+     public static float[] rgbToHsv(int r, int g, int b) {
+         float[] hsv = new float[3];
+
+         // Normalize R, G, B values to the range 0-1
+         float red = r / 255.0f;
+         float green = g / 255.0f;
+         float blue = b / 255.0f;
+
+         float cmax = Math.max(red, Math.max(green, blue)); // Maximum of R, G, B
+         float cmin = Math.min(red, Math.min(green, blue)); // Minimum of R, G, B
+         float delta = cmax - cmin; // Delta of max and min
+
+         // Calculate Hue (H)
+         if (delta == 0) {
+             hsv[0] = 0; // Hue is undefined for achromatic colors (grays)
+         } else if (cmax == red) {
+             hsv[0] = (60 * ((green - blue) / delta) + 360) % 360;
+         } else if (cmax == green) {
+             hsv[0] = (60 * ((blue - red) / delta) + 120);
+         } else { // cmax == blue
+             hsv[0] = (60 * ((red - green) / delta) + 240);
+         }
+
+         // Calculate Saturation (S)
+         if (cmax == 0) {
+             hsv[1] = 0; // Saturation is 0 for black
+         } else {
+             hsv[1] = delta / cmax;
+         }
+
+         // Calculate Value (V)
+         hsv[2] = cmax;
+
+         return hsv;
+     }
 
     // --- Use logic comparing both sensors ---
      PixelColor detectPixelPosition() {
