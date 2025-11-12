@@ -16,6 +16,8 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
+import java.nio.file.Path;
+
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
@@ -35,6 +37,8 @@ public class CompetitionAuto extends BaseOpMode {
 
     double minWaitTime = 0.0;
     double maxWaitTime = 15.0;
+    double minIntakes = 0.0;
+    double maxIntakes = 3.0;
 
     @Override
     public void runOpMode() {
@@ -82,6 +86,9 @@ public class CompetitionAuto extends BaseOpMode {
                     .add("Pick a movement:")
                     .add("movement-picker-1", FastBotMovements.class) // enum selector shortcut
                     .add()
+                    .add("Intake Cycles:")
+                    .add("intake-slider", new MenuSlider(minIntakes, maxIntakes))
+                    .add()
                     .add("Wait time:")
                     .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
                     .add()
@@ -103,9 +110,11 @@ public class CompetitionAuto extends BaseOpMode {
         Alliances chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
         FastBotMovements chosenMovement = menu.getResult(FastBotMovements.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
+        double intakeCycles = menu.getResult(Double.class, "intake-slider");
 
         // Red alliance FastBot auto paths
         Action redNearFastBot = drive.actionBuilder(redFBNearStartPose)
+
                 .setTangent(Math.toRadians(-49))
                 .stopAndAdd(new SpinUpAction())
                 .stopAndAdd(new LaunchAction())
@@ -177,6 +186,85 @@ public class CompetitionAuto extends BaseOpMode {
                 .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
                 .build();
 
+
+
+        PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose)
+                .setTangent(Math.toRadians(180))
+                // 3 launch actions
+                //then after disp intake action
+                .splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90))
+                .setTangent(Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(36,60), Math.toRadians(90))
+                .setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90));
+        if (intakeCycles > 1) {
+
+
+            // 3 launch actions
+            //after disp intake action
+                farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(180))
+                    .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90))
+                    .setTangent(Math.toRadians(90))
+                    .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
+                    .setTangent(Math.toRadians(-90))
+                    .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90));
+            // 3 launch actions
+            //after disp intake action
+            if (intakeCycles > 2) {
+                 farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(180))
+                        .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90))
+                        .setTangent(Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90));
+
+            }
+        }
+        farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180));
+        Action farSlowBot = farSlowBotIntake1.build();
+
+
+
+
+        PathFactory nearSlowBotPath = pathFactory.actionBuilder(SBNearStartPose)
+                .setTangent(Math.toRadians(-51))
+                .splineToConstantHeading(new Vector2d(-36,36), Math.toRadians(-51))
+                //3 launches
+                //after disp intake
+                .setTangent(Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90))
+                .setTangent(Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
+                .setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(-36,36, Math.toRadians(139)), Math.toRadians(180));
+        if (intakeCycles > 1) {
+            nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(0))
+
+
+                    //3 launches
+                    //after disp intake
+
+                    .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90))
+                    .setTangent(Math.toRadians(90))
+                    .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
+                    .setTangent(Math.toRadians(-90))
+                    .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180));
+            //3 launches
+            //after disp intake
+            if (intakeCycles > 2) {
+                nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90))
+                        .setTangent(Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180));
+
+            }
+        }
+        nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(-48, 12, Math.toRadians(180)), Math.toRadians(180));
+        Action nearSlowBot = nearSlowBotPath.build();
         // the first parameter is the type to return as
         if (MecanumDrive.isFastBot) {
             Action trajectoryAction = null;
@@ -253,11 +341,11 @@ public class CompetitionAuto extends BaseOpMode {
                 case NEAR:
 
                     drive.setPose(SBNearStartPose);
-                    trajectoryAction = redNearFastBot;
+                    trajectoryAction = nearSlowBot;
                     break;
                 case FAR:
                     drive.setPose(SBFarStartPose);
-                    trajectoryAction = redFarFastBot;
+                    trajectoryAction = farSlowBot;
                     break;
                 case FAR_MINIMAL:
                     drive.setPose(SBFarStartPose);
@@ -312,6 +400,9 @@ class PathFactory {
     Pose2d mirrorPose(Pose2d pose) {
         return new Pose2d(pose.position.x, -pose.position.y, -pose.heading.log());
     }
+    Vector2d mirrorVector(Vector2d vector) {
+        return new Vector2d(vector.x,-vector.y);
+    }
 
     public PathFactory actionBuilder(Pose2d pose) {
         if (mirror) {
@@ -339,6 +430,24 @@ class PathFactory {
         }
         return this;
     }
+    public PathFactory splineToSplineHeading(Pose2d pose, double tangent) {
+        if (mirror) {
+            builder = builder.splineToSplineHeading(mirrorPose(pose), -tangent);
+        } else {
+            builder = builder.splineToSplineHeading(pose, tangent);
+        }
+        return this;
+    }
+    public PathFactory splineToConstantHeading(Vector2d vector, double tangent) {
+        if(mirror) {
+            builder = builder.splineToConstantHeading(mirrorVector(vector), -tangent);
+        } else {
+            builder = builder.splineToConstantHeading(vector, tangent);
+
+        }
+        return this;
+    }
+
 
     public PathFactory stopAndAdd(Action a) {
         builder = builder.stopAndAdd(a);
@@ -348,4 +457,7 @@ class PathFactory {
     public Action build() {
         return builder.build();
     }
+
+
+
 }

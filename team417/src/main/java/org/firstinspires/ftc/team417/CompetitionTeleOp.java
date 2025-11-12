@@ -176,7 +176,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                 }
 
                 if (gamepad2.left_stick_x == 0 /*change meeeee */){
-                    launcher.setVelocity(intakeSpeed * Multiply);
+                    //launcher.setVelocity(intakeSpeed * Multiply);
 
                 }
             }

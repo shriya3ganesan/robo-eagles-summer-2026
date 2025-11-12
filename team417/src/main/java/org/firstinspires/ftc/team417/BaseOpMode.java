@@ -98,7 +98,7 @@ abstract public class BaseOpMode extends LinearOpMode {
     final List<Double> INTAKE_POSITIONS
             = new ArrayList<>(Arrays.asList(-1.0, -0.2, 0.6));
     int [] launcherPositions = {0, 1, 2};
-    double intakeSpeed = gamepad2.left_stick_x;
+    //double intakeSpeed = gamepad2.left_stick_x;
     double Multiply = 0; //need to change, placeholder
     public void initHardware() {
 
