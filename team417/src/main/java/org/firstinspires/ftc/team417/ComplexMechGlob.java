@@ -3,7 +3,6 @@ package org.firstinspires.ftc.team417;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.ams.AMSColorSensor;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,10 +12,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
-import org.swerverobotics.ftc.GoBildaPinpointDriver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,19 +58,21 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
-    //constants for tuning via FTC Dashboard:
+    // TODO tune constants via FTC Dashboard:
     static double FEEDER_POWER = 1;
+    static double TRANSFER_TIME_UP = 0.3;
+    static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
     static double UPPER_FLYWHEEL_VELOCITY = 1500;
     static double LOWER_FLYWHEEL_VELOCITY = 1500;
     static double TRANSFER_INACTIVE_POSITION = 0;
     static double TRANSFER_ACTIVE_POSITION = 1;
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
+    static double FLYWHEEL_VELOCITY_TOLERANCE = 25;
 
 
-
+    ElapsedTime transferTimer;
     double userIntakeSpeed;
-    double drumServoPosition; //the last position the servo went to
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
     ArrayList<PixelColor> slotOccupiedBy = new ArrayList<> (Collections.nCopies(3, PixelColor.NONE));
@@ -91,6 +92,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     final double [] LAUNCH_VOLTS = {0, 1, 2};
     double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
+
+
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -130,7 +133,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
-        coolColorDetector = new CoolColorDetector(hardwareMap);
+        coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
 
         /*
          * Here we set our flywheels to the RUN_USING_ENCODER runmode.
@@ -157,6 +160,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
 
     //the position argument denotes whether we are using intake or launch positions
+    //position takes INTAKE_POSITIONS or LAUNCH_POSITIONS.
     int findNearestSlot (double [] position, RequestedColor requestedColor) {
 
         double minDistance = Double.MAX_VALUE; //the minimum distance to a slot that has what we want
@@ -196,20 +200,22 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (minSlot == -1){
             telemetry.speak("bad");
         } else {
-            queueDrum(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
+            addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
         }
     }
-    void queueDrum (double position, WaitState waitState){
+    void addToDrumQueue(double position, WaitState waitState){ //this function adds a new drum request to the drum queue.
         drumQueue.add(new DrumRequest(position, waitState));
         lastQueuedPosition = position;
     }
 
+    boolean drumAtPosition() {
+        return true;
+        // TODO: implement this
+    }
     @Override
     void update () {
         double intakePower = 0;
-        double transferPosition = TRANSFER_INACTIVE_POSITION;
-
         if (userIntakeSpeed < 0) {
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
@@ -220,7 +226,47 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             }
         }
 
-
+        if (waitState == WaitState.IDLE) {
+            if (userIntakeSpeed > 0) {
+                waitState = WaitState.INTAKE;
+                int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
+                if (minSlot != -1) {
+                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+                }
+            }
+        }
+        // let a firing request interrupt an intake
+        if (waitState == WaitState.IDLE || waitState == WaitState.INTAKE) {
+            if (!drumQueue.isEmpty()) {
+                hwDrumPosition = drumQueue.get(0).position;
+                waitState = WaitState.DRUM_MOVE;
+            }
+        }
+        if (waitState == WaitState.DRUM_MOVE) {
+            if (drumAtPosition()) {
+                waitState = drumQueue.get(0).nextState;
+                drumQueue.remove(0);
+            }
+        }
+        if (waitState == WaitState.SPIN_UP) {
+            if (Math.abs(motLLauncher.getVelocity() -LOWER_FLYWHEEL_VELOCITY) <= FLYWHEEL_VELOCITY_TOLERANCE &&
+                    Math.abs(motULauncher.getVelocity() - UPPER_FLYWHEEL_VELOCITY) <= FLYWHEEL_VELOCITY_TOLERANCE) {
+                waitState = WaitState.TRANSFER;
+            }
+        }
+        double transferPosition = TRANSFER_INACTIVE_POSITION;
+        if (waitState == WaitState.TRANSFER) {
+            if (transferTimer == null) {
+                transferTimer = new ElapsedTime();
+            }
+            if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
+                transferPosition = TRANSFER_ACTIVE_POSITION;
+            }
+            if (transferTimer.seconds() >= TRANSFER_TIME_TOTAL) {
+                waitState = WaitState.IDLE;
+                transferTimer = null;
+            }
+        }
         servoDrum.setPosition(hwDrumPosition);
         servoTransfer.setPosition(transferPosition);
         motLLauncher.setVelocity(LOWER_FLYWHEEL_VELOCITY);
