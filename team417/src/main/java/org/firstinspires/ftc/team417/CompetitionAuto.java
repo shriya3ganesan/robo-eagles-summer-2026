@@ -8,7 +8,8 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-
+import org.firstinspires.ftc.team417.apriltags.AprilTagDetector;
+import org.firstinspires.ftc.team417.apriltags.Pattern;
 import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
 import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
@@ -17,20 +18,18 @@ import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
-import java.nio.file.Path;
-
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
 @Autonomous(name = "Auto", group = "Competition", preselectTeleOp = "CompetitionTeleOp")
 public class CompetitionAuto extends BaseOpMode {
-    enum Alliances {
+    public enum Alliance {
         RED,
         BLUE,
     }
 
-    enum SlowBotMovements {
+    enum SlowBotMovement {
         NEAR,
         FAR,
         FAR_OUT_OF_WAY,
@@ -38,7 +37,8 @@ public class CompetitionAuto extends BaseOpMode {
     }
 
     double minWaitTime = 0.0;
-    double maxWaitTime = 15.0;
+    double maxWaitTime = 30.0;
+
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
 
@@ -55,6 +55,11 @@ public class CompetitionAuto extends BaseOpMode {
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
+        // Test to make sure the camera is there, and then immediately close the detector object
+        try (AprilTagDetector detector = new AprilTagDetector()) {
+            detector.initAprilTag(hardwareMap);
+        }
+
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
 
@@ -65,10 +70,10 @@ public class CompetitionAuto extends BaseOpMode {
             menu.add(new MenuHeader("AUTO SETUP"))
                     .add() // empty line for spacing
                     .add("Pick an alliance:")
-                    .add("alliance-picker-1", Alliances.class) // enum selector shortcut
+                    .add("alliance-picker-1", Alliance.class) // enum selector shortcut
                     .add()
                     .add("Pick a movement:")
-                    .add("movement-picker-1", SlowBotMovements.class) // enum selector shortcut
+                    .add("movement-picker-1", SlowBotMovement.class) // enum selector shortcut
                     .add()
                     .add("Intake Cycles:")
                     .add("intake-slider", new MenuSlider(minIntakes, maxIntakes))
@@ -81,7 +86,7 @@ public class CompetitionAuto extends BaseOpMode {
 
         while (!menu.isCompleted()) {
             // get x, y (stick) and select (A) input from controller
-            // on Wily  Works, this is x, y (wasd) and select (enter) on the keyboard
+            // on Wily Works, this is x, y (wasd) and select (enter) on the keyboard
             menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
             menu.updateWithInput(menuInput);
             // display the updated menu
@@ -91,13 +96,10 @@ public class CompetitionAuto extends BaseOpMode {
             telemetry.update();
         }
 
-        Alliances chosenAlliance = menu.getResult(Alliances.class, "alliance-picker-1");
-        SlowBotMovements chosenMovement = menu.getResult(SlowBotMovements.class, "movement-picker-1");
+        Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
+        SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
-
-
-
 
         PathFactory pathFactory;
 
@@ -241,9 +243,30 @@ public class CompetitionAuto extends BaseOpMode {
             packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
             MecanumDrive.sendTelemetryPacket(packet);
 
-            // Wait for Start to be pressed on the Driver Hub!
 
-            waitForStart();
+            // Assume unknown pattern unless detected otherwise.
+            Pattern pattern = Pattern.UNKNOWN;
+
+            // Detect the pattern with the AprilTags from the camera!
+            // Wait for Start to be pressed on the Driver Hub!
+            try (AprilTagDetector detector = new AprilTagDetector()) {
+                detector.initAprilTag(hardwareMap);
+
+                while (!isStarted() && !isStopRequested()) {
+                    Pattern last = detector.detectPattern(chosenAlliance);
+                    if (last != Pattern.UNKNOWN) {
+                        pattern = last;
+                    }
+
+                    telemetry.addData("Chosen alliance: ", chosenAlliance);
+                    telemetry.addData("Chosen movement: ", chosenMovement);
+                    telemetry.addData("Chosen wait time: ", waitTime);
+                    telemetry.addData("Last valid pattern: ", pattern);
+
+                    telemetry.update();
+                }
+            }
+
             sleep((long)waitTime*1000);
             boolean more = true;
             while (opModeIsActive() && more) {

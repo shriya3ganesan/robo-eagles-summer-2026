@@ -7,6 +7,10 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
  * Wily Works device subclass implementation.
  */
 public class WilyHardwareDevice implements HardwareDevice {
+    String deviceName;
+    WilyHardwareDevice(String deviceName) {
+        this.deviceName = deviceName;
+    }
     @Override
     public Manufacturer getManufacturer() {
         return Manufacturer.Unknown;
@@ -14,7 +18,7 @@ public class WilyHardwareDevice implements HardwareDevice {
 
     @Override
     public String getDeviceName() {
-        return "";
+        return deviceName;
     }
 
     @Override
