@@ -15,6 +15,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
 import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
 import java.nio.file.Path;
 
@@ -32,6 +33,7 @@ public class CompetitionAuto extends BaseOpMode {
     enum SlowBotMovements {
         NEAR,
         FAR,
+        FAR_OUT_OF_WAY,
         FAR_MINIMAL,
     }
 
@@ -114,7 +116,17 @@ public class CompetitionAuto extends BaseOpMode {
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
                 .build();
-
+        Action farOutOfWay = pathFactory.actionBuilder(SBFarStartPose)
+                // 3 launch actions
+                // after disp intake action
+                .setTangent(Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(60,61, Math.toRadians(0)), Math.toRadians(0))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90))
+                // 3 launch actions
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(50,32,Math.toRadians(180)), Math.toRadians(180))
+                .build();
 
 
         PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose)
@@ -208,6 +220,10 @@ public class CompetitionAuto extends BaseOpMode {
                 case FAR:
                     drive.setPose(SBFarStartPose);
                     trajectoryAction = farSlowBot;
+                    break;
+                case FAR_OUT_OF_WAY:
+                    drive.setPose(SBFarStartPose);
+                    trajectoryAction = farOutOfWay;
                     break;
                 case FAR_MINIMAL:
                     drive.setPose(SBFarStartPose);
@@ -322,4 +338,10 @@ class PathFactory {
 
 
 
+}
+class LaunchAction extends RobotAction {
+    @Override
+    public boolean run(double elapsedTime) {
+        return false;
+    }
 }
