@@ -34,10 +34,11 @@ import com.qualcomm.robotcore.hardware.configuration.annotations.DevicePropertie
 
 @DeviceProperties(name = "@string/configTypeLED", xmlTag = "Led", builtIn = true, description = "@string/led_description")
 public class LED implements HardwareDevice, SwitchableLight {
+    public LED(String deviceName) { }
 
     @Override
     public Manufacturer getManufacturer() {
-        return null;
+        return Manufacturer.Other;
     }
 
     @Override
