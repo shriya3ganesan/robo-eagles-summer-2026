@@ -5,31 +5,41 @@ import android.annotation.SuppressLint;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
  public class CoolColorDetector {
      Telemetry telemetry;
-    private ColorSensor sensor1;
-    private ColorSensor sensor2;
+    private NormalizedColorSensor sensor1;
+    private NormalizedColorSensor sensor2;
     private float gain = 50f; // adjust for brightness
     private float[] hsv = new float[3];
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
-        sensor1 = map.get(ColorSensor.class, "cs1");
-        sensor2 = map.get(ColorSensor.class, "cs2");
+        sensor1 = map.get(NormalizedColorSensor.class, "cs1");
+        sensor2 = map.get(NormalizedColorSensor.class, "cs2");
         this.telemetry = telemetry;
     }
 
     // --- Convert a sensor to ONE PixelColor ---
     @SuppressLint("DefaultLocale")
-    private PixelColor detectSingle(ColorSensor sensor) {
+    private PixelColor detectSingle(NormalizedColorSensor sensor) {
         // Get raw values
-        ((NormalizedColorSensor)sensor).setGain(gain);
-        //Just tried something new with the setGain
-        float r = sensor.red();
-        float g = sensor.green();
-        float b = sensor.blue();
-        hsv = rgbToHsv((int)r, (int)g, (int)b);
+        sensor.setGain(gain);
+        NormalizedRGBA colors = sensor.getNormalizedColors();
+        Color.colorToHSV(colors.toColor(), hsv);
 
         telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
         float hue = hsv[0];
@@ -48,41 +58,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         }
     }
 
-     public static float[] rgbToHsv(int r, int g, int b) {
-         float[] hsv = new float[3];
 
-         // Normalize R, G, B values to the range 0-1
-         float red = r / 255.0f;
-         float green = g / 255.0f;
-         float blue = b / 255.0f;
-
-         float cmax = Math.max(red, Math.max(green, blue)); // Maximum of R, G, B
-         float cmin = Math.min(red, Math.min(green, blue)); // Minimum of R, G, B
-         float delta = cmax - cmin; // Delta of max and min
-
-         // Calculate Hue (H)
-         if (delta == 0) {
-             hsv[0] = 0; // Hue is undefined for achromatic colors (grays)
-         } else if (cmax == red) {
-             hsv[0] = (60 * ((green - blue) / delta) + 360) % 360;
-         } else if (cmax == green) {
-             hsv[0] = (60 * ((blue - red) / delta) + 120);
-         } else { // cmax == blue
-             hsv[0] = (60 * ((red - green) / delta) + 240);
-         }
-
-         // Calculate Saturation (S)
-         if (cmax == 0) {
-             hsv[1] = 0; // Saturation is 0 for black
-         } else {
-             hsv[1] = delta / cmax;
-         }
-
-         // Calculate Value (V)
-         hsv[2] = cmax;
-
-         return hsv;
-     }
 
     // --- Use logic comparing both sensors ---
      PixelColor detectPixelPosition() {
