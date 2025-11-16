@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.wilyworks.common.Wily;
 import com.wilyworks.common.WilyWorks;
+import com.wilyworks.simulator.framework.MechSim;
 import com.wilyworks.simulator.framework.InputManager;
 import com.wilyworks.simulator.framework.Simulation;
 import com.wilyworks.simulator.framework.WilyTelemetry;
@@ -30,8 +31,6 @@ import java.awt.Choice;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -262,6 +261,7 @@ public class WilyCore {
     public static Gamepad gamepad1;
     public static Gamepad gamepad2;
     public static HardwareMap hardwareMap;
+    public static MechSim mechSim;
     public static InputManager inputManager;
     public static DashboardWindow dashboardWindow;
     public static Telemetry telemetry;
@@ -344,6 +344,7 @@ public class WilyCore {
         // Advance the time then advance the simulation:
         deltaT = advanceTime(deltaT);
         simulation.advance(deltaT);
+        mechSim.advance(deltaT);
 
         // Render everything:
         render();
@@ -488,6 +489,9 @@ public class WilyCore {
         } catch (InstantiationException|IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+
+        // Create this year's game simulation:
+        mechSim = MechSim.create();
 
         // We need to re-instantiate hardware map on every run:
         hardwareMap = new HardwareMap();

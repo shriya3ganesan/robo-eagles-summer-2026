@@ -2,7 +2,6 @@ package org.firstinspires.ftc.team417;
 
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
