@@ -16,6 +16,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
 import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
@@ -31,6 +32,7 @@ public class CompetitionAuto extends BaseOpMode {
     enum SlowBotMovement {
         NEAR,
         FAR,
+        FAR_OUT_OF_WAY,
         FAR_MINIMAL,
     }
 
@@ -39,6 +41,8 @@ public class CompetitionAuto extends BaseOpMode {
 
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
+
+    Pattern pattern;
 
     @Override
     public void runOpMode() {
@@ -52,11 +56,6 @@ public class CompetitionAuto extends BaseOpMode {
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
-
-        // Test to make sure the camera is there, and then immediately close the detector object
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.initAprilTag(hardwareMap);
-        }
 
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
@@ -116,7 +115,17 @@ public class CompetitionAuto extends BaseOpMode {
                 .setTangent(Math.toRadians(90))
                 .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
                 .build();
-
+        Action farOutOfWay = pathFactory.actionBuilder(SBFarStartPose)
+                // 3 launch actions
+                // after disp intake action
+                .setTangent(Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(60,61, Math.toRadians(0)), Math.toRadians(0))
+                .setTangent(Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90))
+                // 3 launch actions
+                .setTangent(Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(50,32,Math.toRadians(180)), Math.toRadians(180))
+                .build();
 
 
         PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose)
@@ -211,6 +220,10 @@ public class CompetitionAuto extends BaseOpMode {
                     drive.setPose(SBFarStartPose);
                     trajectoryAction = farSlowBot;
                     break;
+                case FAR_OUT_OF_WAY:
+                    drive.setPose(SBFarStartPose);
+                    trajectoryAction = farOutOfWay;
+                    break;
                 case FAR_MINIMAL:
                     drive.setPose(SBFarStartPose);
                     trajectoryAction = farMinimalSlowBot;
@@ -229,12 +242,13 @@ public class CompetitionAuto extends BaseOpMode {
 
 
             // Assume unknown pattern unless detected otherwise.
-            Pattern pattern = Pattern.UNKNOWN;
+            pattern = Pattern.UNKNOWN;
 
             // Detect the pattern with the AprilTags from the camera!
             // Wait for Start to be pressed on the Driver Hub!
-            try (AprilTagDetector detector = new AprilTagDetector()) {
-                detector.initAprilTag(hardwareMap);
+            // (This try-with-resources statement automatically calls detector.close() when it exits
+            //  the try-block.)
+            try (AprilTagDetector detector = new AprilTagDetector(hardwareMap)) {
 
                 while (!isStarted() && !isStopRequested()) {
                     Pattern last = detector.detectPattern(chosenAlliance);
@@ -345,4 +359,10 @@ class PathFactory {
 
 
 
+}
+class LaunchAction extends RobotAction {
+    @Override
+    public boolean run(double elapsedTime) {
+        return false;
+    }
 }
