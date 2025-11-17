@@ -42,6 +42,8 @@ public class CompetitionAuto extends BaseOpMode {
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
 
+    Pattern pattern;
+
     @Override
     public void runOpMode() {
         initHardware();
@@ -54,11 +56,6 @@ public class CompetitionAuto extends BaseOpMode {
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
-
-        // Test to make sure the camera is there, and then immediately close the detector object
-        try (AprilTagDetector detector = new AprilTagDetector()) {
-            detector.initAprilTag(hardwareMap);
-        }
 
         TextMenu menu = new TextMenu();
         MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
@@ -249,12 +246,13 @@ public class CompetitionAuto extends BaseOpMode {
 
 
             // Assume unknown pattern unless detected otherwise.
-            Pattern pattern = Pattern.UNKNOWN;
+            pattern = Pattern.UNKNOWN;
 
             // Detect the pattern with the AprilTags from the camera!
             // Wait for Start to be pressed on the Driver Hub!
-            try (AprilTagDetector detector = new AprilTagDetector()) {
-                detector.initAprilTag(hardwareMap);
+            // (This try-with-resources statement automatically calls detector.close() when it exits
+            //  the try-block.)
+            try (AprilTagDetector detector = new AprilTagDetector(hardwareMap)) {
 
                 while (!isStarted() && !isStopRequested()) {
                     Pattern last = detector.detectPattern(chosenAlliance);
