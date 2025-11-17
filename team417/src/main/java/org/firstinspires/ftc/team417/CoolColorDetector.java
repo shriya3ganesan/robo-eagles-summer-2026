@@ -2,30 +2,19 @@ package org.firstinspires.ftc.team417;
 
 import android.annotation.SuppressLint;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import android.app.Activity;
+
 import android.graphics.Color;
-import android.view.View;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.SwitchableLight;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
  public class CoolColorDetector {
      Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
-    private float gain = 50f; // adjust for brightness
+    private float gain = 85f; // adjust for brightness
     private float[] hsv = new float[3];
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
         sensor1 = map.get(NormalizedColorSensor.class, "cs1");
@@ -49,19 +38,20 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         if(value < 0.45) {
             return PixelColor.NONE;
         }
-        else if (hue >= 10 && hue <= 190) {
+        else if (hue >= 170 && hue <= 180) {
             return PixelColor.GREEN;
         }
         // PURPLE Range: 215 - 245
         else{
             return PixelColor.PURPLE;
+
         }
     }
 
 
 
     // --- Use logic comparing both sensors ---
-     PixelColor detectPixelPosition() {
+     PixelColor detectArtifactColor() {
         PixelColor s1 = detectSingle(sensor1);
         PixelColor s2 = detectSingle(sensor2);
         // Rule 1: If both detect something different → return sensor2
@@ -84,7 +74,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
     public void showTelemetry() {
         telemetry.addData("Sensor 1", detectSingle(sensor1));
         telemetry.addData("Sensor 2", detectSingle(sensor2));
-        telemetry.addData("Chosen Position", detectPixelPosition());
+        telemetry.addData("Chosen Position", detectArtifactColor());
         telemetry.update();
     }
 }

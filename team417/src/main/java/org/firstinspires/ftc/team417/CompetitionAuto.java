@@ -131,11 +131,15 @@ public class CompetitionAuto extends BaseOpMode {
                 .build();
 
 
-        PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose)
-                .setTangent(Math.toRadians(180))
-                // 3 launch actions
-                //then after disp intake action
-                .splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
+        PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose);
+        if (intakeCycles == 0) {
+            farSlowBotIntake1.setTangent(Math.toRadians(180));
+            // 3 launch actions
+            //then after disp intake action
+        }
+
+
+                farSlowBotIntake1.splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                 .setTangent(Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(36,60), Math.toRadians(90))
                 .setTangent(Math.toRadians(-90))
