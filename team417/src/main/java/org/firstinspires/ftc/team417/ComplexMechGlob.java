@@ -340,7 +340,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             }
         }
         if (waitState == WaitState.INTAKE) {
-            PixelColor slotColor = coolColorDetector.detectPixelPosition();
+            PixelColor slotColor = coolColorDetector.detectArtifactColor();
             if (slotColor != PixelColor.NONE) {
                 int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
                 slotOccupiedBy.set(slot, slotColor);
