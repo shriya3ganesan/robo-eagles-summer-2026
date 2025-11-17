@@ -12,12 +12,15 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 enum RequestedColor { //an enum for different color cases for launching
     PURPLE,
@@ -29,6 +32,10 @@ enum PixelColor {
     PURPLE,
     GREEN,
     NONE
+}
+enum LaunchDistance {
+    FAR,
+    NEAR
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
@@ -52,6 +59,14 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 
     void update () {}
 
+    boolean isDoneLaunching () {
+        return true;
+    }
+
+    boolean preLaunch (RequestedColor requestedColor) {
+        return true;
+    }
+    void setLaunchVelocity (LaunchDistance launchDistance) {}
 
 }
 
@@ -61,13 +76,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double FEEDER_POWER = 1;
     static double TRANSFER_TIME_UP = 0.3;
     static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double UPPER_FLYWHEEL_VELOCITY = 1500;
-    static double LOWER_FLYWHEEL_VELOCITY = 1500;
+    static double UPPER_FAR_FLYWHEEL_VELOCITY = 1500;
+    static double LOWER_FAR_FLYWHEEL_VELOCITY = 1500;
+    static double LOWER_NEAR_FLYWHEEL_VELOCITY = 1500;
+    static double UPPER_NEAR_FLYWHEEL_VELOCITY = 1500;
+
     static double TRANSFER_INACTIVE_POSITION = 0;
     static double TRANSFER_ACTIVE_POSITION = 1;
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
-    static double FLYWHEEL_VELOCITY_TOLERANCE = 25;
+    static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
+    static double VOLTAGE_TOLERANCE = 0.05; //THIS IS AN EPSILON AS WELLLLLL
 
 
     ElapsedTime transferTimer;
@@ -85,13 +104,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     WaitState waitState = WaitState.IDLE;
     // arrays with placeholder values for servo positions and voltages relative to intake and launch
-    final double [] INTAKE_POSITIONS = {0, 1, 2};
-    final double [] INTAKE_VOLTS = {0, 1, 2};
-    final double [] LAUNCH_POSITIONS = {0, 1, 2};
-    final double [] LAUNCH_VOLTS = {0, 1, 2};
+    double [] INTAKE_POSITIONS = {0, 1, 2};
+    double [] INTAKE_VOLTS = {0, 1, 2};
+    double [] LAUNCH_POSITIONS = {0, 1, 2};
+    double [] LAUNCH_VOLTS = {0, 1, 2};
     double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
-
+    double upperLaunchVelocity;
+    double lowerLaunchVelocity;
 
 
     HardwareMap hardwareMap;
@@ -121,6 +141,15 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
     }
     ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
+
+        //this changes some lists if we are using WilyWorks
+        if (WilyWorks.isSimulating) {
+            INTAKE_POSITIONS = new double[]{0 / 6.0, 2 / 6.0, 4 / 6.0};
+            LAUNCH_POSITIONS = new double[]{3 / 6.0, 5 / 6.0, 1.0 / 6};
+            INTAKE_VOLTS = new double[]{3.5 * 0 / 6.0, 3.5 * 2 / 6.0, 3.5 * 4 / 6.0};
+            LAUNCH_VOLTS = new double[]{3.5 * 3 / 6.0, 3.5 * 5 / 6.0, 3.5 * 1.0 / 6};
+        }
+
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
 
@@ -203,14 +232,58 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
         }
     }
-    void addToDrumQueue(double position, WaitState waitState){ //this function adds a new drum request to the drum queue.
-        drumQueue.add(new DrumRequest(position, waitState));
+    //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
+    void addToDrumQueue(double position, WaitState nextState){
+        drumQueue.add(new DrumRequest(position, nextState));
         lastQueuedPosition = position;
     }
 
     boolean drumAtPosition() {
-        return true;
-        // TODO: implement this
+
+        int intakeSlot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+        int launchSlot = findSlotFromPosition(hwDrumPosition, LAUNCH_POSITIONS);
+        double expectedVolts;
+
+        if (intakeSlot != -1) {
+            expectedVolts = INTAKE_VOLTS[intakeSlot];
+        } else {
+             expectedVolts = LAUNCH_VOLTS[launchSlot];
+        }
+        return Math.abs(analogDrum.getVoltage() - expectedVolts) <= VOLTAGE_TOLERANCE;
+    }
+    @Override
+    boolean isDoneLaunching () {
+        return drumQueue.isEmpty() && (waitState == WaitState.IDLE || waitState == WaitState.INTAKE);
+    }
+    @Override
+    //this function is just for auto. it rotates to the requested color but does not launch (to save time)
+    boolean preLaunch (RequestedColor requestedColor) {
+        int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
+        if (minSlot == -1){
+            return false;
+        } else {
+            addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.IDLE);
+            return true;
+        }
+
+    }
+    @Override
+    void setLaunchVelocity (LaunchDistance launchDistance) {
+        if (launchDistance == LaunchDistance.NEAR) {
+            upperLaunchVelocity = UPPER_NEAR_FLYWHEEL_VELOCITY;
+            lowerLaunchVelocity = LOWER_NEAR_FLYWHEEL_VELOCITY;
+        } else {
+            upperLaunchVelocity = UPPER_FAR_FLYWHEEL_VELOCITY;
+            lowerLaunchVelocity = LOWER_FAR_FLYWHEEL_VELOCITY;
+        }
+    }
+    int findSlotFromPosition (double position, double [] positions) {
+        for (int i = 0; i < positions.length; i++) {
+            if (positions [i] == position){
+               return i;
+            }
+        }
+        return -1;
     }
     @Override
     void update () {
@@ -248,8 +321,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             }
         }
         if (waitState == WaitState.SPIN_UP) {
-            if (Math.abs(motLLauncher.getVelocity() -LOWER_FLYWHEEL_VELOCITY) <= FLYWHEEL_VELOCITY_TOLERANCE &&
-                    Math.abs(motULauncher.getVelocity() - UPPER_FLYWHEEL_VELOCITY) <= FLYWHEEL_VELOCITY_TOLERANCE) {
+            if (Math.abs(motLLauncher.getVelocity() - lowerLaunchVelocity) <= FLYWHEEL_VELOCITY_TOLERANCE &&
+                    Math.abs(motULauncher.getVelocity() - upperLaunchVelocity) <= FLYWHEEL_VELOCITY_TOLERANCE) {
                 waitState = WaitState.TRANSFER;
             }
         }
@@ -266,10 +339,21 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 transferTimer = null;
             }
         }
+        if (waitState == WaitState.INTAKE) {
+            PixelColor slotColor = coolColorDetector.detectPixelPosition();
+            if (slotColor != PixelColor.NONE) {
+                int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+                slotOccupiedBy.set(slot, slotColor);
+                waitState = WaitState.IDLE;
+            }
+
+
+
+        }
         servoDrum.setPosition(hwDrumPosition);
         servoTransfer.setPosition(transferPosition);
-        motLLauncher.setVelocity(LOWER_FLYWHEEL_VELOCITY);
-        motULauncher.setVelocity(UPPER_FLYWHEEL_VELOCITY);
+        motLLauncher.setVelocity(lowerLaunchVelocity);
+        motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
         servoBLaunchFeeder.setPower(FEEDER_POWER);
         servoFLaunchFeeder.setPower((FEEDER_POWER));
