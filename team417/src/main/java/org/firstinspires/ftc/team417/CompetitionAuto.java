@@ -46,7 +46,6 @@ public class CompetitionAuto extends BaseOpMode {
 
     @Override
     public void runOpMode() {
-        initHardware();
 
         Pose2d startPose = new Pose2d(0, 0, 0);
 
