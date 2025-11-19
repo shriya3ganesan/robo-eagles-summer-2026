@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /*
@@ -114,6 +115,7 @@ public class SensorColor extends LinearOpMode {
   }
 
   protected void runSample() {
+    telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
     // You can give the sensor a gain value, will be multiplied by the sensor's raw value before the
     // normalized color values are calculated. Color sensors (especially the REV Color Sensor V3)
     // can give very low values (depending on the lighting conditions), which only use a small part
@@ -122,7 +124,7 @@ public class SensorColor extends LinearOpMode {
     // colors will report at or near 1, and you won't be able to determine what color you are
     // actually looking at. For this reason, it's better to err on the side of a lower gain
     // (but always greater than  or equal to 1).
-    float gain = 20;
+    float gain = 150;
 
     // Once per loop, we will update this hsvValues array. The first element (0) will contain the
     // hue, the second element (1) will contain the saturation, and the third element (2) will
@@ -158,9 +160,9 @@ public class SensorColor extends LinearOpMode {
       // Update the gain value if either of the A or B gamepad buttons is being held
       if (gamepad1.a) {
         // Only increase the gain by a small amount, since this loop will occur multiple times per second.
-        gain += 0.005;
+        gain += 0.05;
       } else if (gamepad1.b && gain > 1) { // A gain of less than 1 will make the values smaller, which is not helpful.
-        gain -= 0.005;
+        gain -= 0.05;
       }
 
       // Show the gain value via telemetry
@@ -195,6 +197,7 @@ public class SensorColor extends LinearOpMode {
 
       // Update the hsvValues array by passing it to Color.colorToHSV()
       Color.colorToHSV(colors.toColor(), hsvValues);
+      int hueColor = Color.HSVToColor(new float[]{hsvValues[0], 1, 1});
 
       telemetry.addLine()
               .addData("Red", "%.3f", colors.red)
@@ -205,6 +208,8 @@ public class SensorColor extends LinearOpMode {
               .addData("Saturation", "%.3f", hsvValues[1])
               .addData("Value", "%.3f", hsvValues[2]);
       telemetry.addData("Alpha", "%.3f", colors.alpha);
+      telemetry.addLine(colorString(colors.toColor()));
+      telemetry.addLine(colorString(hueColor));
 
       /* If this color sensor also has a distance sensor, display the measured distance.
        * Note that the reported distance is only useful at very close range, and is impacted by
@@ -222,5 +227,9 @@ public class SensorColor extends LinearOpMode {
         }
       });
     }
+  }
+  static String colorString(int color) {
+    return String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
+            color & 0xffffff);
   }
 }

@@ -25,7 +25,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
      Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
-    private float gain = 50f; // adjust for brightness
+    private float gain = 85f; // adjust for brightness
     private float[] hsv = new float[3];
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
         sensor1 = map.get(NormalizedColorSensor.class, "cs1");
@@ -40,27 +40,30 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         sensor.setGain(gain);
         NormalizedRGBA colors = sensor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsv);
+        double distance = ((DistanceSensor) sensor).getDistance(DistanceUnit.MM);
 
         telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
         float hue = hsv[0];
-        float value = hsv[2];
         //
-        // GREEN Range: 145 - 165
-        if(value < 0.45) {
-            return PixelColor.NONE;
+        if (distance <= 25) {
+            if (hue > 165 && hue < 180) {
+                return PixelColor.GREEN;
+            }
+            //Return purple based on hue value color sensor is detecting
+            else if (hue >= 200 && hue <= 225) {
+                return PixelColor.PURPLE;
+            } else {
+                return PixelColor.PURPLE;
+            }
+        } else {
+                return PixelColor.NONE;
+            }
         }
-        else if (hue >= 10 && hue <= 190) {
-            return PixelColor.GREEN;
-        }
-        // PURPLE Range: 215 - 245
-        else{
-            return PixelColor.PURPLE;
-        }
-    }
 
 
 
-    // --- Use logic comparing both sensors ---
+
+    // --- Uswe logic comparing both sensors ---
      PixelColor detectPixelPosition() {
         PixelColor s1 = detectSingle(sensor1);
         PixelColor s2 = detectSingle(sensor2);
