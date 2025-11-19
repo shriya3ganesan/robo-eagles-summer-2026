@@ -2,6 +2,7 @@ package org.firstinspires.ftc.team417;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -9,8 +10,9 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import android.graphics.Color;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
- public class CoolColorDetector {
+public class CoolColorDetector {
      Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
