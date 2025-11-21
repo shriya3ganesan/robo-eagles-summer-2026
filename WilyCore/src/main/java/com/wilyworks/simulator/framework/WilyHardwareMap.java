@@ -6,6 +6,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -37,7 +39,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
-import org.swerverobotics.ftc.GoBildaPinpointDriver;
 import org.swerverobotics.ftc.UltrasonicDistanceSensor;
 
 import java.util.ArrayList;
@@ -58,7 +59,6 @@ import kotlin.coroutines.Continuation;
  * Wily Works simulated IMU implementation.
  */
 class WilyIMU extends WilyHardwareDevice implements IMU {
-    WilyIMU(String deviceName) { super(deviceName); }
     double startYaw;
     @Override
     public boolean initialize(Parameters parameters) {
@@ -106,7 +106,6 @@ class WilyIMU extends WilyHardwareDevice implements IMU {
  * Wily Works voltage sensor implementation.
  */
 class WilyVoltageSensor extends WilyHardwareDevice implements VoltageSensor {
-    WilyVoltageSensor(String deviceName) { super(deviceName); }
     @Override
     public double getVoltage() {
         return 13.0;
@@ -122,7 +121,6 @@ class WilyVoltageSensor extends WilyHardwareDevice implements VoltageSensor {
  * Wily Works distance sensor implementation.
  */
 class WilyDistanceSensor extends WilyHardwareDevice implements DistanceSensor {
-    WilyDistanceSensor(String deviceName) { super(deviceName); }
     @Override
     public double getDistance(DistanceUnit unit) { return unit.fromMm(65535); } // Distance when not responding
 }
@@ -130,8 +128,7 @@ class WilyDistanceSensor extends WilyHardwareDevice implements DistanceSensor {
 /**
  * Wily Works normalized color sensor implementation.
  */
-class WilyNormalizedColorSensor extends WilyHardwareDevice implements NormalizedColorSensor {
-    WilyNormalizedColorSensor(String deviceName) { super(deviceName); }
+class WilyNormalizedColorSensor extends WilyHardwareDevice implements NormalizedColorSensor, DistanceSensor {
     @Override
     public NormalizedRGBA getNormalizedColors() { return new NormalizedRGBA(); }
 
@@ -140,14 +137,17 @@ class WilyNormalizedColorSensor extends WilyHardwareDevice implements Normalized
 
     @Override
     public void setGain(float newGain) { }
+
+    @Override
+    public double getDistance(DistanceUnit unit) {
+        return 0;
+    }
 }
 
 /**
  * Wily Works color sensor implementation.
  */
 class WilyColorSensor extends WilyHardwareDevice implements ColorSensor {
-    WilyColorSensor(String deviceName) { super(deviceName); }
-
     @Override
     public int red() { return 0; }
 
@@ -180,7 +180,6 @@ class WilyWebcam extends WilyHardwareDevice implements WebcamName {
     WilyWorks.Config.Camera wilyCamera;
 
     WilyWebcam(String deviceName) {
-        super(deviceName);
         for (WilyWorks.Config.Camera camera: WilyCore.config.cameras) {
             if (camera.name.equals(deviceName)) {
                 wilyCamera = camera;
@@ -247,7 +246,6 @@ class WilyWebcam extends WilyHardwareDevice implements WebcamName {
  * Wily Works ServoController implementation.
  */
 class WilyServoController extends WilyHardwareDevice implements ServoController {
-    WilyServoController(String deviceName) { super(deviceName); }
     @Override
     public void pwmEnable() { }
 
@@ -271,12 +269,11 @@ class WilyServoController extends WilyHardwareDevice implements ServoController 
  * Wily Works Servo implementation.
  */
 class WilyServo extends WilyHardwareDevice implements Servo {
-    WilyServo(String deviceName) { super(deviceName); }
     double position;
 
     @Override
     public ServoController getController() {
-        return new WilyServoController(deviceName);
+        return new WilyServoController();
     }
 
     @Override
@@ -310,13 +307,12 @@ class WilyServo extends WilyHardwareDevice implements Servo {
  * Wily Works CRServo implementation.
  */
 class WilyCRServo extends WilyHardwareDevice implements CRServo {
-    WilyCRServo(String deviceName) { super(deviceName); }
     double power;
     Direction direction;
 
     @Override
     public ServoController getController() {
-        return new WilyServoController(deviceName);
+        return new WilyServoController();
     }
 
     @Override
@@ -349,7 +345,6 @@ class WilyCRServo extends WilyHardwareDevice implements CRServo {
  * Wily Works DigitalChannel implementation.
  */
 class WilyDigitalChannel extends WilyHardwareDevice implements DigitalChannel {
-    WilyDigitalChannel(String deviceName) { super(deviceName); }
     boolean state;
 
     @Override
@@ -376,7 +371,6 @@ class WilyLED extends LED {
     double y;
     boolean isRed;
     WilyLED(String deviceName) {
-        super(deviceName);
         WilyWorks.Config.LEDIndicator wilyLed = null;
         for (WilyWorks.Config.LEDIndicator led: WilyCore.config.ledIndicators) {
             if (led.name.equals(deviceName)) {
@@ -393,9 +387,10 @@ class WilyLED extends LED {
     }
 
     @Override
-    public void enableLight(boolean enable) {
-        this.enable = enable;
-    }
+    public void enable(boolean enableLed) { this.enable = enableLed; }
+
+    @Override
+    public void enableLight(boolean enable) { enable(enable); }
 
     @Override
     public boolean isLightOn() {
@@ -407,7 +402,6 @@ class WilyLED extends LED {
  * Wily Works AnalogInput implementation.
  */
 class WilyAnalogInput extends AnalogInput {
-    WilyAnalogInput(String deviceName) { super(deviceName); }
     @Override
     public double getVoltage() { return 0; }
 
@@ -435,10 +429,13 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
     public DeviceMapping<UltrasonicDistanceSensor> ultrasonicDistanceSensor = new DeviceMapping<>(UltrasonicDistanceSensor.class);
     public DeviceMapping<AnalogInput>              analogInput              = new DeviceMapping<>(AnalogInput.class);
     public DeviceMapping<IMU>                      imu                      = new DeviceMapping<>(IMU.class);
+    public DeviceMapping<Limelight3A>              limelight                = new DeviceMapping<>(Limelight3A.class);
     protected Map<String, List<HardwareDevice>>    allDevicesMap            = new HashMap<>();
     protected List<HardwareDevice>                 allDevicesList           = new ArrayList<>();
 
     public WilyHardwareMap() {
+        // Road Runner expects this object to be already created becaues it references
+        // hardwareMap.voltageSensor.iterator().next() directly:
         put("voltage_sensor", VoltageSensor.class);
     }
 
@@ -473,14 +470,15 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
         return result;
     }
 
-    @Deprecated
     public HardwareDevice get(String deviceName) {
-        for (HardwareDevice device: allDevicesList) {
-            if (device.getDeviceName().equals(deviceName)) {
+        deviceName = deviceName.trim();
+        List<HardwareDevice> list = allDevicesMap.get(deviceName);
+        if (list != null) {
+            for (HardwareDevice device : list) {
+                initializeDeviceIfNecessary(device);
                 return device;
             }
         }
-
         throw new IllegalArgumentException("Use the typed version of get(), e.g. get(DcMotorEx.class, \"leftMotor\")");
     }
 
@@ -494,50 +492,55 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
         }
         HardwareDevice device;
         if (CRServo.class.isAssignableFrom(klass)) {
-            device = new WilyCRServo(deviceName);
+            device = new WilyCRServo();
             crservo.put(deviceName, (CRServo) device);
         } else if (Servo.class.isAssignableFrom(klass)) {
-            device = new WilyServo(deviceName);
+            device = new WilyServo();
             servo.put(deviceName, (Servo) device);
         } else if (DcMotor.class.isAssignableFrom(klass)) {
-            device = new WilyDcMotorEx(deviceName);
+            device = new WilyDcMotorEx();
             dcMotor.put(deviceName, (DcMotor) device);
         } else if (VoltageSensor.class.isAssignableFrom(klass)) {
-            device = new WilyVoltageSensor(deviceName);
+            device = new WilyVoltageSensor();
             voltageSensor.put(deviceName, (VoltageSensor) device);
         } else if (DistanceSensor.class.isAssignableFrom(klass)) {
-            device = new WilyDistanceSensor(deviceName);
+            device = new WilyDistanceSensor();
             distanceSensor.put(deviceName, (DistanceSensor) device);
         } else if (NormalizedColorSensor.class.isAssignableFrom(klass)) {
-            device = new WilyNormalizedColorSensor(deviceName);
+            device = new WilyNormalizedColorSensor();
             normalizedColorSensor.put(deviceName, (NormalizedColorSensor) device);
         } else if (ColorSensor.class.isAssignableFrom(klass)) {
-            device = new WilyColorSensor(deviceName);
+            device = new WilyColorSensor();
             colorSensor.put(deviceName, (ColorSensor) device);
         } else if (WebcamName.class.isAssignableFrom(klass)) {
             device = new WilyWebcam(deviceName);
             webcamName.put(deviceName, (WebcamName) device);
         } else if (DigitalChannel.class.isAssignableFrom(klass)) {
-            device = new WilyDigitalChannel(deviceName);
+            device = new WilyDigitalChannel();
             digitalChannel.put(deviceName, (DigitalChannel) device);
         } else if (LED.class.isAssignableFrom(klass)) {
             device = new WilyLED(deviceName);
             led.put(deviceName, (LED) device);
+        } else if (AnalogInput.class.isAssignableFrom(klass)) {
+            device = new WilyAnalogInput();
+            analogInput.put(deviceName, (WilyAnalogInput) device);
+        } else if (IMU.class.isAssignableFrom(klass)) {
+            device = new WilyIMU();
+            imu.put(deviceName, (WilyIMU) device);
+
+        // Not actually built into HardwareMap.java:
+        } else if (UltrasonicDistanceSensor.class.isAssignableFrom(klass)) {
+            device = new WilyUltrasonicDistanceSensor(deviceName);
+            ultrasonicDistanceSensor.put(deviceName, (WilyUltrasonicDistanceSensor) device);
         } else if (SparkFunOTOS.class.isAssignableFrom(klass)) {
             device = new SparkFunOTOS(null);
             sparkFunOTOS.put(deviceName, (SparkFunOTOS) device);
         } else if (GoBildaPinpointDriver.class.isAssignableFrom(klass)) {
             device = new GoBildaPinpointDriver(null, false);
             goBildaPinpointDrivers.put(deviceName, (GoBildaPinpointDriver) device);
-        } else if (UltrasonicDistanceSensor.class.isAssignableFrom(klass)) {
-            device = new WilyUltrasonicDistanceSensor(deviceName);
-            ultrasonicDistanceSensor.put(deviceName, (WilyUltrasonicDistanceSensor) device);
-        } else if (AnalogInput.class.isAssignableFrom(klass)) {
-            device = new WilyAnalogInput(deviceName);
-            analogInput.put(deviceName, (WilyAnalogInput) device);
-        } else if (IMU.class.isAssignableFrom(klass)) {
-            device = new WilyIMU(deviceName);
-            imu.put(deviceName, (WilyIMU) device);
+        } else if (Limelight3A.class.isAssignableFrom(klass)) {
+            device = new Limelight3A(null, "", null);
+            limelight.put(deviceName, (Limelight3A) device);
         } else {
             throw new IllegalArgumentException("Unexpected device type for HardwareMap");
         }
@@ -560,9 +563,10 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
 
     public SortedSet<String> getAllNames(Class<? extends HardwareDevice> classOrInterface) {
         SortedSet<String> result = new TreeSet<>();
-        for (HardwareDevice device: allDevicesList) {
+        for (String userName: allDevicesMap.keySet()) {
+            HardwareDevice device = allDevicesMap.get(userName).get(0);
             if (classOrInterface.isInstance(device)) {
-                result.add(device.getDeviceName());
+                result.add(userName);
             }
         }
         return result;

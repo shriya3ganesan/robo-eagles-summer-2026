@@ -11,7 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * Wily Works DcMotorEx implementation.
  */
 public class WilyDcMotorEx extends WilyHardwareDevice implements DcMotorEx {
-    WilyDcMotorEx(String deviceName) { super(deviceName); }
     RunMode mode;
     double velocity;
     double power;

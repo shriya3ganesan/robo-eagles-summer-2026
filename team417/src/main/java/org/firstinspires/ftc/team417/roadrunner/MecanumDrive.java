@@ -48,6 +48,7 @@ import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
@@ -70,7 +71,6 @@ import org.firstinspires.ftc.team417.roadrunner.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.team417.roadrunner.messages.MecanumLocalizerInputsMessage;
 import org.firstinspires.ftc.team417.roadrunner.messages.PoseMessage;
 import org.firstinspires.inspection.InspectionState;
-import org.swerverobotics.ftc.GoBildaPinpointDriver;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -394,8 +394,8 @@ public final class MecanumDrive {
         if (pinpointDriver == null)
             return; // ====>
 
-        pinpointDriver.setOffsets(PARAMS.pinpoint.xOffset, PARAMS.pinpoint.yOffset);
-        pinpointDriver.setEncoderResolution(PARAMS.pinpoint.ticksPerMm);
+        pinpointDriver.setOffsets(PARAMS.pinpoint.xOffset, PARAMS.pinpoint.yOffset, DistanceUnit.MM);
+        pinpointDriver.setEncoderResolution(PARAMS.pinpoint.ticksPerMm, DistanceUnit.MM);
         pinpointDriver.setEncoderDirections(
                 PARAMS.pinpoint.xReversed ? GoBildaPinpointDriver.EncoderDirection.REVERSED : GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 PARAMS.pinpoint.yReversed ? GoBildaPinpointDriver.EncoderDirection.REVERSED : GoBildaPinpointDriver.EncoderDirection.FORWARD);
@@ -828,7 +828,12 @@ public final class MecanumDrive {
             // Query the driver for position and velocity:
             pinpointDriver.update();
             Pose2D pose2D = pinpointDriver.getPosition();
-            Pose2D poseVelocity2D = pinpointDriver.getVelocity();
+            Pose2D poseVelocity2D = new Pose2D(
+                    DistanceUnit.INCH,
+                    pinpointDriver.getVelX(DistanceUnit.INCH),
+                    pinpointDriver.getVelY(DistanceUnit.INCH),
+                    AngleUnit.RADIANS,
+                    pinpointDriver.getHeading(AngleUnit.RADIANS));
 
             // Convert to Road Runner format, remembering that the Pinpoint tracking sensor
             // reports velocity as field-relative but Road Runner wants it robot-relative:

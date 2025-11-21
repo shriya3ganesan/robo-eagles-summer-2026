@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.hardware.configuration.annotations.DevicePropertie
  */
 @DeviceProperties(name = "@string/configTypeAnalogInput", xmlTag = "AnalogInput", builtIn = true)
 public class AnalogInput implements HardwareDevice {
-    public AnalogInput(String deviceName) { }
-
     @Override public Manufacturer getManufacturer()  { return Manufacturer.Other; }
 
     public double getVoltage() { return 0; }
