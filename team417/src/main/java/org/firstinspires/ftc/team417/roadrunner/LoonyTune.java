@@ -7,10 +7,6 @@ package org.firstinspires.ftc.team417.roadrunner;
 
 import static com.acmerobotics.roadrunner.Profiles.constantProfile;
 
-import static org.swerverobotics.ftc.GoBildaPinpointDriver.DeviceStatus.FAULT_NO_PODS_DETECTED;
-import static org.swerverobotics.ftc.GoBildaPinpointDriver.DeviceStatus.FAULT_X_POD_NOT_DETECTED;
-import static org.swerverobotics.ftc.GoBildaPinpointDriver.DeviceStatus.FAULT_Y_POD_NOT_DETECTED;
-import static org.swerverobotics.ftc.GoBildaPinpointDriver.DeviceStatus.NOT_READY;
 import static java.lang.System.nanoTime;
 
 import android.annotation.SuppressLint;
@@ -36,6 +32,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.google.gson.Gson;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -54,7 +51,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.swerverobotics.ftc.GoBildaPinpointDriver;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -899,11 +895,11 @@ public class LoonyTune extends LinearOpMode {
     // Constants:
     final Pose2d zeroPose = new Pose2d(0, 0, 0);
 
-    // Get the current heading from the tracking sensor:
+    // Get the current heading from the tracking sensor, in radians:
     double getSensorHeading() {
         if (usePinpoint) {
-            drive.pinpointDriver.update(GoBildaPinpointDriver.readData.ONLY_UPDATE_HEADING);
-            return drive.pinpointDriver.getHeading();
+            drive.pinpointDriver.update(GoBildaPinpointDriver.ReadData.ONLY_UPDATE_HEADING);
+            return drive.pinpointDriver.getHeading(AngleUnit.RADIANS);
         } else {
             return drive.otosDriver.getPosition().h;
         }
@@ -914,12 +910,10 @@ public class LoonyTune extends LinearOpMode {
     Pose2D getSensorVelocity() {
         if (usePinpoint) {
             drive.pinpointDriver.update();
-            org.firstinspires.ftc.robotcore.external.navigation.Pose2D velocity
-                    = drive.pinpointDriver.getVelocity();
             return new Pose2D(
-                    velocity.getX(DistanceUnit.INCH),
-                    velocity.getY(DistanceUnit.INCH),
-                    velocity.getHeading(AngleUnit.RADIANS));
+                    drive.pinpointDriver.getVelX(DistanceUnit.INCH),
+                    drive.pinpointDriver.getVelY(DistanceUnit.INCH),
+                    drive.pinpointDriver.getHeading(AngleUnit.RADIANS));
         } else {
             return drive.otosDriver.getVelocity();
         }
@@ -1898,11 +1892,11 @@ public class LoonyTune extends LinearOpMode {
                     currentStatus = "not ready";
                 else if (status == GoBildaPinpointDriver.DeviceStatus.CALIBRATING)
                     currentStatus = "calibrating";
-                else if (status == FAULT_X_POD_NOT_DETECTED)
+                else if (status == GoBildaPinpointDriver.DeviceStatus.FAULT_X_POD_NOT_DETECTED)
                     currentStatus = "X pod not detected";
-                else if (status == FAULT_Y_POD_NOT_DETECTED)
+                else if (status == GoBildaPinpointDriver.DeviceStatus.FAULT_Y_POD_NOT_DETECTED)
                     currentStatus = "Y pod not detected";
-                else if (status == FAULT_NO_PODS_DETECTED)
+                else if (status == GoBildaPinpointDriver.DeviceStatus.FAULT_NO_PODS_DETECTED)
                     currentStatus = "no pods detected";
                 else if (status == GoBildaPinpointDriver.DeviceStatus.FAULT_IMU_RUNAWAY)
                     currentStatus = "IMU runaway";
@@ -4231,14 +4225,14 @@ public class LoonyTune extends LinearOpMode {
             drive.pinpointDriver.update(); // Call update() to read the status register
             GoBildaPinpointDriver.DeviceStatus status = drive.pinpointDriver.getDeviceStatus();
 
-            if (status == NOT_READY) {
+            if (status == GoBildaPinpointDriver.DeviceStatus.NOT_READY) {
                 dialog.warning("The Pinpoint computer isn't responding. Check your I2C wiring.");
                 return; // ====>
             }
 
-            if ((status == FAULT_X_POD_NOT_DETECTED) ||
-                (status == FAULT_Y_POD_NOT_DETECTED) ||
-                (status == FAULT_NO_PODS_DETECTED)) {
+            if ((status == GoBildaPinpointDriver.DeviceStatus.FAULT_X_POD_NOT_DETECTED) ||
+                (status == GoBildaPinpointDriver.DeviceStatus.FAULT_Y_POD_NOT_DETECTED) ||
+                (status == GoBildaPinpointDriver.DeviceStatus.FAULT_NO_PODS_DETECTED)) {
                 dialog.warning("The Pinpoint computer indicates that pods aren't connected. " +
                         "Check your encoder wiring.");
                 return; // ====>

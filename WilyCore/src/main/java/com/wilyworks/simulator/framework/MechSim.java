@@ -3,15 +3,19 @@ package com.wilyworks.simulator.framework;
 import static com.wilyworks.simulator.WilyCore.time;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.wilyworks.simulator.WilyCore;
 import com.wilyworks.simulator.helpers.Point;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -119,8 +123,7 @@ public class MechSim {
 // Hooked class for measuring the position of the drum:
 class DrumAnalogInput extends WilyAnalogInput {
     DecodeSlowBotMechSim mechSim;
-    DrumAnalogInput(String deviceName, DecodeSlowBotMechSim mechSim) {
-        super(deviceName);
+    DrumAnalogInput(DecodeSlowBotMechSim mechSim) {
         this.mechSim = mechSim;
     }
 
@@ -136,41 +139,58 @@ class DrumAnalogInput extends WilyAnalogInput {
 class DrumColorSensor extends WilyNormalizedColorSensor {
     DecodeSlowBotMechSim mechSim;
     int idMask; // Sensor 0 or 1
-    DrumColorSensor(String deviceName, DecodeSlowBotMechSim mechSim, int index) {
-        super(deviceName);
+    DrumColorSensor(DecodeSlowBotMechSim mechSim, int index) {
         this.mechSim = mechSim;
         this.idMask = 1 << index;
     }
-    public NormalizedRGBA getNormalizedColors() {
+
+    // Returns true if this sensor can read a ball; false if a hole in the ball is positioned
+    // over the sensor.
+    boolean sensorCanReadBall() {
         // Every time we get a new ball, reset our variations:
         if (mechSim.colorSensorMask == -1) {
             mechSim.colorSensorMask = 1 + (int)(Math.random() * 3.0); // Mask = 1, 2 or 3
         }
-        NormalizedRGBA color = new NormalizedRGBA();
+        return ((mechSim.colorSensorMask & idMask) != 0);
+    }
+
+    @Override
+    public NormalizedRGBA getNormalizedColors() {
+        NormalizedRGBA normalizedColor = new NormalizedRGBA();
 
         // Simulate the ball holes for some reads:
-        if ((mechSim.colorSensorMask & idMask) != 0) {
-            // Figure out what slot is being input into, if any:
-            int slot = mechSim.findDrumSlot(mechSim.INTAKE_POSITIONS);
-            if (slot != -1) {
-                DecodeSlowBotMechSim.Ball ball = mechSim.slotBalls.get(slot);
-                if (ball != null) {
+        int rgbColor = 0;
+        // Figure out what slot is being input into, if any:
+        int slot = mechSim.findDrumSlot(mechSim.INTAKE_POSITIONS);
+        if (slot != -1) {
+            DecodeSlowBotMechSim.Ball ball = mechSim.slotBalls.get(slot);
+            if (ball != null) {
+                // There's ball over the sensors. See if they can be read:
+                if (sensorCanReadBall()) {
                     if (ball.color == DecodeSlowBotMechSim.BallColor.GREEN) {
-                        color.green = 1;
+                        rgbColor = android.graphics.Color.HSVToColor(new float[]{175, 1, 1});
                     } else {
-                        color.red = 0.5f;
-                        color.blue = 0.5f;
+                        rgbColor = android.graphics.Color.HSVToColor(new float[]{210, 1, 1});
                     }
                 }
             }
         }
-        return color;
+        normalizedColor.red = new Color(rgbColor).getRed() / 255.0f;
+        normalizedColor.green = new Color(rgbColor).getGreen() / 255.0f;
+        normalizedColor.blue = new Color(rgbColor).getBlue() / 255.0f;
+        return normalizedColor;
+    }
+
+    @Override
+    public double getDistance(DistanceUnit unit) {
+        int slot = mechSim.findDrumSlot(mechSim.INTAKE_POSITIONS);
+        boolean ballPositionedForRead = (slot != -1) && mechSim.slotBalls.get(slot) != null;
+        return ballPositionedForRead && sensorCanReadBall() ? unit.fromMm(18) : unit.fromMm(70);
     }
 }
 
 // Let us ramp up the launcher motor velocity.
 class LaunchMotor extends WilyDcMotorEx {
-    LaunchMotor(String deviceName) { super(deviceName); }
     double targetVelocity;
     double actualVelocity;
 
@@ -247,6 +267,9 @@ class DecodeSlowBotMechSim extends MechSim {
     // Hooked devices:
     LaunchMotor upperLaunchMotor;
     LaunchMotor lowerLaunchMotor;
+    AnalogInput analogDrum;
+    NormalizedColorSensor sensorColor1;
+    NormalizedColorSensor sensorColor2;
     DcMotorEx intakeMotor;
     Servo drumServo;
     Servo transferServo;
@@ -309,19 +332,19 @@ class DecodeSlowBotMechSim extends MechSim {
 
         // There have outputs:
         if (name.equals("motULauncher")) {
-            device = upperLaunchMotor = new LaunchMotor(device.getDeviceName());
+            device = upperLaunchMotor = new LaunchMotor();
         }
         if (name.equals("motLLauncher")) {
-            device = lowerLaunchMotor = new LaunchMotor(device.getDeviceName());
+            device = lowerLaunchMotor = new LaunchMotor();
         }
         if (name.equals("analogDrum")) {
-            device = new DrumAnalogInput(device.getDeviceName(), this);
+            device = analogDrum = new DrumAnalogInput(this);
         }
         if (name.equals("sensorColor1")) {
-            device = new DrumColorSensor(device.getDeviceName(), this, 0);
+            device = sensorColor1 = new DrumColorSensor(this, 0);
         }
         if (name.equals("sensorColor2")) {
-            device = new DrumColorSensor(device.getDeviceName(), this, 1);
+            device = sensorColor2 = new DrumColorSensor(this, 1);
         }
         return device;
     }
@@ -342,6 +365,12 @@ class DecodeSlowBotMechSim extends MechSim {
             throw new RuntimeException("Missing forward feeder servo");
         if (backwardFeederServo == null)
             throw new RuntimeException("Missing backward feeder servo");
+        if (analogDrum == null)
+            throw new RuntimeException("Missing analog drum");
+        if (sensorColor1 == null)
+            throw new RuntimeException("Missing color sensor 1");
+        if (sensorColor2 == null)
+            throw new RuntimeException("Missing color sensor 2");
     }
 
     void render(Graphics2D g, Pose2d pose) {
@@ -493,12 +522,9 @@ class DecodeSlowBotMechSim extends MechSim {
         // backwards:
         if (upperLaunchMotor.getVelocity() < 0) {
             if (forwardFeederServo.getPower() >= 0) {
-                throw new RuntimeException("That's weird, one launch motor runs backwards and the other doesn't?");
-            }
-            if (forwardFeederServo.getPower() > 0) {
                 throw new RuntimeException("When running launch motors backwards, forward feeder servo must too.");
             }
-            if (backwardFeederServo.getPower() > 0) {
+            if (backwardFeederServo.getPower() >= 0) {
                 throw new RuntimeException("When running launch motors backwards, backward feeder servo must too.");
             }
             // If the slot is empty, fill it up with a ball!
@@ -518,6 +544,12 @@ class DecodeSlowBotMechSim extends MechSim {
             }
             if (targetDrumPosition != actualDrumPosition) {
                 throw new RuntimeException("The drum is moving during a transfer. That will break things!");
+            }
+            if (upperLaunchMotor.getVelocity() <= 0) {
+                throw new RuntimeException("A transfer is requested when upper launcher motor isn't running forward. That won't work!");
+            }
+            if (lowerLaunchMotor.getVelocity() <= 0) {
+                throw new RuntimeException("A transfer is requested when lower launcher motor isn't running forward. That won't work!");
             }
             if (forwardFeederServo.getPower() < FEEDER_POWER) {
                 throw new RuntimeException("A transfer is requested when forward feeder servo isn't running. That won't work!");

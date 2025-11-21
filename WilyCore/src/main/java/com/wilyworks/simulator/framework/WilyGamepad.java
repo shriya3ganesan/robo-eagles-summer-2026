@@ -103,6 +103,44 @@ class GamepadStateChanges {
  */
 public class WilyGamepad {
 
+
+    public enum Type {
+        // Do NOT change the order/names of existing entries,
+        // you will break backwards compatibility!!
+        UNKNOWN(LegacyType.UNKNOWN),
+        LOGITECH_F310(LegacyType.LOGITECH_F310),
+        XBOX_360(LegacyType.XBOX_360),
+        SONY_PS4(LegacyType.SONY_PS4), // This indicates a PS4-compatible controller that is being used through our compatibility mode
+        SONY_PS4_SUPPORTED_BY_KERNEL(LegacyType.SONY_PS4); // This indicates a PS4-compatible controller that is being used through the DualShock 4 Linux kernel driver.
+
+        private final LegacyType correspondingLegacyType;
+        Type(LegacyType correspondingLegacyType) {
+            this.correspondingLegacyType = correspondingLegacyType;
+        }
+    }
+
+    // LegacyType is necessary because robocol gamepad version 3 was written in a way that was not
+    // forwards-compatible, so we have to keep sending V3-compatible values.
+    public enum LegacyType {
+        // Do NOT change the order or names of existing entries, or add new entries.
+        // You will break backwards compatibility!!
+        UNKNOWN,
+        LOGITECH_F310,
+        XBOX_360,
+        SONY_PS4;
+    }
+
+    /**
+     * Get the type of gamepad as a {@link Type}. This method defaults to "UNKNOWN".
+     * @return gamepad type
+     */
+    public Type type() {
+        return type;
+    }
+
+    @SuppressWarnings("UnusedAssignment")
+    public volatile Type type = Type.XBOX_360; // IntelliJ thinks this is redundant, but it is NOT. Must be a bug in the analyzer?
+
     public volatile float left_stick_x = 0f;
     public volatile float left_stick_y = 0f;
     public volatile float right_stick_x = 0f;
