@@ -42,7 +42,7 @@ public class CompetitionTeleOp extends BaseOpMode {
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry);
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
 
         // Initialize motors, servos, LEDs
 
@@ -64,12 +64,25 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             ));
 
+
+
             // Update the current pose:
 
             drive.updatePoseEstimate();
 
+
+
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
+
+            // Do the work now for all active Road Runner actions, if any:
+            drive.doActionsWork(packet);
+
+            // Draw the robot and field:
+            packet.fieldOverlay().setStroke("#3F51B5");
+            Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
+            MecanumDrive.sendTelemetryPacket(packet);
+
 
             //add slowbot teleop controls here
             if (gamepad2.yWasPressed()) {
@@ -86,6 +99,9 @@ public class CompetitionTeleOp extends BaseOpMode {
             }
             mechGlob.intake(gamepad2.left_stick_x);
             mechGlob.update();
+            
+            MecanumDrive.sendTelemetryPacket(packet);
+            telemetry.update();
         }
     }
 
