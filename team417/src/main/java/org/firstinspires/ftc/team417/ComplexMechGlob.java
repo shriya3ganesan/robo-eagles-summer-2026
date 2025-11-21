@@ -42,7 +42,7 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     MechGlob(){}
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
-    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry){
+    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, boolean runningAuto){
         if (MecanumDrive.isSlowBot) { //if the robot is slowbot, use ComplexMechGlob.
             return new ComplexMechGlob(hardwareMap, telemetry); //Go to ComplexMechGlob class
 
@@ -225,9 +225,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     void launch (RequestedColor requestedColor) {
 
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
-        if (minSlot == -1){
-            telemetry.speak("bad");
-        } else {
+        if (minSlot != -1){
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
         }
