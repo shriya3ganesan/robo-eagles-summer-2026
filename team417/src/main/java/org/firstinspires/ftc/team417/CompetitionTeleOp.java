@@ -6,8 +6,10 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
@@ -40,9 +42,9 @@ public class CompetitionTeleOp extends BaseOpMode {
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry);
 
         // Initialize motors, servos, LEDs
-        initHardware();
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
@@ -70,8 +72,20 @@ public class CompetitionTeleOp extends BaseOpMode {
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
 
             //add slowbot teleop controls here
-
-
+            if (gamepad2.yWasPressed()) {
+                mechGlob.launch(RequestedColor.EITHER);
+            } else if (gamepad2.bWasPressed()) {
+                mechGlob.launch(RequestedColor.PURPLE);
+            } else if (gamepad2.aWasPressed()) {
+                mechGlob.launch(RequestedColor.GREEN);
+            }
+            if (gamepad2.dpadUpWasPressed()) {
+                mechGlob.setLaunchVelocity(LaunchDistance.FAR);
+            } else if (gamepad2.dpadDownWasPressed()) {
+                mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
+            }
+            mechGlob.intake(gamepad2.left_stick_x);
+            mechGlob.update();
         }
     }
 

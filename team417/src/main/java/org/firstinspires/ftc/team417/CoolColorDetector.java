@@ -2,6 +2,7 @@ package org.firstinspires.ftc.team417;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -9,8 +10,9 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import android.graphics.Color;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
- public class CoolColorDetector {
+public class CoolColorDetector {
      Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
@@ -29,24 +31,25 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
         sensor.setGain(gain);
         NormalizedRGBA colors = sensor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsv);
+        double distance = ((DistanceSensor) sensor).getDistance(DistanceUnit.MM);
 
         telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
         float hue = hsv[0];
-        float value = hsv[2];
         //
-        // GREEN Range: 145 - 165
-        if(value < 0.45) {
-            return PixelColor.NONE;
+        if (distance <= 25) {
+            if (hue > 165 && hue < 180) {
+                return PixelColor.GREEN;
+            }
+            //Return purple based on hue value color sensor is detecting
+            else if (hue >= 200 && hue <= 225) {
+                return PixelColor.PURPLE;
+            } else {
+                return PixelColor.PURPLE;
+            }
+        } else {
+                return PixelColor.NONE;
+            }
         }
-        else if (hue >= 170 && hue <= 180) {
-            return PixelColor.GREEN;
-        }
-        // PURPLE Range: 215 - 245
-        else{
-            return PixelColor.PURPLE;
-
-        }
-    }
 
 
 

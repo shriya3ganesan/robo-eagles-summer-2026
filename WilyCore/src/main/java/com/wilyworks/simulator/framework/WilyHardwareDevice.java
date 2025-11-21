@@ -7,19 +7,13 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
  * Wily Works device subclass implementation.
  */
 public class WilyHardwareDevice implements HardwareDevice {
-    String deviceName;
-    WilyHardwareDevice(String deviceName) {
-        this.deviceName = deviceName;
-    }
     @Override
     public Manufacturer getManufacturer() {
         return Manufacturer.Unknown;
     }
 
     @Override
-    public String getDeviceName() {
-        return deviceName;
-    }
+    public String getDeviceName() { return ""; }
 
     @Override
     public String getConnectionInfo() {
