@@ -51,7 +51,8 @@ public class CoolColorDetector {
 
         String colorCube = String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
                 colors.toColor() & 0xffffff);
-        telemetry.addLine(String.format("Color Detect: %.2f\", %.2f\" %s, Hue: %.1f",
+
+        telemetry.addLine(String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
                 distance1, distance2, colorCube, hue));
 
         if (hue > 165 && hue < 180) {      //range determined from testing
