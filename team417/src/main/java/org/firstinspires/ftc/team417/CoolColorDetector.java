@@ -19,8 +19,8 @@ public class CoolColorDetector {
     private float gain = 85f; // adjust for brightness
     private float[] hsv = new float[3];
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
-        sensor1 = map.get(NormalizedColorSensor.class, "cs1");
-        sensor2 = map.get(NormalizedColorSensor.class, "cs2");
+        sensor1 = map.get(NormalizedColorSensor.class, "sensorColor1");
+        sensor2 = map.get(NormalizedColorSensor.class, "sensorColor2");
         this.telemetry = telemetry;
     }
 
