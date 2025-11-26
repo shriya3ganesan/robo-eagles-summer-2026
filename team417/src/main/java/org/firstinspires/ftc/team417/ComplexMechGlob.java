@@ -76,11 +76,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double FEEDER_POWER = 1;
     static double TRANSFER_TIME_UP = 0.3;
     static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double UPPER_FAR_FLYWHEEL_VELOCITY = 1500;
-    static double LOWER_FAR_FLYWHEEL_VELOCITY = 1500;
-    static double LOWER_NEAR_FLYWHEEL_VELOCITY = 1500;
-    static double UPPER_NEAR_FLYWHEEL_VELOCITY = 1500;
-
+    static double FAR_FLYWHEEL_VELOCITY = 1500;
+    static double NEAR_FLYWHEEL_VELOCITY = 1500;
+    static double FLYWHEEL_TOP_SPIN = 0;
     static double TRANSFER_INACTIVE_POSITION = 0;
     static double TRANSFER_ACTIVE_POSITION = 1;
     static double REVERSE_INTAKE_SPEED = -1;
@@ -268,11 +266,11 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
         if (launchDistance == LaunchDistance.NEAR) {
-            upperLaunchVelocity = UPPER_NEAR_FLYWHEEL_VELOCITY;
-            lowerLaunchVelocity = LOWER_NEAR_FLYWHEEL_VELOCITY;
+            upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_TOP_SPIN);
+            lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_TOP_SPIN);
         } else {
-            upperLaunchVelocity = UPPER_FAR_FLYWHEEL_VELOCITY;
-            lowerLaunchVelocity = LOWER_FAR_FLYWHEEL_VELOCITY;
+            upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_TOP_SPIN);
+            lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_TOP_SPIN);
         }
     }
     int findSlotFromPosition (double position, double [] positions) {
