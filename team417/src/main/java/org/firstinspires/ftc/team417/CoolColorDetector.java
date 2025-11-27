@@ -13,70 +13,60 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class CoolColorDetector {
-     Telemetry telemetry;
+    Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
-    private float gain = 85f; // adjust for brightness
-    private float[] hsv = new float[3];
+    private final float GAIN = 85f; // adjust for brightness
+
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
         sensor1 = map.get(NormalizedColorSensor.class, "sensorColor1");
         sensor2 = map.get(NormalizedColorSensor.class, "sensorColor2");
+        sensor1.setGain(GAIN);
+        sensor2.setGain(GAIN);
         this.telemetry = telemetry;
     }
 
     // --- Convert a sensor to ONE PixelColor ---
     @SuppressLint("DefaultLocale")
-    private PixelColor detectSingle(NormalizedColorSensor sensor) {
-        // Get raw values
-        sensor.setGain(gain);
-        NormalizedRGBA colors = sensor.getNormalizedColors();
-        Color.colorToHSV(colors.toColor(), hsv);
-        double distance = ((DistanceSensor) sensor).getDistance(DistanceUnit.MM);
-
-        telemetry.addData("HSV", String.format("{%f, %f, %f}", hsv[0], hsv[1], hsv[2]));
-        float hue = hsv[0];
-        //
-        if (distance <= 25) {
-            if (hue > 165 && hue < 180) {
-                return PixelColor.GREEN;
-            }
-            //Return purple based on hue value color sensor is detecting
-            else if (hue >= 200 && hue <= 225) {
-                return PixelColor.PURPLE;
-            } else {
-                return PixelColor.PURPLE;
-            }
-        } else {
-                return PixelColor.NONE;
-            }
-        }
-
-
-
     // --- Use logic comparing both sensors ---
-     PixelColor detectArtifactColor() {
-        PixelColor s1 = detectSingle(sensor1);
-        PixelColor s2 = detectSingle(sensor2);
-        // Rule 1: If both detect something different → return sensor2
-        if (s1 == s2) {
-            return s1;
-        }
-        // Rule 2: If sensor1 detects color and sensor2 = NONE → sensor1 wins
-        if ((s1 == PixelColor.GREEN || s1 == PixelColor.PURPLE) && s2 == PixelColor.NONE) {
-            return s1;
-        }
-        // Rule 3: If sensor2 detects color and sensor1 = NONE → sensor2 wins
-        if ((s2 == PixelColor.GREEN || s2 == PixelColor.PURPLE) && s1 == PixelColor.NONE) {
-            return s2;
-        }
-        else {
-            // Otherwise no decision → return none
+    PixelColor detectArtifactColor() {
+        final double MINIMUM_DISTANCE = 25;         //25mm
+        double distance1 = ((DistanceSensor) sensor1).getDistance(DistanceUnit.MM);
+        double distance2 = ((DistanceSensor) sensor2).getDistance(DistanceUnit.MM);
+        NormalizedColorSensor sensor;
+
+        if (distance1 < MINIMUM_DISTANCE) {
+            sensor = sensor1;
+        } else if (distance2 < MINIMUM_DISTANCE) {
+            sensor = sensor2;
+        } else {
+            telemetry.addLine(String.format(" %.2f\", %.2f\"", distance1, distance2));
             return PixelColor.NONE;
         }
+
+        NormalizedRGBA colors = sensor.getNormalizedColors();
+        float[] hsv = new float[3];
+        Color.colorToHSV(colors.toColor(), hsv);
+        float hue = hsv[0];
+
+        String colorCube = String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
+                colors.toColor() & 0xffffff);
+
+        telemetry.addLine(String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
+                distance1, distance2, colorCube, hue));
+
+        if (hue > 165 && hue < 180) {      //range determined from testing
+            return PixelColor.GREEN;
+        } else if (hue >= 200 && hue <= 225) {     //range determined from testing
+            return PixelColor.PURPLE;
+        } else {
+            //error case use the most likely color
+            return PixelColor.PURPLE;
+        }
     }
-    public void showTelemetry() {
-        telemetry.addData("Sensor 1", detectSingle(sensor1));
-        telemetry.addData("Sensor 2", detectSingle(sensor2));
+
+    public void testTelemetry() {
+
         telemetry.addData("Chosen Position", detectArtifactColor());
         telemetry.update();
     }

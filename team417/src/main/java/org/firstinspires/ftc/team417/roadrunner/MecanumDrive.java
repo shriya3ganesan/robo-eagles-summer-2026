@@ -1027,7 +1027,7 @@ public final class MecanumDrive {
         // rendering.
         Canvas canvas = packet.fieldOverlay();
         if (showField) {
-            canvas.drawImage("/dash/into-the-deep.png", 0, 0, 144, 144,
+            canvas.drawImage("/dash/decode.webp", 0, 0, 144, 144,
                     Math.toRadians(90), 0, 144, true);
         } else {
             canvas.setFill("#000000");
