@@ -82,6 +82,7 @@ public class AprilTagDT extends LinearOpMode {
 
     // Launch sequence states
     private enum LaunchState {
+
         IDLE,
         SPINNING_UP,
         FIRING,
@@ -197,6 +198,10 @@ public class AprilTagDT extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            if (runtime.seconds() > 5.0) {
+                openGateSequence();
+                runtime.reset();
+            }
             //updates the telemetry for the camera
             telemetryAprilTag();
 
@@ -470,7 +475,7 @@ public class AprilTagDT extends LinearOpMode {
 
         // Set the camera (webcam vs. built-in RC phone camera).
         if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+            builder.setCamera(hardwareMap.get(WebcamName.class, "limelight"));
         } else {
             builder.setCamera(BuiltinCameraDirection.BACK);
         }
@@ -550,4 +555,35 @@ public class AprilTagDT extends LinearOpMode {
         return Range.clip(degrees / 300.0, 0.0, 1.0);
     }
 
+    // === Added Autonomous Gate Opening Functions ===
+
+    private void openGateSequence() {
+        // Drive to gate
+        driveForward(0.4, 800);
+        // Push gate
+        driveForward(0.3, 400);
+        // Back up to starting point
+        driveForward(-0.4, 900);
+        // Stop
+        stopDrive();
+    }
+
+    private void driveForward(double power, long ms) {
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(power);
+        backLeftDrive.setPower(power);
+        backRightDrive.setPower(power);
+        sleep(ms);
+    }
+
+    private void stopDrive() {
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        backRightDrive.setPower(0);
+    }
+
 }
+
+
+
