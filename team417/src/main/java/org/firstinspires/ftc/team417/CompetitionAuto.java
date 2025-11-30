@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PoseMap;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -41,23 +43,144 @@ public class CompetitionAuto extends BaseOpMode {
 
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
-
+    TextMenu menu = new TextMenu();
+    MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
     Pattern pattern;
+    Alliance chosenAlliance;
+    SlowBotMovement chosenMovement;
+    double intakeCycles;
+    public Action getPath(SlowBotMovement chosenMovement, Alliance chosenAlliance, double intakeCycles) {
+        Pose2d startPose = new Pose2d(0, 0, 0);
 
+
+        Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
+        Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
+
+
+        PoseMap poseMap = pose -> new Pose2dDual<>(
+                pose.position.x,
+                pose.position.y,
+                pose.heading);
+        if (chosenAlliance == Alliance.BLUE) {
+            poseMap = pose -> new Pose2dDual<>(
+                    pose.position.x,
+                    pose.position.y.unaryMinus(),
+                    pose.heading.inverse());
+        }
+        TrajectoryActionBuilder trajectoryAction = drive.actionBuilder(SBFarStartPose, poseMap);
+        switch (chosenMovement) {
+            case NEAR:
+                trajectoryAction.setTangent(Math.toRadians(-51))
+                    .splineToConstantHeading(new Vector2d(-36,36), Math.toRadians(-51))
+                    //3 launches
+                    //after disp intake
+                    .setTangent(Math.toRadians(0))
+                    .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
+                    .setTangent(Math.toRadians(90))
+                    .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
+                    .setTangent(Math.toRadians(-90))
+                    .splineToSplineHeading(new Pose2d(-36,36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
+                if (intakeCycles > 1) {
+                    trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
+
+
+                            //3 launches
+                            //after disp intake
+
+                            .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
+                            .setTangent(Math.toRadians(90))
+                            .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
+                            .setTangent(Math.toRadians(-90))
+                            .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
+                    //3 launches
+                    //after disp intake
+                    if (intakeCycles > 2) {
+                        trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
+                                .splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake  farthest from goal
+                                .setTangent(Math.toRadians(90))
+                                .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90))
+                                .setTangent(Math.toRadians(-90))
+                                .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
+
+                    }
+                }
+                break;
+            case FAR:
+                if (intakeCycles == 0) {
+                    trajectoryAction.setTangent(Math.toRadians(180));
+                    // 3 launch actions
+                    //then after disp intake action
+                }
+
+
+                trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
+                        .setTangent(Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(36,60), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90));  //go to launch position
+                if (intakeCycles > 1) {
+
+
+                    // 3 launch actions
+                    //after disp intake action
+                    trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
+                            .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
+                            .setTangent(Math.toRadians(90))
+                            .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
+                            .setTangent(Math.toRadians(-90))
+                            .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
+                    // 3 launch actions
+                    //after disp intake action
+                    if (intakeCycles > 2) {
+                        trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
+                                .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest to goal
+                                .setTangent(Math.toRadians(90))
+                                .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
+                                .setTangent(Math.toRadians(-90))
+                                .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
+
+                    }
+                }
+                break;
+            case FAR_OUT_OF_WAY:
+                // 3 launch actions
+                // after disp intake action
+                trajectoryAction.setTangent(Math.toRadians(180))
+                    .splineToLinearHeading(new Pose2d(60,61, Math.toRadians(0)), Math.toRadians(0))
+                    .setTangent(Math.toRadians(-90))
+                    .splineToLinearHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90))
+                    // 3 launch actions
+                    .setTangent(Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(50,32,Math.toRadians(180)), Math.toRadians(180));
+                break;
+            case FAR_MINIMAL:
+                trajectoryAction.setTangent(Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
+                    .build();
+                break;
+        }
+        return trajectoryAction.build();
+
+
+
+
+
+    }
     @Override
     public void runOpMode() {
+
+
+
 
         Pose2d startPose = new Pose2d(0, 0, 0);
 
 
         Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
-
-
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
-        TextMenu menu = new TextMenu();
-        MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
+
 
         // Text menu for FastBot
 
@@ -110,104 +233,7 @@ public class CompetitionAuto extends BaseOpMode {
                 throw new IllegalArgumentException("Alliance must be red or blue");
         }
 
-        Action farMinimalSlowBot = pathFactory.actionBuilder(SBFarStartPose)
-                .setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
-                .build();
-        Action farOutOfWay = pathFactory.actionBuilder(SBFarStartPose)
-                // 3 launch actions
-                // after disp intake action
-                .setTangent(Math.toRadians(180))
-                .splineToLinearHeading(new Pose2d(60,61, Math.toRadians(0)), Math.toRadians(0))
-                .setTangent(Math.toRadians(-90))
-                .splineToLinearHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90))
-                // 3 launch actions
-                .setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(50,32,Math.toRadians(180)), Math.toRadians(180))
-                .build();
 
-
-        PathFactory farSlowBotIntake1 = pathFactory.actionBuilder(SBFarStartPose);
-        if (intakeCycles == 0) {
-            farSlowBotIntake1.setTangent(Math.toRadians(180));
-            // 3 launch actions
-            //then after disp intake action
-        }
-
-
-                farSlowBotIntake1.splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
-                .setTangent(Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(36,60), Math.toRadians(90))
-                .setTangent(Math.toRadians(-90))
-                .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90));  //go to launch position
-        if (intakeCycles > 1) {
-
-
-            // 3 launch actions
-            //after disp intake action
-                farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(180))
-                    .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
-                    .setTangent(Math.toRadians(90))
-                    .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
-                    .setTangent(Math.toRadians(-90))
-                    .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
-            // 3 launch actions
-            //after disp intake action
-            if (intakeCycles > 2) {
-                 farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(180))
-                        .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest to goal
-                        .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
-                        .setTangent(Math.toRadians(-90))
-                        .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
-
-            }
-        }
-        farSlowBotIntake1 = farSlowBotIntake1.setTangent(Math.toRadians(90))
-                .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180));
-        Action farSlowBot = farSlowBotIntake1.build();
-
-
-
-
-        PathFactory nearSlowBotPath = pathFactory.actionBuilder(SBNearStartPose)
-                .setTangent(Math.toRadians(-51))
-                .splineToConstantHeading(new Vector2d(-36,36), Math.toRadians(-51))
-                //3 launches
-                //after disp intake
-                .setTangent(Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
-                .setTangent(Math.toRadians(90))
-                .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
-                .setTangent(Math.toRadians(-90))
-                .splineToSplineHeading(new Pose2d(-36,36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
-        if (intakeCycles > 1) {
-            nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(0))
-
-
-                    //3 launches
-                    //after disp intake
-
-                    .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
-                    .setTangent(Math.toRadians(90))
-                    .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
-                    .setTangent(Math.toRadians(-90))
-                    .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
-            //3 launches
-            //after disp intake
-            if (intakeCycles > 2) {
-                nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(0))
-                        .splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake  farthest from goal
-                        .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90))
-                        .setTangent(Math.toRadians(-90))
-                        .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
-
-            }
-        }
-        nearSlowBotPath = nearSlowBotPath.setTangent(Math.toRadians(-90))
-                .splineToSplineHeading(new Pose2d(-48, 12, Math.toRadians(180)), Math.toRadians(180));
-        Action nearSlowBot = nearSlowBotPath.build();
         // the first parameter is the type to return as
 
 
@@ -217,22 +243,19 @@ public class CompetitionAuto extends BaseOpMode {
                 case NEAR:
 
                     drive.setPose(SBNearStartPose);
-                    trajectoryAction = nearSlowBot;
+
                     break;
                 case FAR:
                     drive.setPose(SBFarStartPose);
-                    trajectoryAction = farSlowBot;
                     break;
                 case FAR_OUT_OF_WAY:
                     drive.setPose(SBFarStartPose);
-                    trajectoryAction = farOutOfWay;
                     break;
                 case FAR_MINIMAL:
                     drive.setPose(SBFarStartPose);
-                    trajectoryAction = farMinimalSlowBot;
                     break;
             }
-
+            trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles);
 
             // Get a preview of the trajectory's path:
             Canvas previewCanvas = new Canvas();
