@@ -63,6 +63,7 @@ dependencies {
     implementation "com.google.code.gson:gson:2.11.0" // For serializing Java objects to JSON
     implementation 'net.bytebuddy:byte-buddy:1.15.10' // For proxying classes rather than interfaces
     implementation 'org.objenesis:objenesis:3.2' // Instantiate class without invoking a constructor
+    implementation 'org.json:json:20250107' // Or any recent version
 
     // Lwjgl for gamepad input:
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")

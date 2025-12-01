@@ -164,7 +164,7 @@ public final class MecanumDrive {
 
         public double inPerTick; // Inches-per-tick for encoders (set to 1.0 if using Optical Tracking)
         public double lateralInPerTick; // Lateral inches-per-tick for encoders
-        public double trackWidthTicks; // Diameter of the circle that a wheel travels to turn the robot 360 degrees, in ticks
+        public double trackWidthTicks; // Radius of the circle that a wheel travels to turn the robot 360 degrees, in ticks
 
         public double kS; // Feed-forward voltage to overcome static friction
         public double kV; // Feed-forward voltage factor to achieve target velocity, in tick units
@@ -950,6 +950,9 @@ public final class MecanumDrive {
 
     // Override the current pose for Road Runner and the optical tracking sensor:
     public void setPose(Pose2d pose) {
+        // Tell Wily Works about the new pose:
+        WilyWorks.setStartPose(pose, new PoseVelocity2d(new Vector2d(0, 0), 0));
+
         // Set the Road Runner pose:
         this.pose = pose;
         this.targetPose = pose;

@@ -33,9 +33,9 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.json.JSONObject;
+
 /**
  * Represents the status of a Limelight.
  */

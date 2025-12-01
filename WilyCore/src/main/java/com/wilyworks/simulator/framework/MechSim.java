@@ -27,6 +27,7 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -206,7 +207,7 @@ class LaunchMotor extends WilyDcMotorEx {
 
 // Simulation for the SlowBot in the 2025/2026 Decode game.
 class DecodeSlowBotMechSim extends MechSim {
-    enum BallColor {PURPLE, GREEN}
+    enum BallColor {PURPLE, GREEN, GOLD}
 
     final double WIDTH = 18; // Robot width
     final double HEIGHT = 18; // Robot height
@@ -259,9 +260,9 @@ class DecodeSlowBotMechSim extends MechSim {
             new Ball(BallColor.PURPLE, 59.5, 69.5)
     };
     Ball[] ballPreloads = {
-            new Ball(BallColor.GREEN, 0, 0),
-            new Ball(BallColor.PURPLE, 0, 0),
-            new Ball(BallColor.PURPLE, 0, 0)
+            new Ball(BallColor.GOLD, 0, 0),
+            new Ball(BallColor.GOLD, 0, 0),
+            new Ball(BallColor.GOLD, 0, 0)
     };
 
     // Hooked devices:
@@ -279,7 +280,6 @@ class DecodeSlowBotMechSim extends MechSim {
     // State:
     double accumulatedDeltaT;
     Ball intakeBall; // Ball in the intake, may be null
-    // List<Ball> slotBalls = new ArrayList<>(Arrays.asList(ballPreloads)); // Collections.nCopies(3, null));
     List<Ball> slotBalls = new ArrayList<>(Collections.nCopies(3, null));
     List<Ball> airBalls = new LinkedList<>(); // Balls flying through the air
     List<Ball> fieldBalls = new LinkedList<>(); // Pickable balls on the field
@@ -289,6 +289,8 @@ class DecodeSlowBotMechSim extends MechSim {
     double actualTransferPosition; // Current transfer servo position, [0, 1]
     double transferStartTime; // Time that a transfer started, zero when not transferring
     int colorSensorMask = -1; // Random 2-bit mask indicating which sensors return true data; -1 if reset
+    boolean hasIntaken = false; // True once any ball has been taken into the drum
+    boolean hasLaunched = false; // True once any ball has been launched
 
     // Initialize the beast.
     DecodeSlowBotMechSim() {
@@ -305,8 +307,10 @@ class DecodeSlowBotMechSim extends MechSim {
             return Color.BLACK;
         else if (ball.color == BallColor.PURPLE)
             return new Color(128, 0, 128);
-        else
+        else if (ball.color == BallColor.GREEN)
             return Color.GREEN;
+        else
+            return new Color(255, 215, 0); // Gold
     }
 
     // WilyHardwareMap calls this method when it creates a device, allowing us to substitute
@@ -557,6 +561,15 @@ class DecodeSlowBotMechSim extends MechSim {
             if (backwardFeederServo.getPower() < FEEDER_POWER) {
                 throw new RuntimeException("A transfer is requested when backward feeder servo isn't running. That won't work!");
             }
+            if (slotBalls.get(transferSlot) == null) {
+                if (!hasIntaken && !hasLaunched) {
+                    // A transfer has been requested there was no intake done. Assume that this
+                    // is Auto with preloads and populate the drum with three golden balls. We
+                    // make them gold balls so that we don't have to worry about getting the
+                    // ordering correct.
+                    slotBalls = new ArrayList<>(Arrays.asList(ballPreloads));
+                }
+            }
             if (slotBalls.get(transferSlot) != null) {
                 if (transferStartTime == 0) {
                     transferStartTime = time();
@@ -580,6 +593,7 @@ class DecodeSlowBotMechSim extends MechSim {
                     airBalls.add(ball);
                     slotBalls.set(transferSlot, null);
                     transferStartTime = 0;
+                    hasLaunched = true;
                 }
             }
         }
@@ -606,6 +620,7 @@ class DecodeSlowBotMechSim extends MechSim {
                     if (slotBalls.get(slot) == null) {
                         slotBalls.set(slot, intakeBall);
                         intakeBall = null;
+                        hasIntaken = true;
                     }
                 }
             }
