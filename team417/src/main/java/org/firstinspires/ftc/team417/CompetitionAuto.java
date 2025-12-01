@@ -10,7 +10,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.team417.apriltags.AprilTagDetector;
+import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
 import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
@@ -200,7 +200,7 @@ public class CompetitionAuto extends BaseOpMode {
                 .add("finish-button-1", new MenuFinishedButton());
 
 
-        while (!menu.isCompleted()) {
+        while (!menu.isCompleted() && !isStopRequested()) {
             // get x, y (stick) and select (A) input from controller
             // on Wily Works, this is x, y (wasd) and select (enter) on the keyboard
             menuInput.update(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.a);
@@ -254,25 +254,28 @@ public class CompetitionAuto extends BaseOpMode {
         // Assume unknown pattern unless detected otherwise.
         pattern = Pattern.UNKNOWN;
 
-        // Detect the pattern with the AprilTags from the camera!
-        // Wait for Start to be pressed on the Driver Hub!
-        // (This try-with-resources statement automatically calls detector.close() when it exits
-        //  the try-block.)
-        try (AprilTagDetector detector = new AprilTagDetector(hardwareMap)) {
+            // Detect the pattern with the AprilTags from the camera!
+            // Wait for Start to be pressed on the Driver Hub!
+            // (This try-with-resources statement automatically calls detector.close() when it exits
+            //  the try-block.)
+            try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
 
-            while (!isStarted() && !isStopRequested()) {
-                Pattern last = detector.detectPattern(chosenAlliance);
-                if (last != Pattern.UNKNOWN) {
-                    pattern = last;
+                while (opModeInInit()) {
+                    Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
+                    if (last != Pattern.UNKNOWN) {
+                        pattern = last;
+                    }
+
+                    telemetry.addData("Chosen alliance: ", chosenAlliance);
+                    telemetry.addData("Chosen movement: ", chosenMovement);
+                    telemetry.addData("Chosen wait time: ", waitTime);
+                    telemetry.addData("Last valid pattern: ", pattern);
+
+                    telemetry.update();
+                    if (isStopRequested()) {
+                        break;
+                    }
                 }
-
-                telemetry.addData("Chosen alliance: ", chosenAlliance);
-                telemetry.addData("Chosen movement: ", chosenMovement);
-                telemetry.addData("Chosen wait time: ", waitTime);
-                telemetry.addData("Last valid pattern: ", pattern);
-
-                telemetry.update();
-            }
         }
         if(chosenMovement == SlowBotMovement.NEAR) {
             mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
