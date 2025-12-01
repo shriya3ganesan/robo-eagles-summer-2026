@@ -76,15 +76,16 @@ public class CompetitionAuto extends BaseOpMode {
                         .stopAndAdd(new LaunchAction(mechGlob, pattern, countBalls))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
+                        .stopAndAdd(new IntakeAction(mechGlob, 1))
                         .setTangent(Math.toRadians(90))
                         .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90))
+                        .stopAndAdd(new IntakeAction(mechGlob, 0))
                         .setTangent(Math.toRadians(-90))
-                        .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
-
+                        .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
+                        .stopAndAdd(new LaunchAction(mechGlob, pattern, countBalls));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
-                            //3 launches
-                            //after disp intake
+
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
                             .setTangent(Math.toRadians(90))
                             .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90))
@@ -334,6 +335,21 @@ class LaunchAction extends RobotAction {
         return !mechGlob.isDoneLaunching();    //we are done
     }
 
+}
+class IntakeAction extends RobotAction {
+    double intakeSpeed;
+    MechGlob mechGlob;
+    public IntakeAction(MechGlob mechGlob, double intakeSpeed) {
+        this.intakeSpeed = intakeSpeed;
+        this.mechGlob = mechGlob;
+
+    }
+
+    @Override
+    public boolean run(double elapsedTime) {
+        mechGlob.intake(intakeSpeed);
+        return false;
+    }
 }
 class CountBalls {
     public int orderCount;   // 0, 1 or 2 to find color pattern
