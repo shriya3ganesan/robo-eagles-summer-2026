@@ -78,7 +78,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
     static double FAR_FLYWHEEL_VELOCITY = 1500;
     static double NEAR_FLYWHEEL_VELOCITY = 1500;
-    static double FLYWHEEL_TOP_SPIN = 0;
+    static double FLYWHEEL_BACK_SPIN = 300;
     static double TRANSFER_INACTIVE_POSITION = 0;
     static double TRANSFER_ACTIVE_POSITION = 1;
     static double REVERSE_INTAKE_SPEED = -1;
@@ -172,8 +172,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // set the motors to a braking behavior so it slows down faster when left trigger is pressed
-        motLLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motLLauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
@@ -267,11 +267,11 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
         if (launchDistance == LaunchDistance.NEAR) {
-            upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_TOP_SPIN);
-            lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_TOP_SPIN);
+            upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
+            lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
         } else {
-            upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_TOP_SPIN);
-            lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_TOP_SPIN);
+            upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
+            lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
         }
     }
     int findSlotFromPosition (double position, double [] positions) {

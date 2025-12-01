@@ -31,7 +31,7 @@ public class LauncherTest extends CompetitionTeleOp {
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
 
-        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+
         servoBLaunchFeeder.setDirection(CRServo.Direction.REVERSE);
 
     }
@@ -45,14 +45,14 @@ public class LauncherTest extends CompetitionTeleOp {
 
             // Spin up launcher flywheels to set flywheel velocities and start feeder wheels
             if (gamepad2.dpadUpWasPressed()) {
-                motULauncher.setVelocity(ComplexMechGlob.FAR_FLYWHEEL_VELOCITY + (0.5 * ComplexMechGlob.FLYWHEEL_TOP_SPIN));
-                motLLauncher.setVelocity(ComplexMechGlob.FAR_FLYWHEEL_VELOCITY - (0.5 * ComplexMechGlob.FLYWHEEL_TOP_SPIN));
+                motULauncher.setVelocity(ComplexMechGlob.FAR_FLYWHEEL_VELOCITY - (0.5 * ComplexMechGlob.FLYWHEEL_BACK_SPIN));
+                motLLauncher.setVelocity(ComplexMechGlob.FAR_FLYWHEEL_VELOCITY + (0.5 * ComplexMechGlob.FLYWHEEL_BACK_SPIN));
                 servoBLaunchFeeder.setPower(ComplexMechGlob.FEEDER_POWER);
                 servoFLaunchFeeder.setPower(ComplexMechGlob.FEEDER_POWER);
 
             } else if (gamepad2.dpadDownWasPressed()) {
-                motULauncher.setVelocity(ComplexMechGlob.NEAR_FLYWHEEL_VELOCITY + (0.5 * ComplexMechGlob.FLYWHEEL_TOP_SPIN));
-                motLLauncher.setVelocity(ComplexMechGlob.NEAR_FLYWHEEL_VELOCITY - (0.5 * ComplexMechGlob.FLYWHEEL_TOP_SPIN));
+                motULauncher.setVelocity(ComplexMechGlob.NEAR_FLYWHEEL_VELOCITY - (0.5 * ComplexMechGlob.FLYWHEEL_BACK_SPIN));
+                motLLauncher.setVelocity(ComplexMechGlob.NEAR_FLYWHEEL_VELOCITY + (0.5 * ComplexMechGlob.FLYWHEEL_BACK_SPIN));
                 servoBLaunchFeeder.setPower(ComplexMechGlob.FEEDER_POWER);
                 servoFLaunchFeeder.setPower(ComplexMechGlob.FEEDER_POWER);
             }
