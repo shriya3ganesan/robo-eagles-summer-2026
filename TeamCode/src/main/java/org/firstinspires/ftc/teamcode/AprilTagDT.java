@@ -122,10 +122,10 @@ public class AprilTagDT extends LinearOpMode {
     private final double JITTER_FORWARD_TIME = 0.10;
 
     // AprilTag lock-on constants
-    private final double TAG_LOCK_KP = 0.02;        // Proportional gain for rotation
-    private final double TAG_LOCK_TOLERANCE = 2.0;  // Degrees - how close is "locked on"
+    private final double TAG_LOCK_KP = 0.09;        // Proportional gain for rotation
+    private final double TAG_LOCK_TOLERANCE = 0.5;  // Degrees - how close is "locked on"
     private final double TAG_LOCK_MIN_POWER = 0.05; // Minimum rotation power
-    private final double TAG_LOCK_MAX_POWER = 0.4;  // Maximum rotation power
+    private final double TAG_LOCK_MAX_POWER = 0.7;  // Maximum rotation power
 
     private double tagX = 0.0;
     private double tagY = 0.0;
@@ -173,9 +173,7 @@ public class AprilTagDT extends LinearOpMode {
         Trigger.setDirection(Servo.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
-        telemetry.addData("Status", "Initialized");
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData("Controls", "Left Trigger = AprilTag Lock-On");
+        telemetry.addData("Status: ", "Initialized");
         telemetry.update();
 
         // Set initial positions
@@ -185,7 +183,6 @@ public class AprilTagDT extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        telemetry.setMsTransmissionInterval(11);
         limelight.start();
         limelight.pipelineSwitch(0);
         // run until the end of the match (driver presses STOP)
@@ -199,9 +196,10 @@ public class AprilTagDT extends LinearOpMode {
                     telemetry.addData("ty", result.getTy());
                     telemetry.addData("Botpose", botpose.toString());
                 }
-            else{
-                telemetry.addData("no limelight", "at all");
+                else{
+                    telemetry.addData("no limelight read", ":(");
                 }
+            }
 
             double max;
 
@@ -210,50 +208,47 @@ public class AprilTagDT extends LinearOpMode {
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
             double lateral =  gamepad1.left_stick_x;
             double yaw = -gamepad1.right_stick_x;
-            /*
+
             // ===== APRILTAG LOCK-ON FEATURE =====
-            // Left trigger activates AprilTag lock-on mode
-            if (gamepad1.left_trigger > 0.1 && tagVisible) {
-                // Use proportional control to align to the tag
-                // tagBearing tells us the horizontal angle to the tag
-                // Negative bearing = tag is to the left, positive = tag is to the right
+            // Left bumper activates AprilTag lock-on mode
+            if (gamepad1.left_bumper && result != null && result.isValid()) {
+                // Get horizontal offset from Limelight (tx)
+                double tx = result.getTx();
 
-                double error = -tagBearing;  // Error in degrees
+                // Check if we're within tolerance
+                isLockedOn = Math.abs(tx) < TAG_LOCK_TOLERANCE;
 
-                // Check if we're locked on (within tolerance)
-                if (Math.abs(error) < TAG_LOCK_TOLERANCE) {
-                    isLockedOn = true;
-                    yaw = 0.0;  // No rotation needed, we're aligned!
-                }
-                else {
-                    isLockedOn = false;
-                    // Calculate proportional control
-                    yaw = error * TAG_LOCK_KP;
+                // Calculate proportional correction
+                double rotationCorrection = tx * TAG_LOCK_KP;
 
-                    // Apply minimum power to overcome friction
-                    if (Math.abs(yaw) > 0 && Math.abs(yaw) < TAG_LOCK_MIN_POWER) {
-                        yaw = Math.copySign(TAG_LOCK_MIN_POWER, yaw);
-                    }
+                // Clamp the correction to min/max power
+                rotationCorrection = Range.clip(rotationCorrection, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
 
-                    // Clamp to max power
-                    yaw = Range.clip(yaw, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
+                // Apply minimum power if not locked on
+                if (!isLockedOn && Math.abs(rotationCorrection) < TAG_LOCK_MIN_POWER) {
+                    rotationCorrection = TAG_LOCK_MIN_POWER * Math.signum(rotationCorrection);
                 }
 
-                telemetry.addData(" TAG LOCK", "ACTIVE");
-                telemetry.addData("Bearing Error", "%.1f°", error);
+                // Override yaw with our correction
+                yaw = -rotationCorrection;
+
+                tagVisible = true;
+                telemetry.addData("TAG LOCK", "ACTIVE");
                 telemetry.addData("Lock Status", isLockedOn ? "🟢 LOCKED ON" : "🟡 ALIGNING...");
-                telemetry.addData("Rotation Power", "%.2f", yaw);
+                telemetry.addData("TX Offset", "%.2f", tx);
+                telemetry.addData("Yaw Correction", "%.2f", yaw);
             }
             else {
                 // Normal manual control
                 yaw = -gamepad1.right_stick_x;
+                tagVisible = false;
                 isLockedOn = false;
 
-                if (gamepad1.left_trigger > 0.1 && !tagVisible) {
-                    telemetry.addData(" TAG LOCK", " NO TAG VISIBLE");
+                if (gamepad1.left_bumper) {
+                    telemetry.addData("⚠️ Tag Lock", "No AprilTag visible");
                 }
             }
-                    */
+
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             double frontLeftPower  = (axial + lateral + yaw) * 1.25;
             double frontRightPower = (axial - lateral - yaw) * 0.75;
@@ -399,7 +394,7 @@ public class AprilTagDT extends LinearOpMode {
             telemetry.addData("Launch State", launchState);
             telemetry.addData("Intake Jitter", intakeJitterState);
             telemetry.addLine("\n--- GAMEPAD 1 (DRIVER) ---");
-            telemetry.addData("Left Trigger", "AprilTag Lock-On");
+            telemetry.addData("Left Bumper", "AprilTag Lock-On");
             telemetry.addLine("\n--- GAMEPAD 2 (OPERATOR) ---");
             telemetry.addData("Left Trigger", "Quick Shot (1.0s)");
             telemetry.addData("Right Trigger", "Power Shot (2.2s)");
@@ -407,11 +402,11 @@ public class AprilTagDT extends LinearOpMode {
             telemetry.addData("Y Button", "Reverse Intake");
             telemetry.addData("X Button", "Intake Jitter");
             telemetry.addData("B Button", "Slow Intake");
-
+            telemetry.update();
 
         }
     }
-}
+
     public void configurePinpoint(){
         pinpoint.setOffsets(-84.0, -168.0, DistanceUnit.MM);
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
