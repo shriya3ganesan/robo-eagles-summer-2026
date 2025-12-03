@@ -6,7 +6,6 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
@@ -44,6 +43,71 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+
+// Helpers for using HTML with the FTC Driver Station.
+/** @noinspection unused*/
+class Html {
+    // Showing a less-than or greater-than sign requires special encodings when HTML is enabled:
+    public final static String LESS_THAN = "&lt;"; // String to show  a "<"
+    public final static String GREATER_THAN = "&gt;"; // String to show a ">"
+
+    // Enable the display on telemetry for HTML.
+    public static void initialize(Telemetry telemetry) { initialize(telemetry, false); }
+    public static void initialize(Telemetry telemetry, boolean monospace) {
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
+        if (monospace) {
+            telemetry.addLine("<tt>");
+        }
+    }
+
+    // Repeat the string for the specified count.
+    private static String repeat(int count, String string) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            result.append(string);
+        }
+        return result.toString();
+    }
+
+    // Set the foreground font color for a string. Color must be in the format" #dc3545".
+    public static String color(String color, String string) {
+        return "<font color='" + color + "'>" + string + "</font>";
+    }
+
+    // Set the background color for a string. Color must be in the format" #dc3545".
+    public static String background(String backgroundColor, String string) {
+        return "<span style='background: " + backgroundColor + "'>" + string + "</span>";
+    }
+
+    // Set the foreground and background colors for a string. Colors must be in the format" #dc3545".
+    public static String colors(String foregroundColor, String backgroundColor, String string) {
+        return "<span style='color: " + foregroundColor + "; background: " + backgroundColor + "'>" + string + "</span>";
+    }
+
+    // Make a string big according to the specified count: 1.25^count times bigger.
+    public static String big(int count, String string) {
+        return repeat(count, "<big>") + string + repeat(count, "</big>");
+    }
+
+    // Make a string smaller according to the specified count: 0.8^count times smaller.
+    public static String small(int count, String string) {
+        return repeat(count, "<small>") + string + repeat(count, "</small>");
+    }
+
+    // Leading spaces on a line will be trimmed unless this is used:
+    public static String spaces(int count) {
+        return repeat(count / 4, "&emsp;") + repeat(count % 4, "&nbsp;");
+    }
+
+    // One-liners:
+    public static String bold(String string) { return "<b>" + string + "</b>"; }
+    public static String italic(String string) { return "<i>" + string + "</i>"; }
+    public static String monospace(String string) { return "<tt>" + string + "</tt>"; }
+    public static String underline(String string) { return "<u>" + string + "</u>"; }
+    public static String superscript(String string) { return "<sup>" + string + "</sup>"; }
+    public static String subscript(String string) { return "<sub>" + string + "</sub>"; }
+    public static String strikethrough(String string) { return "<del>" + string + "</del>"; }
+}
 
 @TeleOp(name="Configuration Tester", group="Utility")
 @SuppressLint("DefaultLocale")
@@ -90,7 +154,7 @@ public class ConfigurationTester extends LinearOpMode {
             }
             for (int i = firstDisplayLine; i < options.size(); i++) {
                 if (i == current) {
-                    ui.line(htmlBackground(Ui.HIGHLIGHT_COLOR,
+                    ui.line(Html.background(Ui.HIGHLIGHT_COLOR,
                             "\u25c6 " + options.get(i))); // Solid circle
                 } else {
                     ui.line("\u25c7 " + options.get(i)); // Hollow circle
@@ -154,7 +218,7 @@ public class ConfigurationTester extends LinearOpMode {
 
     // Time, in seconds:
     static double time() {
-        return nanoTime() * 1e-9; 
+        return nanoTime() * 1e-9;
     }
 
     // Unusually, we do all our work before Start is pressed, rather than after. That's so that
@@ -164,48 +228,14 @@ public class ConfigurationTester extends LinearOpMode {
         return !this.isStopRequested() && !isStarted();
     }
 
-    // Set the foreground font color for a string. Color must be in the format" #dc3545".
-    static String htmlForeground(String color, String string, Object... args) {
-        return String.format("<font color='%s'>%s</font>", color, String.format(string, args));
-    }
-
-    // Set the background color for a string. Color must be in the format" #dc3545".
-    static String htmlBackground(String backgroundColor, String string, Object... args) {
-        return String.format("<span style='background: %s'>%s</span>", backgroundColor, String.format(string, args));
-    }
-
-    // Set the foreground and background colors for a string. Colors must be in the format" #dc3545".
-    /** @noinspection unused*/
-    static String htmlColors(String foregroundColor, String backgroundColor, String string, Object... args) {
-        return String.format("<span style='color: %s; background: %s'>%s</span>", foregroundColor, backgroundColor, String.format(string, args));
-    }
-
-    // Make a string big according to the specified size: 1.5^size.
-    static String htmlBig(int size, String string, Object... args) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < size; i++) {
-            result.append("<big>");
-        }
-        result.append(String.format(string, args));
-        for (int i = 0; i < size; i++) {
-            result.append("</big>");
-        }
-        return result.toString();
-    }
-
-    // Make a string bold.
-    static String htmlBold(String string, Object... args) {
-        return "<b>" + String.format(string, args) + "</b>";
-    }
-
     // Convert a string into a red error message.
     static String error(String string, Object... args) {
-        return htmlForeground("#DC3545", string, args);
+        return Html.color("#DC3545", String.format(string, args));
     }
 
     // Style for displaying gamepad control names.
     static String buttonName(String button) {
-        return htmlBackground("#404040", button);
+        return Html.background("#404040", button);
     }
 
     String format(String format, Object... args) {
@@ -258,10 +288,10 @@ public class ConfigurationTester extends LinearOpMode {
             return false;
         }
         String gray = "#808080";
-        ui.line(htmlBig(2, htmlBold("\"%s\"", testDescriptor.deviceName)));
-        ui.line(htmlForeground(gray, "Description: %s", testDescriptor.hardwareDevice.getDeviceName()));
-        ui.line(htmlForeground(gray, "Connection: %s", testDescriptor.hardwareDevice.getConnectionInfo()));
-        ui.line(htmlForeground(gray, "Loop I/O performance: %s", loopTimer.get()));
+        ui.line(Html.big(2,Html.bold("\"%s\"")), testDescriptor.deviceName);
+        ui.line(Html.color(gray, "Description: %s"), testDescriptor.hardwareDevice.getDeviceName());
+        ui.line(Html.color(gray, "Connection: %s"), testDescriptor.hardwareDevice.getConnectionInfo());
+        ui.line(Html.color(gray, "Loop I/O performance: %s"), loopTimer.get());
         return true;
     }
 
@@ -284,7 +314,7 @@ public class ConfigurationTester extends LinearOpMode {
             this.telemetry = telemetry;
             this.buffer = new StringBuilder();
             // Enable our extensive use of HTML:
-            telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
+            Html.initialize(telemetry);
             // Change the update interval from 250ms to 50ms for a more responsive UI:
             telemetry.setMsTransmissionInterval(50);
         }
@@ -352,8 +382,8 @@ public class ConfigurationTester extends LinearOpMode {
 
         // Show a splash screen while we initialize:
         double splashTime = time();
-        ui.line(htmlBig(5, htmlForeground(Ui.HIGHLIGHT_COLOR, htmlBold("Configuration Tester!"))));
-        ui.line(htmlBig(2, "By Swerve Robotics, Woodinville\n"));
+        ui.line(Html.big(5, Html.color(Ui.HIGHLIGHT_COLOR, Html.bold("Configuration Tester!"))));
+        ui.line(Html.big(2, "By Swerve Robotics, Woodinville\n"));
         ui.line("Initializing...");
         ui.update();
 
@@ -411,7 +441,7 @@ public class ConfigurationTester extends LinearOpMode {
         int selection = 0;
         while (isActive()) {
             String header = format("Here's your entire configuration. dpad to navigate, A to select. Tap %s to quit.",
-                    htmlForeground("#05BD05", "\u25B6"));
+                    Html.color("#05BD05", "\u25B6"));
 
             selection = menu(header + "\n", 6, options, selection, true);
             testDescriptor = testList.get(selection);
@@ -435,9 +465,12 @@ public class ConfigurationTester extends LinearOpMode {
         IMU imu = (IMU) device;
         do {
             YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
-            ui.line("Yaw: " + htmlBig(2, "%.2f\u00b0", angles.getYaw(AngleUnit.DEGREES)) +
-                    ", Pitch: " + htmlBig(2, "%.2f\u00b0", angles.getPitch(AngleUnit.DEGREES)) +
-                    ", Roll: " + htmlBig(2, "%.2f\u00b0", angles.getRoll(AngleUnit.DEGREES)));
+            ui.line("Yaw: " + Html.big(2, "%.2f\u00b0") +
+                    ", Pitch: " + Html.big(2, "%.2f\u00b0") +
+                    ", Roll: " + Html.big(2, "%.2f\u00b0"),
+                    angles.getYaw(AngleUnit.DEGREES),
+                    angles.getPitch(AngleUnit.DEGREES),
+                    angles.getRoll(AngleUnit.DEGREES));
         } while (prompt());
     }
 
@@ -445,7 +478,7 @@ public class ConfigurationTester extends LinearOpMode {
     void testVoltage(HardwareDevice device) {
         VoltageSensor voltage = (VoltageSensor) device;
         do {
-            ui.line(htmlBig(3, "Voltage: %.2f", voltage.getVoltage()));
+            ui.line(Html.big(3, "Voltage: %.2f"), voltage.getVoltage());
         } while (prompt());
     }
 
@@ -456,7 +489,7 @@ public class ConfigurationTester extends LinearOpMode {
         String encoderStatus = "";
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         do {
-            ui.line(htmlBig(3, "Power: %.2f", power));
+            ui.line(Html.big(3, "Power: %.2f"), power);
             power = stickValue(gamepad1.right_stick_y, power, -1, 1);
             if (gamepad1.xWasPressed())
                 power = 0;
@@ -488,7 +521,7 @@ public class ConfigurationTester extends LinearOpMode {
         CRServo crServo = (CRServo) device;
         double power = crServo.getPower();
         do {
-            ui.line(htmlBig(3, "Power: %.2f", power));
+            ui.line(Html.big(3, "Power: %.2f"), power);
             power = stickValue(gamepad1.right_stick_y, power, -1, 1);
             if (gamepad1.xWasPressed())
                 power = 0;
@@ -502,7 +535,7 @@ public class ConfigurationTester extends LinearOpMode {
         double position = servo.getPosition();
         boolean enabled = false;
         do {
-            ui.line(htmlBig(3, "Position: %.2f", position));
+            ui.line(Html.big(3, "Position: %.2f"), position);
             position = stickValue(gamepad1.right_stick_y, position, 0, 1);
             if (enabled)
                 servo.setPosition(position);
@@ -517,7 +550,7 @@ public class ConfigurationTester extends LinearOpMode {
     void testDistance(HardwareDevice device) {
         DistanceSensor distance = (DistanceSensor) device;
         do {
-            ui.line(htmlBig(2, "Distance: %.2fcm", distance.getDistance(DistanceUnit.CM)));
+            ui.line(Html.big(2, "Distance: %.2fcm"), distance.getDistance(DistanceUnit.CM));
         } while (prompt());
     }
 
@@ -530,10 +563,10 @@ public class ConfigurationTester extends LinearOpMode {
         String promptText;
         do {
             if (mode == DigitalChannel.Mode.INPUT) {
-                ui.line(htmlBig(2, "Input: %s", channel.getState()));
+                ui.line(Html.big(2, "Input: %s"), channel.getState());
                 promptText = "Y to switch output mode";
             } else {
-                ui.line(htmlBig(2, "Output: %s", outputValue));
+                ui.line(Html.big(2, "Output: %s"), outputValue);
                 promptText = "A to toggle value, Y to switch output mode";
                 if (gamepad1.aWasPressed())
                     outputValue = !outputValue;
@@ -565,7 +598,7 @@ public class ConfigurationTester extends LinearOpMode {
         AnalogInput input = (AnalogInput) device;
         do {
             ui.line("Max voltage: %.2f", input.getMaxVoltage());
-            ui.line(htmlBig(2, "Voltage: %.2f", input.getVoltage()));
+            ui.line(Html.big(2, "Voltage: %.2f"), input.getVoltage());
         } while (prompt());
     }
 
@@ -586,17 +619,32 @@ public class ConfigurationTester extends LinearOpMode {
 
             SparkFunOTOS.Pose2D pose = otos.getPosition();
             ui.line("x: %.2f\", y: %.2f\", heading: %.2f°", pose.x, pose.y, pose.h);
-            ui.line(htmlBig(2, "Status: %s", otos.selfTest() ? "Good" : "Bad"));
+            ui.line(Html.big(2, "Status: %s"), otos.selfTest() ? "Good" : "Bad");
         } while (prompt());
     }
 
     // Test the GoBilda Pinpoint odometry computer.
     void testPinpoint(HardwareDevice device) {
         GoBildaPinpointDriver pinpoint = (GoBildaPinpointDriver) device;
+        int xOr = 0;
+        int yOr = 0;
         do {
+            pinpoint.update();
+            int xEncoder = pinpoint.getEncoderX();
+            int yEncoder = pinpoint.getEncoderY();
+            xOr |= xEncoder;
+            yOr |= yEncoder;
+
+            ui.line("X encoder: %d, Y encoder: %d", xEncoder, yEncoder);
+            if (xOr == 0 || yOr == 0) {
+                ui.line(error("Turn both pod wheels manually to verify wiring. " +
+                        "The encoder values shouldn't stay at zero."));
+            }
+
             int loopTime = pinpoint.getLoopTime();
             double frequency = pinpoint.getFrequency();
             ui.line("Loop time: %d, frequency: %.1f", loopTime, frequency);
+
             // The GoBilda driver code says to contact tech support if the following
             // conditions are consistently seen:
             if ((loopTime < 500) || (loopTime > 1100)) {
@@ -606,14 +654,11 @@ public class ConfigurationTester extends LinearOpMode {
                 ui.line(error("Bad frequency, contact tech@gobilda.com"));
             }
 
-            pinpoint.update();
-            ui.line("X encoder: %d, y encoder: %d", pinpoint.getEncoderX(), pinpoint.getEncoderY());
-
             GoBildaPinpointDriver.DeviceStatus status = pinpoint.getDeviceStatus();
             if (status == GoBildaPinpointDriver.DeviceStatus.READY)
-                ui.line(htmlBig(2, "Status: Good"));
+                ui.line(Html.big(0, "Reported status: Good"));
             else if (status == GoBildaPinpointDriver.DeviceStatus.FAULT_BAD_READ)
-                ui.line(htmlBig(2, "Status: Ok") + "(bad read)");
+                ui.line(Html.big(0, "Reported status: Ok") + "(bad read)");
             else {
                 String error = "Unknown error";
                 switch (status) {
@@ -636,7 +681,7 @@ public class ConfigurationTester extends LinearOpMode {
                         error = "IMU runaway";
                         break;
                 }
-                ui.line(error("Error: " + error));
+                ui.line(error("Status error: " + error));
             }
         } while (prompt());
     }
@@ -654,7 +699,7 @@ public class ConfigurationTester extends LinearOpMode {
             NormalizedRGBA rgba = sensor.getNormalizedColors();
             Color.colorToHSV(rgba.toColor(), hsv);
             String color = String.format("#%06x", rgba.toColor() & 0xffffff); // Color in hex
-            ui.line("Color: %s", htmlBig(3, htmlForeground(color, "\u25a0"))); // Box
+            ui.line("Color: %s", Html.big(3, Html.color(color, "\u25a0"))); // Box
             ui.line("Normalized ARGB: (%.2f, %.2f, %.2f)", rgba.red, rgba.green, rgba.blue);
             ui.line("HSV: (%.2f, %.2f, %.2f)", hsv[0], hsv[1], hsv[2]);
 

@@ -84,7 +84,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
     static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
-    static double VOLTAGE_TOLERANCE = 0.05; //THIS IS AN EPSILON AS WELLLLLL
+    static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
 
 
     ElapsedTime transferTimer;
@@ -102,10 +102,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     WaitState waitState = WaitState.IDLE;
     // arrays with placeholder values for servo positions and voltages relative to intake and launch
-    double [] INTAKE_POSITIONS = {0, 1, 2};
-    double [] INTAKE_VOLTS = {0, 1, 2};
-    double [] LAUNCH_POSITIONS = {0, 1, 2};
-    double [] LAUNCH_VOLTS = {0, 1, 2};
+    double [] INTAKE_POSITIONS = {0.067, 0.44, 0.803};
+    double [] INTAKE_VOLTS = {2.94, 1.83, 0.74};
+    double [] LAUNCH_POSITIONS = {0.258, 0.627, 1};
+    double [] LAUNCH_VOLTS = {2.37, 1.27, 0.155};
     double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
     double upperLaunchVelocity;
@@ -179,8 +179,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
         motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
-        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
-        servoBLaunchFeeder.setDirection(CRServo.Direction.REVERSE);
+        motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        setLaunchVelocity(LaunchDistance.NEAR);
 
 
     }
@@ -243,7 +244,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (intakeSlot != -1) {
             expectedVolts = INTAKE_VOLTS[intakeSlot];
         } else {
-             expectedVolts = LAUNCH_VOLTS[launchSlot];
+            expectedVolts = LAUNCH_VOLTS[launchSlot];
         }
         return Math.abs(analogDrum.getVoltage() - expectedVolts) <= VOLTAGE_TOLERANCE;
     }

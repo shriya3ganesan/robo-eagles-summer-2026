@@ -33,13 +33,14 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+import com.qualcomm.hardware.limelightvision.LLResultTypes.CalibrationResult;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.util.SerialNumber;
 
 import org.firstinspires.ftc.robotcore.internal.usb.EthernetOverUsbSerialNumber;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -51,8 +52,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import com.qualcomm.hardware.limelightvision.LLResultTypes.*;
-import com.qualcomm.hardware.limelightvision.LLFieldMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
