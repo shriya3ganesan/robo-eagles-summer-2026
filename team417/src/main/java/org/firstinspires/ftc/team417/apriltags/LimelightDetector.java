@@ -32,6 +32,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.team417.apriltags;
 
+import android.annotation.SuppressLint;
+
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
@@ -40,7 +43,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.team417.CompetitionAuto;
 
@@ -49,22 +51,22 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/*
+/**
  * This class is used to detect AprilTags using the Limelight3A Vision Sensor.
  *
  * @see <a href="https://limelightvision.io/">Limelight</a>
- *
+ * <p>
  * Notes on configuration:
- *
+ * <p>
  *   The device presents itself, when plugged into a USB port on a Control Hub as an ethernet
  *   interface.  A DHCP server running on the Limelight automatically assigns the Control Hub an
  *   ip address for the new ethernet interface.
- *
+ * <p>
  *   Since the Limelight is plugged into a USB port, it will be listed on the top level configuration
  *   activity along with the Control Hub Portal and other USB devices such as webcams.  Typically
  *   serial numbers are displayed below the device's names.  In the case of the Limelight device, the
  *   Control Hub's assigned ip address for that ethernet interface is used as the "serial number".
- *
+ * <p>
  *   Tapping the Limelight's name, transitions to a new screen where the user can rename the Limelight
  *   and specify the Limelight's ip address.  Users should take care not to confuse the ip address of
  *   the Limelight itself, which can be configured through the Limelight settings page via a web browser,
@@ -75,7 +77,7 @@ public class LimelightDetector implements Closeable {
     /**
      * The variable to store our instance of the AprilTag processor.
      */
-    private Limelight3A limelight;
+    private final Limelight3A limelight;
 
     /**
      * The variable for how long ago the detection last changed.
@@ -110,6 +112,7 @@ public class LimelightDetector implements Closeable {
     /**
      * Add telemetry about AprilTag detections.
      */
+    @SuppressLint("DefaultLocale")
     public Pattern detectPatternAndTelemeter(CompetitionAuto.Alliance alliance, Telemetry telemetry, boolean verbose) {
         LLResult result = limelight.getLatestResult();
 
@@ -124,7 +127,7 @@ public class LimelightDetector implements Closeable {
 
             if (result.isValid()) {
                 // Access general information
-                Pose3D botpose = result.getBotpose();
+                Pose3D botPose = result.getBotpose();
                 double captureLatency = result.getCaptureLatency();
                 double targetingLatency = result.getTargetingLatency();
                 double parseLatency = result.getParseLatency();
@@ -137,7 +140,7 @@ public class LimelightDetector implements Closeable {
                 telemetry.addData("ty", result.getTy());
                 telemetry.addData("tync", result.getTyNC());
 
-                telemetry.addData("Botpose", botpose.toString());
+                telemetry.addData("Botpose", botPose.toString());
 
 
                 // Access fiducial results
@@ -160,7 +163,7 @@ public class LimelightDetector implements Closeable {
         // The `\\u...` are escape sequences for green and purple circle emojis.
         // \uD83D\uDFE3 -> Purple circle
         // \uD83D\uDFE2 -> Green circle
-        // \u26AA -> White circle
+        // ⚪ -> White circle
         switch (pattern) {
             case PPG:
                 patternDisplay = "\uD83D\uDFE3\uD83D\uDFE3\uD83D\uDFE2";
@@ -172,7 +175,7 @@ public class LimelightDetector implements Closeable {
                 patternDisplay = "\uD83D\uDFE2\uD83D\uDFE3\uD83D\uDFE3";
                 break;
             default:
-                patternDisplay = "\u26AA\u26AA\u26AA";
+                patternDisplay = "⚪⚪⚪";
                 break;
         }
 
@@ -273,7 +276,7 @@ public class LimelightDetector implements Closeable {
     /**
      * Detect the pose of the robot with the AprilTag.
      */
-    public Pose2D detectRobotPose() {
+    public Pose2d detectRobotPose() {
         LLResult result = limelight.getLatestResult();
 
         if (result.isValid()) {
@@ -289,18 +292,20 @@ public class LimelightDetector implements Closeable {
                     .min(Comparator.comparingDouble(aprilTagDetection ->
                             Math.abs(aprilTagDetection.getTargetXDegrees()))).orElse(null);
 
+            if (detection == null) {
+                return null;
+            }
+
             Pose3D pose = detection.getRobotPoseFieldSpace();
 
-            return new Pose2D(
-                    pose.getPosition().unit,
+            return new Pose2d(
                     pose.getPosition().x,
                     pose.getPosition().y,
-                    AngleUnit.RADIANS,
                     pose.getOrientation().getYaw(AngleUnit.RADIANS));
         }
 
         return null;
-    };
+    }
 
     /**
      * Release the resources taken up by the vision portal.

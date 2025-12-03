@@ -6,10 +6,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
@@ -38,10 +36,13 @@ public class CompetitionTeleOp extends BaseOpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
+    LimelightDetector detector = new LimelightDetector(hardwareMap);
+    MecanumDrive drive;
+
     @Override
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
+        drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
 
         // Initialize motors, servos, LEDs
@@ -86,11 +87,11 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             //add slowbot teleop controls here
             if (gamepad2.yWasPressed()) {
-                mechGlob.launch(RequestedColor.EITHER);
+                mechGlob.launch(RequestedColor.EITHER, this);
             } else if (gamepad2.bWasPressed()) {
-                mechGlob.launch(RequestedColor.PURPLE);
+                mechGlob.launch(RequestedColor.PURPLE, this);
             } else if (gamepad2.aWasPressed()) {
-                mechGlob.launch(RequestedColor.GREEN);
+                mechGlob.launch(RequestedColor.GREEN, this);
             }
             if (gamepad2.dpadUpWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.FAR);

@@ -44,18 +44,21 @@ public class CompetitionAuto extends BaseOpMode {
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
     TextMenu menu = new TextMenu();
+    LimelightDetector detector = new LimelightDetector(hardwareMap);
     MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
     Pattern pattern;
     Alliance chosenAlliance;
     SlowBotMovement chosenMovement;
     double intakeCycles;
+    MecanumDrive drive;
+
     public Action getPath(SlowBotMovement chosenMovement, Alliance chosenAlliance, double intakeCycles) {
         Pose2d startPose = new Pose2d(0, 0, 0);
 
 
         Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
+        drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
 
         PoseMap poseMap = pose -> new Pose2dDual<>(
@@ -72,15 +75,15 @@ public class CompetitionAuto extends BaseOpMode {
         switch (chosenMovement) {
             case NEAR:
                 trajectoryAction.setTangent(Math.toRadians(-51))
-                    .splineToConstantHeading(new Vector2d(-36,36), Math.toRadians(-51))
-                    //3 launches
-                    //after disp intake
-                    .setTangent(Math.toRadians(0))
-                    .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
-                    .setTangent(Math.toRadians(90))
-                    .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
-                    .setTangent(Math.toRadians(-90))
-                    .splineToSplineHeading(new Pose2d(-36,36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
+                        .splineToConstantHeading(new Vector2d(-36, 36), Math.toRadians(-51))
+                        //3 launches
+                        //after disp intake
+                        .setTangent(Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
+                        .setTangent(Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)); //go to launch position
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
 
@@ -114,11 +117,11 @@ public class CompetitionAuto extends BaseOpMode {
                 }
 
 
-                trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
+                trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(36,60), Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90))
                         .setTangent(Math.toRadians(-90))
-                        .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90));  //go to launch position
+                        .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90));  //go to launch position
                 if (intakeCycles > 1) {
 
 
@@ -134,11 +137,11 @@ public class CompetitionAuto extends BaseOpMode {
                     //after disp intake action
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
-                                .splineToSplineHeading(new Pose2d(-12,32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest to goal
+                                .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest to goal
                                 .setTangent(Math.toRadians(90))
-                                .splineToConstantHeading(new Vector2d(-12,55), Math.toRadians(90))
+                                .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90))
                                 .setTangent(Math.toRadians(-90))
-                                .splineToSplineHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
+                                .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)); //go to launch position
 
                     }
                 }
@@ -147,30 +150,26 @@ public class CompetitionAuto extends BaseOpMode {
                 // 3 launch actions
                 // after disp intake action
                 trajectoryAction.setTangent(Math.toRadians(180))
-                    .splineToLinearHeading(new Pose2d(60,61, Math.toRadians(0)), Math.toRadians(0))
-                    .setTangent(Math.toRadians(-90))
-                    .splineToLinearHeading(new Pose2d(54,12, Math.toRadians(157.5)), Math.toRadians(-90))
-                    // 3 launch actions
-                    .setTangent(Math.toRadians(90))
-                    .splineToLinearHeading(new Pose2d(50,32,Math.toRadians(180)), Math.toRadians(180));
+                        .splineToLinearHeading(new Pose2d(60, 61, Math.toRadians(0)), Math.toRadians(0))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
+                        // 3 launch actions
+                        .setTangent(Math.toRadians(90))
+                        .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
                 break;
             case FAR_MINIMAL:
                 trajectoryAction.setTangent(Math.toRadians(90))
-                    .splineToLinearHeading(new Pose2d(48,32,Math.toRadians(180)), Math.toRadians(180))
-                    .build();
+                        .splineToLinearHeading(new Pose2d(48, 32, Math.toRadians(180)), Math.toRadians(180))
+                        .build();
                 break;
         }
         return trajectoryAction.build();
 
 
-
-
-
     }
+
     @Override
     public void runOpMode() {
-
-
 
 
         Pose2d startPose = new Pose2d(0, 0, 0);
@@ -181,26 +180,25 @@ public class CompetitionAuto extends BaseOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
 
 
-
         // Text menu for FastBot
 
 
-            // Text menu for SlowBot
-            menu.add(new MenuHeader("AUTO SETUP"))
-                    .add() // empty line for spacing
-                    .add("Pick an alliance:")
-                    .add("alliance-picker-1", Alliance.class) // enum selector shortcut
-                    .add()
-                    .add("Pick a movement:")
-                    .add("movement-picker-1", SlowBotMovement.class) // enum selector shortcut
-                    .add()
-                    .add("Intake Cycles:")
-                    .add("intake-slider", new MenuSlider(minIntakes, maxIntakes))
-                    .add()
-                    .add("Wait time:")
-                    .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
-                    .add()
-                    .add("finish-button-1", new MenuFinishedButton());
+        // Text menu for SlowBot
+        menu.add(new MenuHeader("AUTO SETUP"))
+                .add() // empty line for spacing
+                .add("Pick an alliance:")
+                .add("alliance-picker-1", Alliance.class) // enum selector shortcut
+                .add()
+                .add("Pick a movement:")
+                .add("movement-picker-1", SlowBotMovement.class) // enum selector shortcut
+                .add()
+                .add("Intake Cycles:")
+                .add("intake-slider", new MenuSlider(minIntakes, maxIntakes))
+                .add()
+                .add("Wait time:")
+                .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
+                .add()
+                .add("finish-button-1", new MenuFinishedButton());
 
 
         while (!menu.isCompleted() && !isStopRequested()) {
@@ -223,85 +221,89 @@ public class CompetitionAuto extends BaseOpMode {
         // the first parameter is the type to return as
 
 
-            Action trajectoryAction = null;
+        Action trajectoryAction = null;
 
-            switch (chosenMovement) {
-                case NEAR:
-                    drive.setPose(SBNearStartPose);
-                    break;
-                case FAR:
-                    drive.setPose(SBFarStartPose);
-                    break;
-                case FAR_OUT_OF_WAY:
-                    drive.setPose(SBFarStartPose);
-                    break;
-                case FAR_MINIMAL:
-                    drive.setPose(SBFarStartPose);
-                    break;
-            }
-            trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles);
+        switch (chosenMovement) {
+            case NEAR:
+                drive.setPose(SBNearStartPose);
+                break;
+            case FAR:
+                drive.setPose(SBFarStartPose);
+                break;
+            case FAR_OUT_OF_WAY:
+                drive.setPose(SBFarStartPose);
+                break;
+            case FAR_MINIMAL:
+                drive.setPose(SBFarStartPose);
+                break;
+        }
+        trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles);
 
-            // Get a preview of the trajectory's path:
-            Canvas previewCanvas = new Canvas();
-            trajectoryAction.preview(previewCanvas);
+        // Get a preview of the trajectory's path:
+        Canvas previewCanvas = new Canvas();
+        trajectoryAction.preview(previewCanvas);
 
-            // Show the preview on FTC Dashboard now.
-            TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
-            packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
-            MecanumDrive.sendTelemetryPacket(packet);
+        // Show the preview on FTC Dashboard now.
+        TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
+        packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
+        MecanumDrive.sendTelemetryPacket(packet);
 
 
-            // Assume unknown pattern unless detected otherwise.
-            pattern = Pattern.UNKNOWN;
+        // Assume unknown pattern unless detected otherwise.
+        pattern = Pattern.UNKNOWN;
 
-            // Detect the pattern with the AprilTags from the camera!
-            // Wait for Start to be pressed on the Driver Hub!
-            // (This try-with-resources statement automatically calls detector.close() when it exits
-            //  the try-block.)
-            try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
-
-                while (opModeInInit()) {
-                    Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
-                    if (last != Pattern.UNKNOWN) {
-                        pattern = last;
-                    }
-
-                    telemetry.addData("Chosen alliance: ", chosenAlliance);
-                    telemetry.addData("Chosen movement: ", chosenMovement);
-                    telemetry.addData("Chosen wait time: ", waitTime);
-
-                    telemetry.update();
-
-                    if (isStopRequested()) {
-                        break;
-                    }
-                }
+        // Detect the pattern with the AprilTags from the camera!
+        // Wait for Start to be pressed on the Driver Hub!
+        while (opModeInInit()) {
+            Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
+            if (last != Pattern.UNKNOWN) {
+                pattern = last;
             }
 
-            sleep((long)waitTime*1000);
-            boolean more = true;
-            while (opModeIsActive() && more) {
-                telemetry.addLine("Running Auto!");
+            telemetry.addData("Chosen alliance: ", chosenAlliance);
+            telemetry.addData("Chosen movement: ", chosenMovement);
+            telemetry.addData("Chosen wait time: ", waitTime);
 
-                // 'packet' is the object used to send data to FTC Dashboard:
-                packet = MecanumDrive.getTelemetryPacket();
+            telemetry.update();
 
-                // Draw the preview and then run the next step of the trajectory on top:
-                packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
-                more = trajectoryAction.run(packet);
-
-                // Only send the packet if there's more to do in order to keep the very last
-                // drawing up on the field once the robot is done:
-                if (more)
-                    MecanumDrive.sendTelemetryPacket(packet);
-                telemetry.update();
+            if (isStopRequested()) {
+                break;
             }
         }
+
+
+        sleep((long) waitTime * 1000);
+        boolean more = true;
+        while (opModeIsActive() && more) {
+            telemetry.addLine("Running Auto!");
+
+            // 'packet' is the object used to send data to FTC Dashboard:
+            packet = MecanumDrive.getTelemetryPacket();
+
+            // Draw the preview and then run the next step of the trajectory on top:
+            packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
+            more = trajectoryAction.run(packet);
+
+            // Only send the packet if there's more to do in order to keep the very last
+            // drawing up on the field once the robot is done:
+            if (more)
+                MecanumDrive.sendTelemetryPacket(packet);
+            telemetry.update();
+        }
     }
+}
 
 class LaunchAction extends RobotAction {
+    CompetitionAuto opMode;
+
+    // Pass `this` into here
+    public LaunchAction(CompetitionAuto opMode) {
+        this.opMode = opMode;
+    }
+
     @Override
     public boolean run(double elapsedTime) {
+        BaseOpMode.tryResetRobotPose(opMode.detector, opMode.drive); // Resets the robot pose only if the robot is not moving
         return false;
     }
 }
