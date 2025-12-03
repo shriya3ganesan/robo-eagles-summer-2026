@@ -76,10 +76,10 @@ public class CompetitionAuto extends BaseOpMode {
                         .stopAndAdd(new LaunchAction(mechGlob, pattern, countBalls))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
-                        .stopAndAdd(new IntakeAction(mechGlob, 1))
+                        .afterDisp(0, new IntakeAction(mechGlob, 1))
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90))
-                        .stopAndAdd(new IntakeAction(mechGlob, 0))
+                        .splineToConstantHeading(new Vector2d(-12, 59), Math.toRadians(90))
+                        .afterDisp(0, new IntakeAction(mechGlob, 0))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-36, 36, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
                         .stopAndAdd(new LaunchAction(mechGlob, pattern, countBalls));
@@ -350,8 +350,9 @@ class IntakeAction extends RobotAction {
 
     @Override
     public boolean run(double elapsedTime) {
+
         mechGlob.intake(intakeSpeed);
-        return false;
+        return elapsedTime < 3;
     }
 }
 class CountBalls {
