@@ -39,6 +39,8 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.team417.CompetitionAuto;
 
@@ -219,7 +221,7 @@ public class LimelightDetector implements Closeable {
                         && detection.getFiducialId() != 23
         );
 
-        // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot
+        // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot.
         //  When we're on the red alliance, we want the leftmost valid
         //  AprilTag, and when we're on the blue alliance, we want the rightmost valid AprilTag.
         //  This is because, in our near position, we see two AprilTags on the obelisk: the front
@@ -232,13 +234,13 @@ public class LimelightDetector implements Closeable {
                 // Set detection to the leftmost (min x degrees) detection relative to the robot
                 // If there are no detections, set it to null
                 detection = currentDetections.stream()
-                        .min(Comparator.comparingDouble(aprilTagDetection -> aprilTagDetection.getTargetXDegrees())).orElse(null);
+                        .min(Comparator.comparingDouble(LLResultTypes.FiducialResult::getTargetXDegrees)).orElse(null);
                 break;
             case BLUE:
                 // Set detection to the rightmost (max x degrees) detection relative to the robot
                 // If there are no detections, set it to null
                 detection = currentDetections.stream()
-                        .max(Comparator.comparingDouble(aprilTagDetection -> aprilTagDetection.getTargetXDegrees())).orElse(null);
+                        .max(Comparator.comparingDouble(LLResultTypes.FiducialResult::getTargetXDegrees)).orElse(null);
         }
 
         if (detection == null) {
@@ -267,6 +269,38 @@ public class LimelightDetector implements Closeable {
                 return Pattern.UNKNOWN;
         }
     }
+
+    /**
+     * Detect the pose of the robot with the AprilTag.
+     */
+    public Pose2D detectRobotPose() {
+        LLResult result = limelight.getLatestResult();
+
+        if (result.isValid()) {
+            List<LLResultTypes.FiducialResult> currentDetections = result.getFiducialResults();
+
+            // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot.
+            //  We want the AprilTag that is as straight on as possible,
+            //  that is, the lowest absolute value x.
+            // For more information about the info the AprilTagDetection object contains, see this link:
+            //  https://ftc-docs.firstinspires.org/en/latest/apriltag/understanding_apriltag_detection_values/understanding-apriltag-detection-values.html
+
+            LLResultTypes.FiducialResult detection = currentDetections.stream()
+                    .min(Comparator.comparingDouble(aprilTagDetection ->
+                            Math.abs(aprilTagDetection.getTargetXDegrees()))).orElse(null);
+
+            Pose3D pose = detection.getRobotPoseFieldSpace();
+
+            return new Pose2D(
+                    pose.getPosition().unit,
+                    pose.getPosition().x,
+                    pose.getPosition().y,
+                    AngleUnit.RADIANS,
+                    pose.getOrientation().getYaw(AngleUnit.RADIANS));
+        }
+
+        return null;
+    };
 
     /**
      * Release the resources taken up by the vision portal.
