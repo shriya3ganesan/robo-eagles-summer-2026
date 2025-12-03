@@ -220,20 +220,6 @@ public class CompetitionAuto extends BaseOpMode {
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
 
-        PathFactory pathFactory;
-
-        switch (chosenAlliance) {
-            case RED:
-                pathFactory = new PathFactory(drive, false);
-                break;
-            case BLUE:
-                pathFactory = new PathFactory(drive, true);
-                break;
-            default:
-                throw new IllegalArgumentException("Alliance must be red or blue");
-        }
-
-
         // the first parameter is the type to return as
 
 
@@ -241,9 +227,7 @@ public class CompetitionAuto extends BaseOpMode {
 
             switch (chosenMovement) {
                 case NEAR:
-
                     drive.setPose(SBNearStartPose);
-
                     break;
                 case FAR:
                     drive.setPose(SBFarStartPose);
@@ -315,80 +299,6 @@ public class CompetitionAuto extends BaseOpMode {
         }
     }
 
-class PathFactory {
-    MecanumDrive drive;
-    TrajectoryActionBuilder builder;
-    boolean mirror;
-
-    public PathFactory(MecanumDrive drive, boolean mirror) {
-        this.drive = drive;
-        this.mirror = mirror;
-    }
-
-    Pose2d mirrorPose(Pose2d pose) {
-        return new Pose2d(pose.position.x, -pose.position.y, -pose.heading.log());
-    }
-    Vector2d mirrorVector(Vector2d vector) {
-        return new Vector2d(vector.x,-vector.y);
-    }
-
-    public PathFactory actionBuilder(Pose2d pose) {
-        if (mirror) {
-            builder = drive.actionBuilder(mirrorPose(pose));
-        } else {
-            builder = drive.actionBuilder(pose);
-        }
-        return this;
-    }
-
-    public PathFactory setTangent(double tangent) {
-        if (mirror) {
-            builder = builder.setTangent(-tangent);
-        } else {
-            builder = builder.setTangent(tangent);
-        }
-        return this;
-    }
-
-    public PathFactory splineToLinearHeading(Pose2d pose, double tangent) {
-        if (mirror) {
-            builder = builder.splineToLinearHeading(mirrorPose(pose), -tangent);
-        } else {
-            builder = builder.splineToLinearHeading(pose, tangent);
-        }
-        return this;
-    }
-    public PathFactory splineToSplineHeading(Pose2d pose, double tangent) {
-        if (mirror) {
-            builder = builder.splineToSplineHeading(mirrorPose(pose), -tangent);
-        } else {
-            builder = builder.splineToSplineHeading(pose, tangent);
-        }
-        return this;
-    }
-    public PathFactory splineToConstantHeading(Vector2d vector, double tangent) {
-        if(mirror) {
-            builder = builder.splineToConstantHeading(mirrorVector(vector), -tangent);
-        } else {
-            builder = builder.splineToConstantHeading(vector, tangent);
-
-        }
-        return this;
-    }
-
-
-    public PathFactory stopAndAdd(Action a) {
-        builder = builder.stopAndAdd(a);
-        return this;
-    }
-
-    public Action build() {
-        return builder.build();
-    }
-
-
-
-}
 class LaunchAction extends RobotAction {
     @Override
     public boolean run(double elapsedTime) {
