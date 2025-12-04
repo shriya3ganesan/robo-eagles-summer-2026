@@ -207,7 +207,7 @@ public final class MecanumDrive {
     }
     public static boolean isDevBot = getBotName().equals("DevBot");
     public static boolean isFastBot = getBotName().equals("417-RC");
-    public static boolean isSlowBot = getBotName().equals("417-b-RC");
+    public static boolean isSlowBot = getBotName().equals("417-B-RC");
     public static Params PARAMS = new Params();
 
     public MecanumKinematics kinematics; // Initialized by initializeKinematics()
