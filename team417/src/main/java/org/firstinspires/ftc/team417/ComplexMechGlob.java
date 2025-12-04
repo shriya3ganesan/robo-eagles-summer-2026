@@ -348,7 +348,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         }
         servoDrum.setPosition(hwDrumPosition);
-        servoTransfer.setPosition(transferPosition);
+        //servoTransfer.setPosition(transferPosition);
+        if (WilyWorks.isSimulating) {
+            // Enable on real hardware once transfer parameters are tuned
+            servoTransfer.setPosition(transferPosition);
+        }
+
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
