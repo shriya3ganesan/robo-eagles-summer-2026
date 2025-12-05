@@ -81,17 +81,18 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double FEEDER_POWER = 1;
     static double TRANSFER_TIME_UP = 2;
     static double TRANSFER_TIME_TOTAL = 5; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double FAR_FLYWHEEL_VELOCITY = 1500;
-    static double NEAR_FLYWHEEL_VELOCITY = 1500;
-    static double FLYWHEEL_BACK_SPIN = 300;
-    static double TRANSFER_INACTIVE_POSITION = 0;
-    static double TRANSFER_ACTIVE_POSITION = 1;
+    static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    static double NEAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    static double FLYWHEEL_BACK_SPIN = 150; //was 300
+    static double TRANSFER_INACTIVE_POSITION = 0.45;
+    static double TRANSFER_ACTIVE_POSITION = 0.7;
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
     static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
     static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
     static double DRUM_GATE_OPEN_POSITION = 1;
     static double DRUM_GATE_CLOSED_POSITION = 0.7;
+    static double MOTOR_D_VALUE = 1;
 
 
     ElapsedTime transferTimer;
@@ -185,10 +186,11 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
+        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setLaunchVelocity(LaunchDistance.NEAR);
 
@@ -368,16 +370,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
         servoDrum.setPosition(hwDrumPosition);
         //servoTransfer.setPosition(transferPosition);
-        if (WilyWorks.isSimulating) {
+
             // Enable on real hardware once transfer parameters are tuned
-            servoTransfer.setPosition(transferPosition);
-        }
+        servoTransfer.setPosition(transferPosition);
+
 
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-        servoBLaunchFeeder.setPower(FEEDER_POWER);
-        servoFLaunchFeeder.setPower((FEEDER_POWER));
+        servoBLaunchFeeder.setPower(-FEEDER_POWER);
+        servoFLaunchFeeder.setPower(FEEDER_POWER);
     }
 }
 
