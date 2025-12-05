@@ -68,14 +68,19 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
+    public String getSlotColor(int slotIndex) {
+        return "NONE";
+    }
+
+
 }
 
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     // TODO tune constants via FTC Dashboard:
     static double FEEDER_POWER = 1;
-    static double TRANSFER_TIME_UP = 0.3;
-    static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    static double TRANSFER_TIME_UP = 2;
+    static double TRANSFER_TIME_TOTAL = 5; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
     static double FAR_FLYWHEEL_VELOCITY = 1500;
     static double NEAR_FLYWHEEL_VELOCITY = 1500;
     static double FLYWHEEL_BACK_SPIN = 300;
@@ -85,6 +90,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double INTAKE_SPEED = 1;
     static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
     static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    static double DRUM_GATE_OPEN_POSITION = 1;
+    static double DRUM_GATE_CLOSED_POSITION = 0.7;
 
 
     ElapsedTime transferTimer;
@@ -124,6 +131,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     DcMotorEx motIntake;
     CRServo servoBLaunchFeeder;
     CRServo servoFLaunchFeeder;
+    Servo servoDrumGate;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
 
@@ -159,6 +167,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
+        servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
 
         /*
@@ -215,8 +224,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
     void intake (double intakeSpeed) {
-
         userIntakeSpeed = intakeSpeed;
+        if (userIntakeSpeed != 0) {
+            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
+        } else {
+            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
+        }
     }
 
     @Override
@@ -282,6 +295,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
         return -1;
     }
+
+    public String getSlotColor(int slotIndex) {
+        PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
+        return artifactColor.toString();
+    }
+
     @Override
     void update () {
         double intakePower = 0;

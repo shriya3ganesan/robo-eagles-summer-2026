@@ -6,7 +6,6 @@ import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -47,6 +46,8 @@ public class CompetitionTeleOp extends BaseOpMode {
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
 
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
+
         // Initialize motors, servos, LEDs
 
         // Wait for Start to be pressed on the Driver Hub!
@@ -54,6 +55,7 @@ public class CompetitionTeleOp extends BaseOpMode {
 
         while (opModeIsActive()) {
             telemetry.addLine("Running TeleOp!");
+            telemetry.addLine("I want <b>bold</b> text");
 
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
@@ -62,7 +64,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                             halfLinearHalfCubic(-gamepad1.left_stick_x * doSLOWMODE())
 
                     ),
-                    halfLinearHalfCubic(-gamepad1.right_stick_y)
+                    halfLinearHalfCubic(-gamepad1.right_stick_x)
 
 
             ));
@@ -100,9 +102,19 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.dpadDownWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
             }
-            mechGlob.intake(gamepad2.left_stick_x);
+            mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
-            
+
+            String slot0 = mechGlob.getSlotColor(0);
+            String slot1 = mechGlob.getSlotColor(1);
+            String slot2 = mechGlob.getSlotColor(2);
+
+            telemetry.addData("Slot0: ", slot0);
+            telemetry.addData("Slot1: ", slot1);
+            telemetry.addData("Slot2: ", slot2);
+
+
+
             MecanumDrive.sendTelemetryPacket(packet);
             telemetry.update();
         }
