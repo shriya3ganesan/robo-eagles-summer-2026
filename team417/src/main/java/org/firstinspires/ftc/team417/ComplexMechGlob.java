@@ -35,7 +35,8 @@ enum PixelColor {
 }
 enum LaunchDistance {
     FAR,
-    NEAR
+    NEAR,
+    OFF //turns the flywheel off
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
@@ -284,9 +285,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
-        } else {
+        } else if (launchDistance == LaunchDistance.FAR){
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+        } else {
+            upperLaunchVelocity = 0;
+            lowerLaunchVelocity = 0;
         }
     }
     int findSlotFromPosition (double position, double [] positions) {

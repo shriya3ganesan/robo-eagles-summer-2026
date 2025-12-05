@@ -55,7 +55,6 @@ public class CompetitionTeleOp extends BaseOpMode {
 
         while (opModeIsActive()) {
             telemetry.addLine("Running TeleOp!");
-            telemetry.addLine("I want <b>bold</b> text");
 
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
@@ -101,7 +100,11 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.setLaunchVelocity(LaunchDistance.FAR);
             } else if (gamepad2.dpadDownWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
+            } else if (gamepad2.dpadRightWasPressed()) {
+                // turns off the flywheels
+                mechGlob.setLaunchVelocity(LaunchDistance.OFF);
             }
+
             mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
 
@@ -112,7 +115,6 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("Slot0: ", slot0);
             telemetry.addData("Slot1: ", slot1);
             telemetry.addData("Slot2: ", slot2);
-
 
 
             MecanumDrive.sendTelemetryPacket(packet);
