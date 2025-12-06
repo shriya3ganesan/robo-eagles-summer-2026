@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.PoseMap;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
@@ -322,6 +323,7 @@ class LaunchAction extends RobotAction {
 
 
     }
+
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
@@ -339,6 +341,35 @@ class LaunchAction extends RobotAction {
     }
 
 }
+class SpinUpAction extends RobotAction {
+    MechGlob mechGlob;
+    LaunchDistance launchDistance;
+    public SpinUpAction(MechGlob mechglob, LaunchDistance launchDistance) {
+        this.mechGlob = mechglob;
+        this.launchDistance = launchDistance;
+    }
+
+    @Override
+    public boolean run(double elapsedTime) {
+        mechGlob.setLaunchVelocity(launchDistance);
+        return false;
+    }
+}
+class PreLaunchAction extends RobotAction {
+    MechGlob mechGlob;
+    RequestedColor requestedColor;
+    public PreLaunchAction(MechGlob mechGlob, RequestedColor requestedColor) {
+        this.requestedColor = requestedColor;
+        this.mechGlob = mechGlob;
+    }
+
+    @Override
+    public boolean run(double elapsedTime) {
+        return mechGlob.preLaunch(requestedColor);
+    }
+}
+
+
 class IntakeAction extends RobotAction {
     double intakeSpeed;
     MechGlob mechGlob;
