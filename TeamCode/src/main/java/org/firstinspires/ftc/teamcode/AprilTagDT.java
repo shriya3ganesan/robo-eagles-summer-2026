@@ -111,8 +111,8 @@ public class AprilTagDT extends LinearOpMode {
 
 
     // Timing constants (in seconds)
-    private final double SPINUP_TIME_SHORT =1.0;  // Left trigger - quick shot
-    private final double SPINUP_TIME_LONG =1.9;   // Right trigger - power shot
+    private final double SPINUP_TIME_SHORT =1.2;  // Left trigger - quick shot
+    private final double SPINUP_TIME_LONG =2.1;   // Right trigger - power shot
     private final double FIRE_TIME = 0.3;          // Time trigger is in fire position
     private final double RESET_TIME = 0.3;         // Time for trigger to reset
     private double currentSpinupTime = SPINUP_TIME_SHORT; // Track which shot type we're using
@@ -122,9 +122,9 @@ public class AprilTagDT extends LinearOpMode {
     private final double JITTER_FORWARD_TIME = 0.10;
 
     // AprilTag lock-on constants
-    private final double TAG_LOCK_KP = 0.09;        // Proportional gain for rotation
-    private final double TAG_LOCK_TOLERANCE = 0.5;  // Degrees - how close is "locked on"
-    private final double TAG_LOCK_MIN_POWER = 0.05; // Minimum rotation power
+    private final double TAG_LOCK_KP = 0.05;        // Proportional gain for rotation
+    private final double TAG_LOCK_TOLERANCE = 0.7;  // Degrees - how close is "locked on"
+    private final double TAG_LOCK_MIN_POWER = 0.00; // Minimum rotation power
     private final double TAG_LOCK_MAX_POWER = 0.7;  // Maximum rotation power
 
     private double tagX = 0.0;
@@ -192,9 +192,7 @@ public class AprilTagDT extends LinearOpMode {
             if (result != null) {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
-                    telemetry.addData("tx", result.getTx());
-                    telemetry.addData("ty", result.getTy());
-                    telemetry.addData("Botpose", botpose.toString());
+                    telemetry.addData("Lock On: ", "AVAILABLE");
                 }
                 else{
                     telemetry.addData("no limelight read", ":(");
@@ -206,7 +204,7 @@ public class AprilTagDT extends LinearOpMode {
             // ===== GAMEPAD 1 (DRIVER) CONTROLS =====
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
+            double lateral =  -gamepad1.left_stick_x;
             double yaw = -gamepad1.right_stick_x;
 
             // ===== APRILTAG LOCK-ON FEATURE =====
@@ -228,7 +226,24 @@ public class AprilTagDT extends LinearOpMode {
                 if (!isLockedOn && Math.abs(rotationCorrection) < TAG_LOCK_MIN_POWER) {
                     rotationCorrection = TAG_LOCK_MIN_POWER * Math.signum(rotationCorrection);
                 }
+// Check if we're within tolerance
+                isLockedOn = Math.abs(tx) < TAG_LOCK_TOLERANCE;
 
+// Calculate proportional correction
+
+// Add deadband - don't correct if we're close enough
+                if (isLockedOn) {
+                    rotationCorrection = 0.0;  // Stop correcting when locked on
+                }
+                else {
+                    // Clamp the correction to min/max power
+                    rotationCorrection = Range.clip(rotationCorrection, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
+
+                    // Apply minimum power if not locked on
+                    if (Math.abs(rotationCorrection) < TAG_LOCK_MIN_POWER) {
+                        rotationCorrection = TAG_LOCK_MIN_POWER * Math.signum(rotationCorrection);
+                    }
+                }
                 // Override yaw with our correction
                 yaw = -rotationCorrection;
 
