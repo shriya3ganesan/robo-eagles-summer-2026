@@ -245,7 +245,7 @@ public class AprilTagDT extends LinearOpMode {
                 isLockedOn = false;
 
                 if (gamepad1.left_bumper) {
-                    telemetry.addData("⚠️ Tag Lock", "No AprilTag visible");
+                    telemetry.addData("Tag Lock", "No AprilTag visible");
                 }
             }
 
@@ -387,21 +387,9 @@ public class AprilTagDT extends LinearOpMode {
                     break;
             }
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.addData("Launch State", launchState);
-            telemetry.addData("Intake Jitter", intakeJitterState);
-            telemetry.addLine("\n--- GAMEPAD 1 (DRIVER) ---");
-            telemetry.addData("Left Bumper", "AprilTag Lock-On");
-            telemetry.addLine("\n--- GAMEPAD 2 (OPERATOR) ---");
-            telemetry.addData("Left Trigger", "Quick Shot (1.0s)");
-            telemetry.addData("Right Trigger", "Power Shot (2.2s)");
-            telemetry.addData("A Button", "Intake");
-            telemetry.addData("Y Button", "Reverse Intake");
-            telemetry.addData("X Button", "Intake Jitter");
-            telemetry.addData("B Button", "Slow Intake");
             telemetry.update();
 
         }
