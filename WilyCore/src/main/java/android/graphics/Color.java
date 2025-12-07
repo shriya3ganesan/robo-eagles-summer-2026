@@ -1,5 +1,7 @@
 package android.graphics;
 
+import android.annotation.NonNull;
+
 public class Color {
     public static final int BLACK = -16777216;
     public static final int BLUE = -16776961;
@@ -107,5 +109,109 @@ public class Color {
         if (colorString.length() == 7)
             value |= 0xff000000;
         return value;
+    }
+
+    public static float red(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static float green(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static float blue(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static float alpha(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static boolean isSrgb(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static boolean isWideGamut(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int toArgb(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    @NonNull
+    public static Color valueOf(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    @NonNull
+    public static Color valueOf(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    @NonNull
+    public static Color valueOf(float r, float g, float b) {
+        throw new RuntimeException("Stub!");
+    }
+
+    @NonNull
+    public static Color valueOf(float r, float g, float b, float a) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static long pack(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static long pack(float red, float green, float blue) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static long pack(float red, float green, float blue, float alpha) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static float luminance(long color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int alpha(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int red(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int green(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int blue(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int rgb(int red, int green, int blue) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int rgb(float red, float green, float blue) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int argb(float alpha, float red, float green, float blue) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static float luminance(int color) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static void RGBToHSV(int red, int green, int blue, float[] hsv) {
+        throw new RuntimeException("Stub!");
+    }
+
+    public static int HSVToColor(int alpha, float[] hsv) {
+        throw new RuntimeException("Stub!");
     }
 }

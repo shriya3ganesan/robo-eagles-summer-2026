@@ -2,6 +2,7 @@ package org.firstinspires.ftc.team417;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
@@ -43,6 +45,8 @@ public class CompetitionTeleOp extends BaseOpMode {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
+
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
         // Initialize motors, servos, LEDs
 
@@ -96,10 +100,23 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.setLaunchVelocity(LaunchDistance.FAR);
             } else if (gamepad2.dpadDownWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
+            } else if (gamepad2.dpadRightWasPressed()) {
+                // turns off the flywheels
+                mechGlob.setLaunchVelocity(LaunchDistance.OFF);
             }
-            mechGlob.intake(gamepad2.left_stick_x);
+
+            mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
-            
+
+            String slot0 = mechGlob.getSlotColor(0);
+            String slot1 = mechGlob.getSlotColor(1);
+            String slot2 = mechGlob.getSlotColor(2);
+
+            telemetry.addData("Slot0: ", slot0);
+            telemetry.addData("Slot1: ", slot1);
+            telemetry.addData("Slot2: ", slot2);
+
+
             MecanumDrive.sendTelemetryPacket(packet);
             telemetry.update();
         }
@@ -119,5 +136,108 @@ public class CompetitionTeleOp extends BaseOpMode {
         return (Math.pow(input, 3) + input) / 2;
     }
 }
+
+class AmazingAutoAim {
+    Telemetry telemetry = null;
+    // Constants to tune in FTC dashboard
+    public static double KP = 1.5;
+    public static double KI = 0;
+    public static double KD = 0.1;
+    double targetX;
+    double targetY;
+    PIDController pid;
+
+    AmazingAutoAim(Telemetry telemetry, CompetitionAuto.Alliance alliance) {
+        this.telemetry = telemetry;
+
+        if (alliance == CompetitionAuto.Alliance.RED) {
+            targetX = -65;
+            targetY = 55;
+        } else {
+            targetX = -65;
+            targetY = -55;
+        }
+        pid = new PIDController(KP, KI, KD);
+
+    }
+
+    public double get(Pose2d pose) {
+        double deltaY = targetY - pose.position.y;
+        double deltaX = targetX - pose.position.x;
+
+        double beta = Math.atan2(deltaY, deltaX);
+        double alpha = pose.heading.toDouble();
+        double angle = beta - alpha;
+        double normalizedAngle = AngleUnit.normalizeRadians(angle);
+
+        return pid.calculate(normalizedAngle);
+
+    }
+
+}
+
+class PIDController {
+
+    private double kP;
+    private double kI;
+    private double kD;
+
+    private double setpoint;
+    private double previousError = 0;
+    private double integral = 0;
+    private double outputMin = Double.NEGATIVE_INFINITY;
+    private double outputMax = Double.POSITIVE_INFINITY;
+
+    private long lastTimestamp = System.nanoTime();
+
+    public PIDController(double kP, double kI, double kD) {
+        this.kP = kP;
+        this.kI = kI;
+        this.kD = kD;
+    }
+
+    public void setSetpoint(double setpoint) {
+        this.setpoint = setpoint;
+    }
+
+    public void setOutputLimits(double min, double max) {
+        this.outputMin = min;
+        this.outputMax = max;
+    }
+
+    /**
+     * Calculates the PID output based on the current process variable.
+     */
+    public double calculate(double currentValue) {
+        long now = System.nanoTime();
+        double dt = (now - lastTimestamp) / 1e9; // seconds
+        lastTimestamp = now;
+
+        double error = setpoint - currentValue;
+
+        // Integral with basic anti-windup
+        integral += error * dt;
+
+        // Derivative
+        double derivative = (error - previousError) / dt;
+
+        // PID Output
+        double output = (kP * error) + (kI * integral) + (kD * derivative);
+
+        // Clamp output
+        output = Math.max(outputMin, Math.min(outputMax, output));
+
+        previousError = error;
+
+        return output;
+    }
+
+    public void reset() {
+        integral = 0;
+        previousError = 0;
+        lastTimestamp = System.nanoTime();
+    }
+}
+
 
 

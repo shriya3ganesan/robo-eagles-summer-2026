@@ -35,7 +35,8 @@ enum PixelColor {
 }
 enum LaunchDistance {
     FAR,
-    NEAR
+    NEAR,
+    OFF //turns the flywheel off
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
@@ -68,23 +69,31 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
+    public String getSlotColor(int slotIndex) {
+        return "NONE";
+    }
+
+
 }
 
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     // TODO tune constants via FTC Dashboard:
     static double FEEDER_POWER = 1;
-    static double TRANSFER_TIME_UP = 0.3;
-    static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double FAR_FLYWHEEL_VELOCITY = 1500;
-    static double NEAR_FLYWHEEL_VELOCITY = 1500;
-    static double FLYWHEEL_BACK_SPIN = 300;
+    static double TRANSFER_TIME_UP = 2;
+    static double TRANSFER_TIME_TOTAL = 5; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    static double NEAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    static double FLYWHEEL_BACK_SPIN = 150; //was 300
     static double TRANSFER_INACTIVE_POSITION = 0.45;
-    static double TRANSFER_ACTIVE_POSITION = 0.71;
+    static double TRANSFER_ACTIVE_POSITION = 0.7;
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
     static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
     static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    static double DRUM_GATE_OPEN_POSITION = 1;
+    static double DRUM_GATE_CLOSED_POSITION = 0.7;
+    static double MOTOR_D_VALUE = 1;
 
 
     ElapsedTime transferTimer;
@@ -124,6 +133,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     DcMotorEx motIntake;
     CRServo servoBLaunchFeeder;
     CRServo servoFLaunchFeeder;
+    Servo servoDrumGate;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
 
@@ -159,6 +169,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
+        servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
 
         /*
@@ -176,10 +187,11 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
+        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setLaunchVelocity(LaunchDistance.NEAR);
 
@@ -215,8 +227,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
     void intake (double intakeSpeed) {
-
         userIntakeSpeed = intakeSpeed;
+        if (userIntakeSpeed != 0) {
+            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
+        } else {
+            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
+        }
     }
 
     @Override
@@ -269,9 +285,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
-        } else {
+        } else if (launchDistance == LaunchDistance.FAR){
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+        } else {
+            upperLaunchVelocity = 0;
+            lowerLaunchVelocity = 0;
         }
     }
     int findSlotFromPosition (double position, double [] positions) {
@@ -282,6 +301,13 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
         return -1;
     }
+
+    @Override
+    public String getSlotColor(int slotIndex) {
+        PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
+        return artifactColor.toString();
+    }
+
     @Override
     void update () {
         double intakePower = 0;
@@ -348,12 +374,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         }
         servoDrum.setPosition(hwDrumPosition);
+        //servoTransfer.setPosition(transferPosition);
+
+            // Enable on real hardware once transfer parameters are tuned
         servoTransfer.setPosition(transferPosition);
+
+
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-        servoBLaunchFeeder.setPower(FEEDER_POWER);
-        servoFLaunchFeeder.setPower((FEEDER_POWER));
+        servoBLaunchFeeder.setPower(-FEEDER_POWER);
+        servoFLaunchFeeder.setPower(FEEDER_POWER);
     }
 }
 

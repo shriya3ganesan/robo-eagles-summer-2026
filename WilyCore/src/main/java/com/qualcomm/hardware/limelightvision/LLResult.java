@@ -33,18 +33,23 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.BarcodeResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.ClassifierResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.ColorResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.qualcomm.hardware.limelightvision.LLResultTypes.*;
 
 /**
  * Represents the result of a Limelight Pipeline. This class parses JSON data from a Limelight

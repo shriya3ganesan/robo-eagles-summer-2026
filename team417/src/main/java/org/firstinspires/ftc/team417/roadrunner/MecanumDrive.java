@@ -21,9 +21,9 @@ import com.acmerobotics.roadrunner.IdentityPoseMap;
 import com.acmerobotics.roadrunner.MecanumKinematics;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.MotorFeedforward;
-import com.acmerobotics.roadrunner.PoseMap;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PoseMap;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.PoseVelocity2dDual;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
@@ -58,7 +58,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
-
 import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -164,7 +163,7 @@ public final class MecanumDrive {
 
         public double inPerTick; // Inches-per-tick for encoders (set to 1.0 if using Optical Tracking)
         public double lateralInPerTick; // Lateral inches-per-tick for encoders
-        public double trackWidthTicks; // Diameter of the circle that a wheel travels to turn the robot 360 degrees, in ticks
+        public double trackWidthTicks; // Radius of the circle that a wheel travels to turn the robot 360 degrees, in ticks
 
         public double kS; // Feed-forward voltage to overcome static friction
         public double kV; // Feed-forward voltage factor to achieve target velocity, in tick units
@@ -207,7 +206,7 @@ public final class MecanumDrive {
     }
     public static boolean isDevBot = getBotName().equals("DevBot");
     public static boolean isFastBot = getBotName().equals("417-RC");
-    public static boolean isSlowBot = getBotName().equals("417-b-RC");
+    public static boolean isSlowBot = getBotName().equals("417-B-RC");
     public static Params PARAMS = new Params();
 
     public MecanumKinematics kinematics; // Initialized by initializeKinematics()
@@ -229,6 +228,7 @@ public final class MecanumDrive {
     public Pose2d targetPose; // Target pose when actively traversing a trajectory
     public SparkFunOTOS otosDriver; // Can be null which means no OTOS
     public GoBildaPinpointDriver pinpointDriver; // Can be null which means no Pinpoint
+    public double durationExtension; // Seconds to extend the duration of a trajectory, usually 0
 
     public double lastLinearGainError = 0; // Most recent gain error in inches and radians
     public double lastHeadingGainError = 0;
@@ -639,7 +639,7 @@ public final class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= timeTrajectory.duration) {
+            if (t >= timeTrajectory.duration + durationExtension) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
@@ -738,7 +738,7 @@ public final class MecanumDrive {
                 t = Actions.now() - beginTs;
             }
 
-            if (t >= turn.duration) {
+            if (t >= turn.duration + durationExtension) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);
@@ -950,6 +950,9 @@ public final class MecanumDrive {
 
     // Override the current pose for Road Runner and the optical tracking sensor:
     public void setPose(Pose2d pose) {
+        // Tell Wily Works about the new pose:
+        WilyWorks.setStartPose(pose, new PoseVelocity2d(new Vector2d(0, 0), 0));
+
         // Set the Road Runner pose:
         this.pose = pose;
         this.targetPose = pose;
@@ -1051,5 +1054,11 @@ public final class MecanumDrive {
     // When done with an FTC Dashboard telemetry packet, send it!
     public static void sendTelemetryPacket(TelemetryPacket packet) {
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
+    }
+
+    // Give extra time at the end of the trajectory for the PID to get the robot into exactly
+    // the right position:
+    public void setDurationExtension(double seconds) {
+        durationExtension = seconds;
     }
 }

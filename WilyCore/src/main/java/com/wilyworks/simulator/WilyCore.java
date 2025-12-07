@@ -366,6 +366,7 @@ public class WilyCore {
         // If the user didn't explicitly call the simulation update() API, do it now:
         double deltaT = advanceTime(0);
         simulation.runTo(deltaT, pose, velocity);
+        mechSim.advance(deltaT);
         simulationUpdated = true;
         render();
     }

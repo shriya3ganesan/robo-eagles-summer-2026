@@ -54,6 +54,8 @@ public class CoolColorDetector {
 
         telemetry.addLine(String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
                 distance1, distance2, colorCube, hue));
+        telemetry.addLine(String.format(" %.2f\", %.2f\"", distance1, distance2));
+
 
         if (hue > 165 && hue < 180) {      //range determined from testing
             return PixelColor.GREEN;
