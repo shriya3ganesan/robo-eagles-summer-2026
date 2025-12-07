@@ -111,14 +111,14 @@ public class MoveAndShootAuto extends LinearOpMode {
         frontRightDrive.setPower(-0.4);
         backRightDrive.setPower(-0.4);
 
-        sleep(400);  // .4 seconds
+        sleep(500);  // .5 seconds
 
         // Stop driving
         stopAllMotors();
 
         telemetry.addData("Status", "Drive complete");
         telemetry.update();
-
+        launchMotor.setPower(0.67);
         sleep(300);  // Brief pause to settle
 
         // ==========================================
@@ -132,8 +132,7 @@ public class MoveAndShootAuto extends LinearOpMode {
             // Spin up launch motor
             telemetry.addData("Ball %d", "Spinning up...", ballNumber);
             telemetry.update();
-            launchMotor.setPower(1.0);
-            sleep(500);  // 0.5 second spinup
+            launchMotor.setPower(0.67);
 
             // Fire the trigger
             telemetry.addData("Ball %d", "FIRING!", ballNumber);
@@ -144,9 +143,6 @@ public class MoveAndShootAuto extends LinearOpMode {
             // Reset trigger
             Trigger.setPosition(TRIGGER_START_POS);
             sleep(200);  // Wait for trigger to reset
-
-            // Stop launch motor
-            launchMotor.setPower(0.0);
 
             // If not the last ball, load the next one
             if (ballNumber < 3) {
@@ -166,7 +162,7 @@ public class MoveAndShootAuto extends LinearOpMode {
         // ==========================================
         // COMPLETE
         // ==========================================
-        telemetry.addData("Status", "✅ Autonomous Complete!");
+        telemetry.addData("Status", "Autonomous Complete!");
         telemetry.addData("Balls Shot", "3");
         telemetry.addData("Total Runtime", "%.1f seconds", runtime.seconds());
         telemetry.update();
