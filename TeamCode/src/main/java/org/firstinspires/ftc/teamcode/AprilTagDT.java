@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.limelightvision.LLFieldMap;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,6 +39,10 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -111,11 +116,17 @@ public class AprilTagDT extends LinearOpMode {
 
 
     // Timing constants (in seconds)
-    private final double SPINUP_TIME_SHORT =1.2;  // Left trigger - quick shot
-    private final double SPINUP_TIME_LONG =2.1;   // Right trigger - power shot
+    private final double SPINUP_TIME_SHORT = 1.1;  // Left trigger - quick shot
+    private final double SPINUP_TIME_LONG = 1.9;   // Right trigger - power shot
     private final double FIRE_TIME = 0.3;          // Time trigger is in fire position
     private final double RESET_TIME = 0.3;         // Time for trigger to reset
     private double currentSpinupTime = SPINUP_TIME_SHORT; // Track which shot type we're using
+
+    // Distance-based spinup time constants
+    private final double MIN_DISTANCE = 55.0;  // inches - minimum shooting distance
+    private final double MAX_DISTANCE = 135.0; // inches - maximum shooting distance
+    private final double MIN_SPINUP = 0.8;     // seconds - spinup time at MIN_DISTANCE
+    private final double MAX_SPINUP = 2.1;     // seconds - spinup time at MAX_DISTANCE
 
     // Intake jitter timing
     private final double JITTER_REVERSE_TIME = 0.05;
@@ -125,7 +136,7 @@ public class AprilTagDT extends LinearOpMode {
     private final double TAG_LOCK_KP = 0.05;        // Proportional gain for rotation
     private final double TAG_LOCK_TOLERANCE = 0.7;  // Degrees - how close is "locked on"
     private final double TAG_LOCK_MIN_POWER = 0.00; // Minimum rotation power
-    private final double TAG_LOCK_MAX_POWER = 0.7;  // Maximum rotation power
+    private final double TAG_LOCK_MAX_POWER = 0.4;  // Maximum rotation power
 
     private double tagX = 0.0;
     private double tagY = 0.0;
@@ -142,7 +153,7 @@ public class AprilTagDT extends LinearOpMode {
     private int tagId = -1;        // ID of the tag being tracked
     private boolean tagVisible = false; // true if a tag was seen this frame
     private boolean isLockedOn = false; // true if aligned within tolerance
-
+    double distance;
 
     @Override
     public void runOpMode() {
@@ -193,6 +204,11 @@ public class AprilTagDT extends LinearOpMode {
                 if (result.isValid()) {
                     Pose3D botpose = result.getBotpose();
                     telemetry.addData("Lock On: ", "AVAILABLE");
+                    telemetry.addData("tX: ", result.getTx());
+                    telemetry.addData("tY:", result.getTy());
+                    telemetry.addData("Orientation: ", botpose.getOrientation());
+                    distance = (29.5 - 12.25)/(Math.tan(result.getTy() * (3.14159 / 180)));
+                    telemetry.addData("distance: ", distance);
                 }
                 else{
                     telemetry.addData("no limelight read", ":(");
@@ -351,7 +367,7 @@ public class AprilTagDT extends LinearOpMode {
             // State machine for launch sequence
             switch (launchState) {
                 case IDLE:
-                    // Left trigger = quick shot (1.0s spinup)
+                    // Left trigger = quick shot (1.2s spinup)
                     if (gamepad2.left_trigger > 0.1) {
                         launchState = LaunchState.SPINNING_UP;
                         launchTimer.reset();
@@ -359,13 +375,50 @@ public class AprilTagDT extends LinearOpMode {
                         currentSpinupTime = SPINUP_TIME_SHORT;
                         telemetry.addData(" Launch", "Quick Shot - Spinning up...");
                     }
-                    // Right trigger = power shot (2.2s spinup)
+                    // Right trigger = power shot (2.1s spinup)
                     else if (gamepad2.right_trigger > 0.1) {
                         launchState = LaunchState.SPINNING_UP;
                         launchTimer.reset();
                         launchMotor.setPower(1.0);
                         currentSpinupTime = SPINUP_TIME_LONG;
                         telemetry.addData(" Launch", "Power Shot - Spinning up...");
+                    }
+                    // Right bumper = distance-calculated shot using Limelight
+                    else if (gamepad2.right_bumper) {
+                        LLResult llResult = limelight.getLatestResult();
+
+                        if (llResult != null && llResult.isValid()) {
+                            // Get the botpose which includes distance information
+                            Pose3D botpose = llResult.getBotpose();
+
+                            // Calculate distance to target (using X-Z plane distance)
+                            // The Pose3D gives us the robot's position relative to the AprilTag
+                            double distanceX = botpose.getPosition().x;
+                            double distanceZ = botpose.getPosition().z;
+                            telemetry.addData("DistanceX", distanceX);
+                            telemetry.addData("DistanceY", distanceZ);
+                            double distanceInches = distance;
+                            telemetry.addData("Distance in inches", distanceInches);
+
+                            // Calculate required spinup time
+                            currentSpinupTime = calculateSpinupTime(distanceInches);
+
+                            launchState = LaunchState.SPINNING_UP;
+                            launchTimer.reset();
+                            launchMotor.setPower(1.0);
+
+                            telemetry.addData("Launch", "Auto Shot - Distance: %.1f in", distanceInches);
+                            telemetry.addData("Spinup Time", "%.2f seconds", currentSpinupTime);
+                        } else {
+                            // No AprilTag visible - use default long spinup
+                            telemetry.addData("Launch ERROR", "No AprilTag visible!");
+                            telemetry.addData("Launch", "Using default spinup time");
+
+                            launchState = LaunchState.SPINNING_UP;
+                            launchTimer.reset();
+                            launchMotor.setPower(1.0);
+                            currentSpinupTime = SPINUP_TIME_LONG;
+                        }
                     }
                     break;
 
@@ -405,9 +458,27 @@ public class AprilTagDT extends LinearOpMode {
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.addData("Launch State", launchState);
+            telemetry.addData("distance: ", distance);
+            telemetry.addData("Spinup Time", "%.2f seconds", currentSpinupTime);
             telemetry.update();
 
         }
+    }
+
+    /**
+     * Calculates the required spinup time based on distance to target
+     * @param distanceInches Distance to AprilTag in inches
+     * @return Spinup time in seconds
+     */
+    private double calculateSpinupTime(double distanceInches) {
+        // Clamp distance to valid range
+        double clampedDistance = Range.clip(distanceInches, MIN_DISTANCE, MAX_DISTANCE);
+
+        // Linear interpolation between min and max spinup times
+        double normalizedDistance = (clampedDistance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
+        double spinupTime = MIN_SPINUP + (normalizedDistance * (MAX_SPINUP - MIN_SPINUP));
+
+        return spinupTime;
     }
 
     public void configurePinpoint(){
