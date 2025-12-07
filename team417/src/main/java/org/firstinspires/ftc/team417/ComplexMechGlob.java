@@ -302,6 +302,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         return -1;
     }
 
+    @Override
     public String getSlotColor(int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
         return artifactColor.toString();

@@ -69,17 +69,17 @@ class Html {
         return result.toString();
     }
 
-    // Set the foreground font color for a string. Color must be in the format" #dc3545".
+    // Set the foreground font color for a string. Color must be in the format "#00ff00".
     public static String color(String color, String string) {
         return "<font color='" + color + "'>" + string + "</font>";
     }
 
-    // Set the background color for a string. Color must be in the format" #dc3545".
+    // Set the background color for a string. Color must be in the format "#ff0000".
     public static String background(String backgroundColor, String string) {
         return "<span style='background: " + backgroundColor + "'>" + string + "</span>";
     }
 
-    // Set the foreground and background colors for a string. Colors must be in the format" #dc3545".
+    // Set the foreground and background colors for a string. Colors must be in the format "#0000ff".
     public static String colors(String foregroundColor, String backgroundColor, String string) {
         return "<span style='color: " + foregroundColor + "; background: " + backgroundColor + "'>" + string + "</span>";
     }
