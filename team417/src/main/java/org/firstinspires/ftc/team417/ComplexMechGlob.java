@@ -79,8 +79,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     static double FAR_FLYWHEEL_VELOCITY = 1500;
     static double NEAR_FLYWHEEL_VELOCITY = 1500;
     static double FLYWHEEL_BACK_SPIN = 300;
-    static double TRANSFER_INACTIVE_POSITION = 0;
-    static double TRANSFER_ACTIVE_POSITION = 1;
+    static double TRANSFER_INACTIVE_POSITION = 0.45;
+    static double TRANSFER_ACTIVE_POSITION = 0.71;
     static double REVERSE_INTAKE_SPEED = -1;
     static double INTAKE_SPEED = 1;
     static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
