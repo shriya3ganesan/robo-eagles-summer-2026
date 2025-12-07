@@ -220,7 +220,7 @@ class DecodeSlowBotMechSim extends MechSim {
     final double[] TRANSFER_POSITIONS = { 3.0/6, 5.0/6, 1.0/6 }; // Servo positions for intaking
     final double SLOT_EPSILON = 0.02; // Epsilon for determining a slot relative to a [0, 1] range
     final double MIN_TRANSFER_TIME = 0.1; // Second it takes for a transfer
-    final double MIN_TRANSFER_POSITION = 0.1; // Minimum position to start a transfer
+    final double MIN_TRANSFER_POSITION = 0.6; // Minimum position to start a transfer
     final double TRANSFER_SERVO_SPEED = (60.0 / 360) / 0.25; // Speed of a goBilda torque servo, position/s
     final double LAUNCH_SPEED = 144; // Ball launch speed, inches per second
     final Point LAUNCH_OFFSET = new Point(-4, 0);
@@ -558,7 +558,7 @@ class DecodeSlowBotMechSim extends MechSim {
             if (forwardFeederServo.getPower() < FEEDER_POWER) {
                 throw new RuntimeException("A transfer is requested when forward feeder servo isn't running. That won't work!");
             }
-            if (backwardFeederServo.getPower() < FEEDER_POWER) {
+            if (Math.abs(backwardFeederServo.getPower()) < FEEDER_POWER) {
                 throw new RuntimeException("A transfer is requested when backward feeder servo isn't running. That won't work!");
             }
             if (slotBalls.get(transferSlot) == null) {
