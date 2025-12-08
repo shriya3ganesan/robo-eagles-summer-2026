@@ -70,8 +70,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
-    public String getSlotColor(int slotIndex) {
-        return "NONE";
+    public PixelColor getSlotColor(int slotIndex) {
+        return PixelColor.NONE;
     }
 
 
@@ -311,9 +311,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
 
     @Override
-    public String getSlotColor(int slotIndex) {
+    public PixelColor getSlotColor(int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
-        return artifactColor.toString();
+        return artifactColor;
     }
 
     @Override

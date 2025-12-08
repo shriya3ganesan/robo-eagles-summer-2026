@@ -185,7 +185,7 @@ public class CompetitionAuto extends BaseOpMode {
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
         PixelColor[] preloads = new PixelColor[]{PixelColor.PURPLE, PixelColor.GREEN, PixelColor.PURPLE};
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry,preloads );
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
 
 
 
@@ -272,28 +272,28 @@ public class CompetitionAuto extends BaseOpMode {
         // Assume unknown pattern unless detected otherwise.
         pattern = Pattern.UNKNOWN;
         pattern = Pattern.PPG; //temporary until hankang limelight
-            // Detect the pattern with the AprilTags from the camera!
-            // Wait for Start to be pressed on the Driver Hub!
-            // (This try-with-resources statement automatically calls detector.close() when it exits
-            //  the try-block.)
-            try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
+        // Detect the pattern with the AprilTags from the camera!
+        // Wait for Start to be pressed on the Driver Hub!
+        // (This try-with-resources statement automatically calls detector.close() when it exits
+        //  the try-block.)
+        try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
 
-                while (opModeInInit()) {
-                    Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
-                    if (last != Pattern.UNKNOWN) {
-                        pattern = last;
-                    }
-
-                    telemetry.addData("Chosen alliance: ", chosenAlliance);
-                    telemetry.addData("Chosen movement: ", chosenMovement);
-                    telemetry.addData("Chosen wait time: ", waitTime);
-                    telemetry.addData("Last valid pattern: ", pattern);
-
-                    telemetry.update();
-                    if (isStopRequested()) {
-                        break;
-                    }
+            while (opModeInInit()) {
+                Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
+                if (last != Pattern.UNKNOWN) {
+                    pattern = last;
                 }
+
+                telemetry.addData("Chosen alliance: ", chosenAlliance);
+                telemetry.addData("Chosen movement: ", chosenMovement);
+                telemetry.addData("Chosen wait time: ", waitTime);
+                telemetry.addData("Last valid pattern: ", pattern);
+
+                telemetry.update();
+                if (isStopRequested()) {
+                    break;
+                }
+            }
         }
         if(chosenMovement == SlowBotMovement.NEAR) {
             mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
@@ -319,6 +319,12 @@ public class CompetitionAuto extends BaseOpMode {
                 MecanumDrive.sendTelemetryPacket(packet);
             telemetry.update();
         }
+
+        // Stores these so they can be transferred to teleop
+        TransferState.chosenAlliance = chosenAlliance;
+        TransferState.storedColors = new PixelColor[] {mechGlob.getSlotColor(0), mechGlob.getSlotColor(1), mechGlob.getSlotColor(2)};
+        TransferState.pose = drive.pose;
+
     }
 }
 class LaunchAction extends RobotAction {
