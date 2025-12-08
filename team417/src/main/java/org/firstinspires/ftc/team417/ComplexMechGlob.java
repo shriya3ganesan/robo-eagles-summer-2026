@@ -72,11 +72,10 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 
     public PixelColor getSlotColor(int slotIndex) {
         return PixelColor.NONE;
+    }
     void controlDrumManually () {}
 
-    public String getSlotColor(int slotIndex) {
-        return "NONE";
-    }
+
 
 
 }
