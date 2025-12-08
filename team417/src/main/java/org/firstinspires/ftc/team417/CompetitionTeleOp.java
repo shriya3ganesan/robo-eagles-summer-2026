@@ -44,7 +44,8 @@ public class CompetitionTeleOp extends BaseOpMode {
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
+        PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
         AmazingAutoAim amazingAutoAim = null;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);

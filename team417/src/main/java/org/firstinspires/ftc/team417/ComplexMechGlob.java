@@ -43,9 +43,10 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     MechGlob(){}
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
-    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, boolean runningAuto){
+    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads){
+
         if (MecanumDrive.isSlowBot) { //if the robot is slowbot, use ComplexMechGlob.
-            return new ComplexMechGlob(hardwareMap, telemetry); //Go to ComplexMechGlob class
+            return new ComplexMechGlob(hardwareMap, telemetry, preloads); //Go to ComplexMechGlob class
 
         } else { //otherwise, use MechGlob
             return new MechGlob(); //Go to MechGlob class
@@ -149,7 +150,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             this.position = position;
         }
     }
-    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
+    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads) {
 
         //this changes some lists if we are using WilyWorks
         if (WilyWorks.isSimulating) {
@@ -172,7 +173,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
         servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
-
+        slotOccupiedBy = new ArrayList<>(Arrays.asList(preloads));
         /*
          * Here we set our flywheels to the RUN_USING_ENCODER runmode.
          * If you notice that you have no control over the velocity of the motor, it just jumps
