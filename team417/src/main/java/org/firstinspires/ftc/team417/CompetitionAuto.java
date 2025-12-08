@@ -44,13 +44,11 @@ public class CompetitionAuto extends BaseOpMode {
     double minIntakes = 0.0;
     double maxIntakes = 3.0;
     TextMenu menu = new TextMenu();
-    LimelightDetector detector = new LimelightDetector(hardwareMap);
     MenuInput menuInput = new MenuInput(MenuInput.InputType.CONTROLLER);
     Pattern pattern;
     Alliance chosenAlliance;
     SlowBotMovement chosenMovement;
     double intakeCycles;
-    MecanumDrive drive;
 
     public Action getPath(SlowBotMovement chosenMovement, Alliance chosenAlliance, double intakeCycles) {
         Pose2d startPose = new Pose2d(0, 0, 0);
@@ -178,6 +176,7 @@ public class CompetitionAuto extends BaseOpMode {
         Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
+        detector = new LimelightDetector(hardwareMap);
 
 
         // Text menu for FastBot
@@ -290,6 +289,8 @@ public class CompetitionAuto extends BaseOpMode {
                 MecanumDrive.sendTelemetryPacket(packet);
             telemetry.update();
         }
+
+        detector.close();
     }
 }
 
@@ -303,7 +304,7 @@ class LaunchAction extends RobotAction {
 
     @Override
     public boolean run(double elapsedTime) {
-        BaseOpMode.tryResetRobotPose(opMode.detector, opMode.drive); // Resets the robot pose only if the robot is not moving
+        opMode.tryResetRobotPose(); // Resets the robot pose only if the robot is not moving
         return false;
     }
 }

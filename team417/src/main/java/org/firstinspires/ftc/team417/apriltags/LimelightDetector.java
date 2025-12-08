@@ -125,7 +125,7 @@ public class LimelightDetector implements Closeable {
             telemetry.addData("Pipeline", "Index: %d, Type: %s",
                     status.getPipelineIndex(), status.getPipelineType());
 
-            if (result.isValid()) {
+            if (result != null && result.isValid()) {
                 // Access general information
                 Pose3D botPose = result.getBotpose();
                 double captureLatency = result.getCaptureLatency();
@@ -212,7 +212,7 @@ public class LimelightDetector implements Closeable {
 
         List<LLResultTypes.FiducialResult> currentDetections = new ArrayList<>();
 
-        if (result.isValid())
+        if (result != null && result.isValid())
             currentDetections = result.getFiducialResults();
 
         // Remove all AprilTags that don't have ID 21, 22, or 23
@@ -279,24 +279,8 @@ public class LimelightDetector implements Closeable {
     public Pose2d detectRobotPose() {
         LLResult result = limelight.getLatestResult();
 
-        if (result.isValid()) {
-            List<LLResultTypes.FiducialResult> currentDetections = result.getFiducialResults();
-
-            // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot.
-            //  We want the AprilTag that is as straight on as possible,
-            //  that is, the lowest absolute value x.
-            // For more information about the info the AprilTagDetection object contains, see this link:
-            //  https://ftc-docs.firstinspires.org/en/latest/apriltag/understanding_apriltag_detection_values/understanding-apriltag-detection-values.html
-
-            LLResultTypes.FiducialResult detection = currentDetections.stream()
-                    .min(Comparator.comparingDouble(aprilTagDetection ->
-                            Math.abs(aprilTagDetection.getTargetXDegrees()))).orElse(null);
-
-            if (detection == null) {
-                return null;
-            }
-
-            Pose3D pose = detection.getRobotPoseFieldSpace();
+        if (result != null && result.isValid()) {
+            Pose3D pose = result.getBotpose_MT2();
 
             return new Pose2d(
                     pose.getPosition().x,
@@ -305,6 +289,13 @@ public class LimelightDetector implements Closeable {
         }
 
         return null;
+    }
+
+    /**
+     * Feed in the yaw from the IMU for MT2.
+     */
+    public void updateRobotYaw(double yaw) {
+        limelight.updateRobotOrientation(Math.toDegrees(yaw));
     }
 
     /**

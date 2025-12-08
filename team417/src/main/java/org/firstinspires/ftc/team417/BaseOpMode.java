@@ -11,12 +11,15 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  * Autonomous logic. All TeleOp and Autonomous classes should derive from this class.
  */
 abstract public class BaseOpMode extends LinearOpMode {
+    LimelightDetector detector;
+    MecanumDrive drive;
+
     // Resets the robot pose only if the robot is not moving
-    public static void tryResetRobotPose(LimelightDetector detector, MecanumDrive drive) {
-        if (isZero(drive.rightBack.getVelocity())
-                && isZero(drive.rightFront.getVelocity())
-                && isZero(drive.leftBack.getVelocity())
-                && isZero(drive.leftFront.getVelocity())) {
+    public void tryResetRobotPose() {
+        if (isZero(drive.poseVelocity.linearVel.x)
+                && isZero(drive.poseVelocity.linearVel.y)
+                && isZero(drive.poseVelocity.angVel)
+        ) {
 
             Pose2d pose = detector.detectRobotPose();
 
@@ -26,9 +29,9 @@ abstract public class BaseOpMode extends LinearOpMode {
         }
     }
 
-    // Sees if a number is within one one-thousandths of zero
-    private static boolean isZero(double x) {
-        return Math.abs(x) < 0.001;
+    // Sees if a number is within one one-hundredths of zero
+    private static boolean isZero(double z) {
+        return Math.abs(z) < 0.01;
     }
 }
 

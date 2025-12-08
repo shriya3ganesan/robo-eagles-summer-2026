@@ -36,12 +36,10 @@ public class CompetitionTeleOp extends BaseOpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
-    LimelightDetector detector = new LimelightDetector(hardwareMap);
-    MecanumDrive drive;
-
     @Override
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
+        detector = new LimelightDetector(hardwareMap);
         drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
 
@@ -61,17 +59,12 @@ public class CompetitionTeleOp extends BaseOpMode {
 
                     ),
                     halfLinearHalfCubic(-gamepad1.right_stick_x)
-
-
             ));
 
-
-
             // Update the current pose:
-
             drive.updatePoseEstimate();
 
-
+            detector.updateRobotYaw(drive.pose.heading.log());
 
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
@@ -83,7 +76,6 @@ public class CompetitionTeleOp extends BaseOpMode {
             packet.fieldOverlay().setStroke("#3F51B5");
             Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
             MecanumDrive.sendTelemetryPacket(packet);
-
 
             //add slowbot teleop controls here
             if (gamepad2.yWasPressed()) {
@@ -102,8 +94,13 @@ public class CompetitionTeleOp extends BaseOpMode {
             mechGlob.update();
             
             MecanumDrive.sendTelemetryPacket(packet);
+
+            detector.detectPatternAndTelemeter(CompetitionAuto.Alliance.BLUE, telemetry, true);
+
             telemetry.update();
         }
+
+        detector.close();
     }
 
 
