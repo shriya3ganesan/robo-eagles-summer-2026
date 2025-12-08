@@ -2,6 +2,7 @@ package org.firstinspires.ftc.team417;
 
 import android.annotation.SuppressLint;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -11,8 +12,16 @@ import android.graphics.Color;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
+@Config
 public class CoolColorDetector {
+    public static double MINIMUM_DISTANCE = 60; //25mm
+    public static double PURPLE_MIN_HUE = 200;
+    public static double PURPLE_MAX_HUE = 225;
+    public static double GREEN_MIN_HUE = 165;
+
+    public static double GREEN_MAX_HUE = 180;
+
+
     Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
@@ -30,7 +39,6 @@ public class CoolColorDetector {
     @SuppressLint("DefaultLocale")
     // --- Use logic comparing both sensors ---
     PixelColor detectArtifactColor() {
-        final double MINIMUM_DISTANCE = 25;         //25mm
         double distance1 = ((DistanceSensor) sensor1).getDistance(DistanceUnit.MM);
         double distance2 = ((DistanceSensor) sensor2).getDistance(DistanceUnit.MM);
         NormalizedColorSensor sensor;
@@ -57,9 +65,9 @@ public class CoolColorDetector {
         telemetry.addLine(String.format(" %.2f\", %.2f\"", distance1, distance2));
 
 
-        if (hue > 165 && hue < 180) {      //range determined from testing
+        if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) {      //range determined from testing
             return PixelColor.GREEN;
-        } else if (hue >= 200 && hue <= 225) {     //range determined from testing
+        } else if (hue >= PURPLE_MIN_HUE && hue <= PURPLE_MAX_HUE) {     //range determined from testing
             return PixelColor.PURPLE;
         } else {
             //error case use the most likely color

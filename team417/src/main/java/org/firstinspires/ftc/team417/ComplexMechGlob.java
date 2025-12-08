@@ -119,6 +119,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
+    double feederPower;
 
 
     HardwareMap hardwareMap;
@@ -192,6 +193,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setLaunchVelocity(LaunchDistance.NEAR);
 
@@ -285,12 +287,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
         } else if (launchDistance == LaunchDistance.FAR){
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
         } else {
             upperLaunchVelocity = 0;
             lowerLaunchVelocity = 0;
+            servoBLaunchFeeder.setPower(0);
+            servoFLaunchFeeder.setPower(0);
+            feederPower = 0;
         }
     }
     int findSlotFromPosition (double position, double [] positions) {
@@ -383,8 +390,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-        servoBLaunchFeeder.setPower(-FEEDER_POWER);
-        servoFLaunchFeeder.setPower(FEEDER_POWER);
+        servoBLaunchFeeder.setPower(feederPower);
+        servoFLaunchFeeder.setPower(feederPower);
     }
 }
 

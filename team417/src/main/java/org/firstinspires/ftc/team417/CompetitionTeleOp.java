@@ -45,16 +45,29 @@ public class CompetitionTeleOp extends BaseOpMode {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
+        AmazingAutoAim amazingAutoAim = null;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
-
+        //Variable for auto aim
+        double amountToTurn;
         // Initialize motors, servos, LEDs
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
 
+
         while (opModeIsActive()) {
             telemetry.addLine("Running TeleOp!");
+
+            if (gamepad1.rightBumperWasPressed()) {
+                amazingAutoAim = new AmazingAutoAim(telemetry, CompetitionAuto.Alliance.BLUE);
+            }
+
+            if (gamepad1.right_bumper) {
+                amountToTurn = -amazingAutoAim.get(drive.pose);
+            } else {
+                amountToTurn = halfLinearHalfCubic(-gamepad1.right_stick_x);
+            }
 
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
@@ -63,8 +76,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                             halfLinearHalfCubic(-gamepad1.left_stick_x * doSLOWMODE())
 
                     ),
-                    halfLinearHalfCubic(-gamepad1.right_stick_x)
-
+                    amountToTurn
 
             ));
 
@@ -170,11 +182,22 @@ class AmazingAutoAim {
         double angle = beta - alpha;
         double normalizedAngle = AngleUnit.normalizeRadians(angle);
 
-        return pid.calculate(normalizedAngle);
+        double pidOutput = pid.calculate(normalizedAngle);
+
+        if (pidOutput  <= -1) {
+            return -1;
+        } else if (pidOutput >= 1){
+            return 1;
+        } else {
+            return pidOutput;
+        }
+
+
 
     }
 
 }
+
 
 class PIDController {
 
