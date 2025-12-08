@@ -43,9 +43,10 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     MechGlob(){}
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
-    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, boolean runningAuto){
+    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads){
+
         if (MecanumDrive.isSlowBot) { //if the robot is slowbot, use ComplexMechGlob.
-            return new ComplexMechGlob(hardwareMap, telemetry); //Go to ComplexMechGlob class
+            return new ComplexMechGlob(hardwareMap, telemetry, preloads); //Go to ComplexMechGlob class
 
         } else { //otherwise, use MechGlob
             return new MechGlob(); //Go to MechGlob class
@@ -69,6 +70,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
+    public PixelColor getSlotColor(int slotIndex) {
+        return PixelColor.NONE;
     void controlDrumManually () {}
 
     public String getSlotColor(int slotIndex) {
@@ -121,6 +124,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
+    double feederPower;
 
 
     HardwareMap hardwareMap;
@@ -150,7 +154,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             this.position = position;
         }
     }
-    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
+    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads) {
 
         //this changes some lists if we are using WilyWorks
         if (WilyWorks.isSimulating) {
@@ -173,6 +177,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
         servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
+        slotOccupiedBy = new ArrayList<>(Arrays.asList(preloads));
 
 
         /*
@@ -195,6 +200,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         setLaunchVelocity(LaunchDistance.NEAR);
 
@@ -288,12 +294,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
         } else if (launchDistance == LaunchDistance.FAR){
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
         } else {
             upperLaunchVelocity = 0;
             lowerLaunchVelocity = 0;
+            servoBLaunchFeeder.setPower(0);
+            servoFLaunchFeeder.setPower(0);
+            feederPower = 0;
         }
     }
     int findSlotFromPosition (double position, double [] positions) {
@@ -320,9 +331,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     }
     @Override
-    public String getSlotColor(int slotIndex) {
+    public PixelColor getSlotColor(int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
-        return artifactColor.toString();
+        return artifactColor;
     }
 
     @Override
@@ -400,8 +411,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-        servoBLaunchFeeder.setPower(-FEEDER_POWER);
-        servoFLaunchFeeder.setPower(FEEDER_POWER);
+        servoBLaunchFeeder.setPower(feederPower);
+        servoFLaunchFeeder.setPower(feederPower);
     }
 }
 

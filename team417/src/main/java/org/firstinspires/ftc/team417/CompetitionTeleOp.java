@@ -42,19 +42,53 @@ public class CompetitionTeleOp extends BaseOpMode {
 
     @Override
     public void runOpMode() {
-        Pose2d beginPose = new Pose2d(0, 0, 0);
+        Pose2d beginPose;
+        if (TransferState.pose != null) {
+            beginPose = TransferState.pose;
+        } else {
+            beginPose = new Pose2d(0, 0, 0);
+        }
+
+        CompetitionAuto.Alliance alliance;
+        if (TransferState.chosenAlliance != null) {
+            alliance = TransferState.chosenAlliance;
+        } else {
+            alliance = CompetitionAuto.Alliance.BLUE;
+        }
+
+        PixelColor[] storedColors;
+        if (TransferState.storedColors != null) {
+            storedColors = TransferState.storedColors;
+        } else {
+            storedColors = new PixelColor[] {PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        }
+
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
+        PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, storedColors);
+        AmazingAutoAim amazingAutoAim = null;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
-
+        //Variable for auto aim
+        double amountToTurn;
         // Initialize motors, servos, LEDs
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
 
+
         while (opModeIsActive()) {
             telemetry.addLine("Running TeleOp!");
+
+            if (gamepad1.rightBumperWasPressed()) {
+                amazingAutoAim = new AmazingAutoAim(telemetry, alliance);
+            }
+
+            if (gamepad1.right_bumper) {
+                amountToTurn = -amazingAutoAim.get(drive.pose);
+            } else {
+                amountToTurn = halfLinearHalfCubic(-gamepad1.right_stick_x);
+            }
 
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
@@ -63,8 +97,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                             halfLinearHalfCubic(-gamepad1.left_stick_x * doSLOWMODE())
 
                     ),
-                    halfLinearHalfCubic(-gamepad1.right_stick_x)
-
+                    amountToTurn
 
             ));
 
@@ -110,9 +143,9 @@ public class CompetitionTeleOp extends BaseOpMode {
             mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
 
-            String slot0 = mechGlob.getSlotColor(0);
-            String slot1 = mechGlob.getSlotColor(1);
-            String slot2 = mechGlob.getSlotColor(2);
+            PixelColor slot0 = mechGlob.getSlotColor(0);
+            PixelColor slot1 = mechGlob.getSlotColor(1);
+            PixelColor slot2 = mechGlob.getSlotColor(2);
 
             telemetry.addData("Slot0: ", slot0);
             telemetry.addData("Slot1: ", slot1);
@@ -172,11 +205,22 @@ class AmazingAutoAim {
         double angle = beta - alpha;
         double normalizedAngle = AngleUnit.normalizeRadians(angle);
 
-        return pid.calculate(normalizedAngle);
+        double pidOutput = pid.calculate(normalizedAngle);
+
+        if (pidOutput  <= -1) {
+            return -1;
+        } else if (pidOutput >= 1){
+            return 1;
+        } else {
+            return pidOutput;
+        }
+
+
 
     }
 
 }
+
 
 class PIDController {
 
