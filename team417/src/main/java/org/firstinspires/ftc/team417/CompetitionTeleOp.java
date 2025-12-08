@@ -103,6 +103,8 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.dpadRightWasPressed()) {
                 // turns off the flywheels
                 mechGlob.setLaunchVelocity(LaunchDistance.OFF);
+            } else if (gamepad2.rightBumperWasPressed()) {
+                mechGlob.controlDrumManually();
             }
 
             mechGlob.intake(gamepad2.left_stick_y);

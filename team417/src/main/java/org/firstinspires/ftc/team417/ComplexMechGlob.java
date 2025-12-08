@@ -69,6 +69,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
+    void controlDrumManually () {}
+
     public String getSlotColor(int slotIndex) {
         return "NONE";
     }
@@ -171,6 +173,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
         servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
+
 
         /*
          * Here we set our flywheels to the RUN_USING_ENCODER runmode.
@@ -302,6 +305,20 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         return -1;
     }
 
+    void controlDrumManually () {
+        int currentSlot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+        if (currentSlot != -1) {
+            slotOccupiedBy.set(currentSlot, PixelColor.PURPLE);
+        }
+        int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
+        if (minSlot != -1) {
+            addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+        }
+        telemetry.addData("LastQueuedPosition", lastQueuedPosition);
+        telemetry.addData("DrumPosition", hwDrumPosition);
+        telemetry.update();
+
+    }
     @Override
     public String getSlotColor(int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
