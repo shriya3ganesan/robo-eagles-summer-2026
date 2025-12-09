@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.wilyworks.common.WilyWorks;
 
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
 import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
@@ -187,9 +188,9 @@ public class CompetitionAuto extends BaseOpMode {
     @Override
     public void runOpMode() {
 
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
         Pose2d startPose = new Pose2d(0, 0, 0);
-
 
         Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
@@ -345,7 +346,7 @@ class LaunchAction extends RobotAction {
         this.orderCount = orderCount;
     }
     public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<String> array = new ArrayList<>();
+        ArrayList<PixelColor> array = new ArrayList<>();
         array.add(mechGlob.getSlotColor(0));
         array.add(mechGlob.getSlotColor(1));
         array.add(mechGlob.getSlotColor(2));
@@ -390,7 +391,7 @@ class PreLaunchAction extends RobotAction {
         this.mechGlob = mechGlob;
     }
     public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<String> array = new ArrayList<>();
+        ArrayList<PixelColor> array = new ArrayList<>();
         array.add(mechGlob.getSlotColor(0));
         array.add(mechGlob.getSlotColor(1));
         array.add(mechGlob.getSlotColor(2));
