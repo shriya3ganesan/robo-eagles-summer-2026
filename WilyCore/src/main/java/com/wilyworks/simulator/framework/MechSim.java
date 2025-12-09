@@ -219,7 +219,7 @@ class DecodeSlowBotMechSim extends MechSim {
     final double[] INTAKE_POSITIONS = { 0.0/6, 2.0/6, 4.0/6 }; // AKA 'launch' positions
     final double[] TRANSFER_POSITIONS = { 3.0/6, 5.0/6, 1.0/6 }; // Servo positions for intaking
     final double SLOT_EPSILON = 0.02; // Epsilon for determining a slot relative to a [0, 1] range
-    final double MIN_TRANSFER_TIME = 0.1; // Second it takes for a transfer
+    final double MIN_TRANSFER_TIME = 0.020; // Second it takes for a transfer
     final double MIN_TRANSFER_POSITION = 0.6; // Minimum position to start a transfer
     final double TRANSFER_SERVO_SPEED = (60.0 / 360) / 0.25; // Speed of a goBilda torque servo, position/s
     final double LAUNCH_SPEED = 144; // Ball launch speed, inches per second
@@ -232,6 +232,7 @@ class DecodeSlowBotMechSim extends MechSim {
     final double LAUNCH_ACCELERATION = 1000; // Increase flywheel speed by this many ticks per second
     final double LAUNCH_DROP = 500; // Drop flywheel speed by this many ticks on launch
     final double LAUNCH_EPSILON = 50; // Target and actual flywheel velocities must be within this amount
+    final double INTAKE_ERROR_PROBABILITY = 0.2; // Probability that a ball is missed on intake
 
     // Struct for tracking ball locations:
     static class Ball {
@@ -607,8 +608,15 @@ class DecodeSlowBotMechSim extends MechSim {
                     for (Ball ball : fieldBalls) {
                         double distance = Math.hypot(ball.point.x - intakePoint.x, ball.point.y - intakePoint.y);
                         if (distance < INTAKE_EPSILON) {
-                            intakeBall = ball;
-                            fieldBalls.remove(ball); // I think this is okay if we terminate the loop...
+                            // Remove the ball from the field. I think this is okay so long as we
+                            // terminate the loop...
+                            fieldBalls.remove(ball);
+
+                            // Move the ball into the intake position, unless random error says
+                            // to toss it:
+                            if ((!WilyCore.enableSensorError) || (Math.random() > INTAKE_ERROR_PROBABILITY)) {
+                                intakeBall = ball;
+                            }
                             break;
                         }
                     }
