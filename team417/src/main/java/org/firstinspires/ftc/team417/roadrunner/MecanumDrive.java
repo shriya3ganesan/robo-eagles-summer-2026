@@ -117,7 +117,39 @@ public final class MecanumDrive {
                 pinpoint.yReversed = false;
                 pinpoint.xOffset = -199.4;
                 pinpoint.yOffset = -120.2;
-            } else {
+            } else if (isFastBot) {
+                // Your competition robot Loony Tune configuration is here:
+                logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+                usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+
+                inPerTick = 1.0;
+                lateralInPerTick = 0.798;
+                trackWidthTicks = 13.82;
+
+                kS = 0.625;
+                kV = 0.183;
+                kA = 0.0110;
+
+                axialGain      = 2.0;
+                axialVelGain   = 0.55;
+                lateralGain    = 9.0;
+                lateralVelGain = 2.0;
+                headingGain    = 9.4;
+                headingVelGain = 0.0;
+
+                otos.offset.x = 0;
+                otos.offset.y = 0;
+                otos.offset.h = Math.toRadians(0);
+                otos.linearScalar = 0;
+                otos.angularScalar = 0;
+
+                pinpoint.ticksPerMm = 19.589;
+                pinpoint.xReversed = false;
+                pinpoint.yReversed = true;
+                pinpoint.xOffset = 119.9;
+                pinpoint.yOffset = 5.4;
+            }
+            else {
                 // Your competition robot Loony Tune configuration is here:
                 logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
                 usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;

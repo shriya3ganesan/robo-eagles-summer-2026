@@ -42,10 +42,30 @@ public class CompetitionTeleOp extends BaseOpMode {
 
     @Override
     public void runOpMode() {
-        Pose2d beginPose = new Pose2d(0, 0, 0);
+        Pose2d beginPose;
+        if (TransferState.pose != null) {
+            beginPose = TransferState.pose;
+        } else {
+            beginPose = new Pose2d(0, 0, 0);
+        }
+
+        CompetitionAuto.Alliance alliance;
+        if (TransferState.chosenAlliance != null) {
+            alliance = TransferState.chosenAlliance;
+        } else {
+            alliance = CompetitionAuto.Alliance.BLUE;
+        }
+
+        PixelColor[] storedColors;
+        if (TransferState.storedColors != null) {
+            storedColors = TransferState.storedColors;
+        } else {
+            storedColors = new PixelColor[] {PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        }
+
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
         PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, storedColors);
         AmazingAutoAim amazingAutoAim = null;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
@@ -61,7 +81,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addLine("Running TeleOp!");
 
             if (gamepad1.rightBumperWasPressed()) {
-                amazingAutoAim = new AmazingAutoAim(telemetry, CompetitionAuto.Alliance.BLUE);
+                amazingAutoAim = new AmazingAutoAim(telemetry, alliance);
             }
 
             if (gamepad1.right_bumper) {
@@ -116,14 +136,16 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.dpadRightWasPressed()) {
                 // turns off the flywheels
                 mechGlob.setLaunchVelocity(LaunchDistance.OFF);
+            } else if (gamepad2.rightBumperWasPressed()) {
+                mechGlob.controlDrumManually();
             }
 
             mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
 
-            String slot0 = mechGlob.getSlotColor(0);
-            String slot1 = mechGlob.getSlotColor(1);
-            String slot2 = mechGlob.getSlotColor(2);
+            PixelColor slot0 = mechGlob.getSlotColor(0);
+            PixelColor slot1 = mechGlob.getSlotColor(1);
+            PixelColor slot2 = mechGlob.getSlotColor(2);
 
             telemetry.addData("Slot0: ", slot0);
             telemetry.addData("Slot1: ", slot1);
