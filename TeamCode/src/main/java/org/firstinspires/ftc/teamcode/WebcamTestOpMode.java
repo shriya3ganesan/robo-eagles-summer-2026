@@ -34,7 +34,7 @@ public class WebcamTestOpMode  extends OpMode {
             double angleToTag = id24.ftcPose.yaw;
             //turret.changeTurretByDegrees(angleToTag);
 
-            distanceToGoalCM = id24.ftcPose.range;
+            double distanceToGoalCM = id24.ftcPose.range;
             // NOTE: use this after distance vs speed has been measured and calibrated
             //launcher.setMotorVelocityForDistance(distanceToGoalCM);
         } else {
