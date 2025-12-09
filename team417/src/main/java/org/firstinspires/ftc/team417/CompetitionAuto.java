@@ -345,36 +345,23 @@ class LaunchAction extends RobotAction {
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;
     }
-    public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<PixelColor> array = new ArrayList<>();
-        array.add(mechGlob.getSlotColor(0));
-        array.add(mechGlob.getSlotColor(1));
-        array.add(mechGlob.getSlotColor(2));
-        return array.contains(requestedColor.toString());
-    }
 
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
         }
@@ -390,21 +377,11 @@ class PreLaunchAction extends RobotAction {
         this.orderCount = orderCount;
         this.mechGlob = mechGlob;
     }
-    public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<PixelColor> array = new ArrayList<>();
-        array.add(mechGlob.getSlotColor(0));
-        array.add(mechGlob.getSlotColor(1));
-        array.add(mechGlob.getSlotColor(2));
-        return array.contains(requestedColor.toString());
-    }
+
 
     @Override
     public boolean run(double elapsedTime) {
-        if (hasColor(orderCount.getColor())) {
-            mechGlob.preLaunch(orderCount.getColor());
-        } else if (hasColor(RequestedColor.EITHER)) {
-            mechGlob.preLaunch(RequestedColor.EITHER);
-        }
+        mechGlob.preLaunch(orderCount.getColor());
         return false;
     }
 }
@@ -448,6 +425,7 @@ class GetColor {
         }
 
     }
+
 
     public RequestedColor getColor() {
         return array[orderCount];
