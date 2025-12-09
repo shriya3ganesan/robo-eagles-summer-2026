@@ -263,11 +263,9 @@ public class CompetitionAuto extends BaseOpMode {
                 drive.setPose(SBFarStartPose);
                 break;
         }
-
         // this lets us move the robot to see the obelisk before start and after init
         while (opModeIsActive()) {
             telemetry.addLine("Ok to move \n A to start");
-            telemetry.addData("Last valid pattern: ", pattern);
             telemetry.update();
             if (gamepad1.aWasPressed()) {
                 break;
@@ -290,8 +288,7 @@ public class CompetitionAuto extends BaseOpMode {
 
 
         // Assume unknown pattern unless detected otherwise.
-        pattern = Pattern.UNKNOWN;
-        pattern = Pattern.PPG; //temporary until hankang limelight
+
         // Detect the pattern with the AprilTags from the camera!
         // Wait for Start to be pressed on the Driver Hub!
         // (This try-with-resources statement automatically calls detector.close() when it exits
