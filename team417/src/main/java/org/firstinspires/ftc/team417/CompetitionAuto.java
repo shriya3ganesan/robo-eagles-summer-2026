@@ -22,10 +22,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
@@ -78,6 +75,7 @@ public class CompetitionAuto extends BaseOpMode {
             case NEAR:
                 trajectoryAction = drive.actionBuilder(SBNearStartPose, poseMap);
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(-51))
+                        .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
                         .splineToConstantHeading(new Vector2d(-12, 12), Math.toRadians(-51))
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(0))
@@ -86,6 +84,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .setTangent(Math.toRadians(90))
                         .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
+                        .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -96,6 +95,8 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(0,new IntakeAction(mechGlob, 1))
                             .setTangent(Math.toRadians(90))
                             .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
+                            .afterDisp(0, new IntakeAction(mechGlob, 0))
+                            .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
                             .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -106,6 +107,8 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(0,new IntakeAction(mechGlob, 1))
                                 .setTangent(Math.toRadians(90))
                                 .splineToConstantHeading(new Vector2d(36, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
+                                .afterDisp(0, new IntakeAction(mechGlob, 0))
+                                .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
                                 .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -124,6 +127,8 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0,new IntakeAction(mechGlob, 1))
                         .setTangent(Math.toRadians(90))
                         .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90), new TranslationalVelConstraint(10))
+                        .afterDisp(0, new IntakeAction(mechGlob, 0))
+                        .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))  //go to launch position
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -133,6 +138,8 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(0,new IntakeAction(mechGlob, 1))
                             .setTangent(Math.toRadians(90))
                             .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90), new TranslationalVelConstraint(10))
+                            .afterDisp(0, new IntakeAction(mechGlob, 0))
+                            .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
                             .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -143,6 +150,8 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(0,new IntakeAction(mechGlob, 1))
                                 .setTangent(Math.toRadians(90))
                                 .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90), new TranslationalVelConstraint(10))
+                                .afterDisp(0, new IntakeAction(mechGlob, 0))
+                                .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
                                 .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -192,7 +201,6 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Text menu for FastBot
 
-
         // Text menu for SlowBot
         menu.add(new MenuHeader("AUTO SETUP"))
                 .add() // empty line for spacing
@@ -210,7 +218,6 @@ public class CompetitionAuto extends BaseOpMode {
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
-
         while (!menu.isCompleted() && !isStopRequested()) {
             // get x, y (stick) and select (A) input from controller
             // on Wily Works, this is x, y (wasd) and select (enter) on the keyboard
@@ -222,12 +229,13 @@ public class CompetitionAuto extends BaseOpMode {
             }
             telemetry.update();
         }
-
         GetColor countBalls = new GetColor(pattern);
         Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
+
+
 
         if (chosenMovement == SlowBotMovement.NEAR) {
             mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
@@ -258,8 +266,6 @@ public class CompetitionAuto extends BaseOpMode {
                 break;
         }
         trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles, drive, mechGlob, countBalls);
-
-        // Get a preview of the trajectory's path:
         Canvas previewCanvas = new Canvas();
         trajectoryAction.preview(previewCanvas);
 
@@ -267,6 +273,10 @@ public class CompetitionAuto extends BaseOpMode {
         TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
         packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
         MecanumDrive.sendTelemetryPacket(packet);
+
+
+        // Get a preview of the trajectory's path:
+
 
 
         // Assume unknown pattern unless detected otherwise.
@@ -295,11 +305,7 @@ public class CompetitionAuto extends BaseOpMode {
                     }
                 }
         }
-        if(chosenMovement == SlowBotMovement.NEAR) {
-            mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
-        } else {
-            mechGlob.setLaunchVelocity(LaunchDistance.FAR);
-        }
+
         sleep((long) waitTime * 1000);
         boolean more = true;
         while (opModeIsActive() && more) {
@@ -330,20 +336,39 @@ class LaunchAction extends RobotAction {
         this.mechGlob = mechGlob;
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;
-
-
-
+    }
+    public boolean hasColor(RequestedColor requestedColor) {
+        ArrayList<String> array = new ArrayList<>();
+        array.add(mechGlob.getSlotColor(0));
+        array.add(mechGlob.getSlotColor(1));
+        array.add(mechGlob.getSlotColor(2));
+        return array.contains(requestedColor.toString());
     }
 
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
-            mechGlob.launch(orderCount.getColor());
-            orderCount.increment();
-            mechGlob.launch(orderCount.getColor());
-            orderCount.increment();
-            mechGlob.launch(orderCount.getColor());
-            orderCount.increment();
+            if (hasColor(orderCount.getColor())) {
+                mechGlob.launch(orderCount.getColor());
+                orderCount.increment();
+            } else if (hasColor(RequestedColor.EITHER)) {
+                mechGlob.launch(RequestedColor.EITHER);
+                orderCount.increment();
+            }
+            if (hasColor(orderCount.getColor())) {
+                mechGlob.launch(orderCount.getColor());
+                orderCount.increment();
+            } else if (hasColor(RequestedColor.EITHER)) {
+                mechGlob.launch(RequestedColor.EITHER);
+                orderCount.increment();
+            }
+            if (hasColor(orderCount.getColor())) {
+                mechGlob.launch(orderCount.getColor());
+                orderCount.increment();
+            } else if (hasColor(RequestedColor.EITHER)) {
+                mechGlob.launch(RequestedColor.EITHER);
+                orderCount.increment();
+            }
         }
         return !mechGlob.isDoneLaunching();    //we are done
     }
@@ -357,10 +382,22 @@ class PreLaunchAction extends RobotAction {
         this.orderCount = orderCount;
         this.mechGlob = mechGlob;
     }
+    public boolean hasColor(RequestedColor requestedColor) {
+        ArrayList<String> array = new ArrayList<>();
+        array.add(mechGlob.getSlotColor(0));
+        array.add(mechGlob.getSlotColor(1));
+        array.add(mechGlob.getSlotColor(2));
+        return array.contains(requestedColor.toString());
+    }
 
     @Override
     public boolean run(double elapsedTime) {
-        return mechGlob.preLaunch(orderCount.getColor());
+        if (hasColor(orderCount.getColor())) {
+            mechGlob.preLaunch(orderCount.getColor());
+        } else if (hasColor(RequestedColor.EITHER)) {
+            mechGlob.preLaunch(RequestedColor.EITHER);
+        }
+        return false;
     }
 }
 
