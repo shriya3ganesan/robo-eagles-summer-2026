@@ -127,6 +127,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
     double feederPower;
+    LaunchDistance launchDistance = LaunchDistance.OFF;
 
 
     HardwareMap hardwareMap;
@@ -204,7 +205,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        setLaunchVelocity(LaunchDistance.NEAR);
 
 
     }
@@ -249,7 +249,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
         //a class that controls the launcher and transfer
     boolean launch (RequestedColor requestedColor) {
-
+        if (launchDistance == LaunchDistance.OFF) {
+            launchDistance = LaunchDistance.NEAR;
+        }
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
         if (minSlot != -1){
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
@@ -295,6 +297,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
+        this.launchDistance = launchDistance;
+    }
+    void calculateLaunchVelocity () {
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
@@ -343,6 +348,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void update () {
         double intakePower = 0;
+
+        calculateLaunchVelocity();
+
         if (userIntakeSpeed < 0) {
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
@@ -355,10 +363,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
-                waitState = WaitState.INTAKE;
                 int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
                 if (minSlot != -1) {
                     addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+                    waitState = WaitState.INTAKE;
                 }
             }
         }
