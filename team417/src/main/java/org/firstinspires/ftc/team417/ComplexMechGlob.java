@@ -88,6 +88,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double FEEDER_POWER = 1;
     public static double TRANSFER_TIME_UP = 0.5;
     public static double TRANSFER_TIME_TOTAL = 1; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    // how long we wait before continuing after the color detector
+    // detects. this is 0 because it will likely become obsolete
+    public static double INTAKE_TIMER = 0;
     public static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
     public static double NEAR_FLYWHEEL_VELOCITY = 933; //was 1500
     public static double FLYWHEEL_BACK_SPIN = 150; //was 300
@@ -103,6 +106,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
 
     ElapsedTime transferTimer;
+    ElapsedTime intakeTimer;
     double userIntakeSpeed;
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
@@ -334,9 +338,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (minSlot != -1) {
             addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
         }
-        telemetry.addData("LastQueuedPosition", lastQueuedPosition);
-        telemetry.addData("DrumPosition", hwDrumPosition);
-        telemetry.update();
 
     }
     @Override
@@ -350,13 +351,18 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         double intakePower = 0;
 
         calculateLaunchVelocity();
-
-        if (userIntakeSpeed < 0) {
+        if (waitState == WaitState.DRUM_MOVE && userIntakeSpeed >= 0) {
+            //if we are moving the drum, do not allow intakes
+            intakePower = 0;
+        } else if (waitState == WaitState.DRUM_MOVE_WAIT) {
+            // always run the intake, even while we're waiting for the ball to enter the drum
+            intakePower = INTAKE_SPEED;
+        } else if (userIntakeSpeed < 0 ) {
+            // allow the intake to run if the driver wants it to
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
+            // if we are in the intake waitState, allow the intake to run
             if (waitState == WaitState.INTAKE) {
-                intakePower = INTAKE_SPEED;
-            } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
                 intakePower = INTAKE_SPEED;
             }
         }
@@ -407,12 +413,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (slotColor != PixelColor.NONE) {
                 int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
                 slotOccupiedBy.set(slot, slotColor);
+                waitState = WaitState.DRUM_MOVE_WAIT;
+                intakeTimer = new ElapsedTime();
+            }
+        }
+        if (waitState == WaitState.DRUM_MOVE_WAIT) {
+            if (intakeTimer.seconds() >= INTAKE_TIMER) {
                 waitState = WaitState.IDLE;
             }
-
-
-
         }
+
         servoDrum.setPosition(hwDrumPosition);
         //servoTransfer.setPosition(transferPosition);
 
