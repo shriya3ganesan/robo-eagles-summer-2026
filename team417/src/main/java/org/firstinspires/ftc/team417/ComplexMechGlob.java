@@ -88,8 +88,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double FEEDER_POWER = 1;
     public static double TRANSFER_TIME_UP = 0.7;
     public static double TRANSFER_TIME_TOTAL = 1.3; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    public static double TRANSFER_TIME_UP = 0.5;
-    public static double TRANSFER_TIME_TOTAL = 1; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
     public static double INTAKE_TIMER = 0;
