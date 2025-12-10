@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 public class CoolColorDetector {
-    public static double MINIMUM_DISTANCE = 60; //25mm
+    public static double MINIMUM_DISTANCE = 30;
     public static double PURPLE_MIN_HUE = 200;
     public static double PURPLE_MAX_HUE = 225;
     public static double GREEN_MIN_HUE = 155;
@@ -40,6 +40,7 @@ public class CoolColorDetector {
     PixelColor detectArtifactColor() {
         double distance1 = ((DistanceSensor) sensor1).getDistance(DistanceUnit.MM);
         double distance2 = ((DistanceSensor) sensor2).getDistance(DistanceUnit.MM);
+        PixelColor result;
         NormalizedColorSensor sensor;
 
         if (distance1 < MINIMUM_DISTANCE) {
@@ -47,7 +48,7 @@ public class CoolColorDetector {
         } else if (distance2 < MINIMUM_DISTANCE) {
             sensor = sensor2;
         } else {
-            telemetry.addLine(String.format(" %.2f\", %.2f\"", distance1, distance2));
+            telemetry.addLine(String.format(" %.1f, %.1f\"", distance1, distance2));
             return PixelColor.NONE;
         }
 
@@ -59,20 +60,22 @@ public class CoolColorDetector {
         String colorCube = String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
                 colors.toColor() & 0xffffff);
 
-        String string = String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
-                distance1, distance2, colorCube, hue);
+        if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) { //range determined from testing
+            result = PixelColor.GREEN;
+        } else if (hue >= PURPLE_MIN_HUE && hue <= PURPLE_MAX_HUE) { //range determined from testing
+            result = PixelColor.PURPLE;
+        } else {
+            //error case use the most likely color
+            result = PixelColor.NONE;
+        }
+
+        String string = String.format("Distances: %.1fmm, %.1fmm %s, Hue: %.2f, Choice: %s",
+                distance1, distance2, colorCube, hue, result);
         telemetry.log().add(string);
         telemetry.addLine(string);
 
-
-        if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) {      //range determined from testing
-            return PixelColor.GREEN;
-        } else if (hue >= PURPLE_MIN_HUE && hue <= PURPLE_MAX_HUE) {     //range determined from testing
-            return PixelColor.PURPLE;
-        } else {
-            //error case use the most likely color
-            return PixelColor.PURPLE;
-        }
+        // Return the result that was decided in the if statements above
+        return result;
 
 
     }
