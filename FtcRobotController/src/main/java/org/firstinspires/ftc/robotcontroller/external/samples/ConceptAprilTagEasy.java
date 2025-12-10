@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import android.util.Size;
-
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -123,44 +121,14 @@ public class ConceptAprilTagEasy extends LinearOpMode {
         // Create the AprilTag processor the easy way.
         aprilTag = AprilTagProcessor.easyCreateWithDefaults();
 
-//        // Create the vision portal the easy way.
-//        if (USE_WEBCAM) {
-//            visionPortal = VisionPortal.easyCreateWithDefaults(
-//                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
-//        } else {
-//            visionPortal = VisionPortal.easyCreateWithDefaults(
-//                BuiltinCameraDirection.BACK, aprilTag);
-//        }
-
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the camera (webcam vs. built-in RC phone camera).
+        // Create the vision portal the easy way.
         if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
         } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                BuiltinCameraDirection.BACK, aprilTag);
         }
-
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(new Size(1920, 1080));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //builder.enableLiveView(true);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-
 
     }   // end method initAprilTag()
 

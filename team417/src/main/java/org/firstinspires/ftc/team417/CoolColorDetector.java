@@ -17,8 +17,7 @@ public class CoolColorDetector {
     public static double MINIMUM_DISTANCE = 60; //25mm
     public static double PURPLE_MIN_HUE = 200;
     public static double PURPLE_MAX_HUE = 225;
-    public static double GREEN_MIN_HUE = 165;
-
+    public static double GREEN_MIN_HUE = 155;
     public static double GREEN_MAX_HUE = 180;
 
 
@@ -60,9 +59,10 @@ public class CoolColorDetector {
         String colorCube = String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
                 colors.toColor() & 0xffffff);
 
-        telemetry.addLine(String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
-                distance1, distance2, colorCube, hue));
-        telemetry.addLine(String.format(" %.2f\", %.2f\"", distance1, distance2));
+        String string = String.format("Color Detect: %.2fmm, %.2fmm %s, Hue: %.1f",
+                distance1, distance2, colorCube, hue);
+        telemetry.log().add(string);
+        telemetry.addLine(string);
 
 
         if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) {      //range determined from testing
@@ -73,6 +73,8 @@ public class CoolColorDetector {
             //error case use the most likely color
             return PixelColor.PURPLE;
         }
+
+
     }
 
     public void testTelemetry() {
