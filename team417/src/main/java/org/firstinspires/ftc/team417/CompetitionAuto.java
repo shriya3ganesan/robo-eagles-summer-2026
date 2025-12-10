@@ -293,6 +293,8 @@ public class CompetitionAuto extends BaseOpMode {
         // Wait for Start to be pressed on the Driver Hub!
         // (This try-with-resources statement automatically calls detector.close() when it exits
         //  the try-block.)
+        pattern = Pattern.UNKNOWN;
+        pattern = Pattern.PPG; //temporary until hankang limelight
         try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
 
             while (opModeInInit()) {
