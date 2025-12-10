@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.team417.utils.WilyConfig;
 
 /**
  * This class exposes the competition version of TeleOp. As a general rule, add code to the
@@ -138,6 +139,13 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.setLaunchVelocity(LaunchDistance.OFF);
             } else if (gamepad2.rightBumperWasPressed()) {
                 mechGlob.controlDrumManually();
+            }
+            if (gamepad1.startWasPressed()) {
+                if (alliance == CompetitionAuto.Alliance.RED) {
+                    drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, -72 + ROBOT_LENGTH/2, Math.toRadians(-90)));
+                } else {
+                    drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, 72 - ROBOT_LENGTH / 2, Math.toRadians(90)));
+                }
             }
 
             mechGlob.intake(gamepad2.left_stick_y);
