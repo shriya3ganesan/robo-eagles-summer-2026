@@ -140,7 +140,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.rightBumperWasPressed()) {
                 mechGlob.controlDrumManually();
             }
-            if (gamepad1.startWasPressed()) {
+            if (gamepad1.guideWasPressed()) {
                 if (alliance == CompetitionAuto.Alliance.RED) {
                     drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, -72 + ROBOT_LENGTH/2, Math.toRadians(-90)));
                 } else {

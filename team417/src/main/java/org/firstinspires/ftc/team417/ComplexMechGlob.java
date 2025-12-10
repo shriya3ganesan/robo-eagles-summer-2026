@@ -87,7 +87,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     // TODO tune constants via FTC Dashboard:
     public static double FEEDER_POWER = 1;
     public static double TRANSFER_TIME_UP = 0.7;
-    public static double TRANSFER_TIME_TOTAL = 1.3; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    public static double TRANSFER_TIME_DOWN = 0.3; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
 
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
@@ -352,10 +352,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         double intakePower = 0;
 
         calculateLaunchVelocity();
-        if (waitState == WaitState.DRUM_MOVE && userIntakeSpeed >= 0) {
-            //if we are moving the drum, do not allow intakes
-            intakePower = 0;
-        } else if (waitState == WaitState.DRUM_MOVE_WAIT) {
+        if (waitState == WaitState.DRUM_MOVE_WAIT) {
             // always run the intake, even while we're waiting for the ball to enter the drum
             intakePower = INTAKE_SPEED;
         } else if (userIntakeSpeed < 0 ) {
@@ -364,6 +361,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         } else if (userIntakeSpeed > 0) {
             // if we are in the intake waitState, allow the intake to run
             if (waitState == WaitState.INTAKE) {
+                intakePower = INTAKE_SPEED;
+            } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
                 intakePower = INTAKE_SPEED;
             }
         }
@@ -376,7 +375,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                     waitState = WaitState.INTAKE;
                 }
             }
+            // this makes it so that after we are done launching the drum goes to intake position
+            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
+                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+            }
         }
+
         // let a firing request interrupt an intake
         if (waitState == WaitState.IDLE || waitState == WaitState.INTAKE) {
             if (!drumQueue.isEmpty()) {
@@ -404,7 +408,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
                 transferPosition = TRANSFER_ACTIVE_POSITION;
             }
-            if (transferTimer.seconds() >= TRANSFER_TIME_TOTAL) {
+            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
             }

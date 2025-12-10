@@ -57,7 +57,7 @@ public class CoolColorDetector {
         Color.colorToHSV(colors.toColor(), hsv);
         float hue = hsv[0];
 
-        String colorCube = String.format("<big><big><big><font color='#%06x'>\u25a0</font></big></big></big>",
+        String colorCube = String.format("<font color='#%06x'>\u25a0\u25a0\u25a0</font>",
                 colors.toColor() & 0xffffff);
 
         if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) { //range determined from testing
@@ -69,9 +69,11 @@ public class CoolColorDetector {
             result = PixelColor.NONE;
         }
 
-        String string = String.format("Distances: %.1fmm, %.1fmm %s, Hue: %.2f, Choice: %s",
+        String string = String.format("%.1f/%.1fmm %s Hue: %.1f %s",
                 distance1, distance2, colorCube, hue, result);
-        telemetry.log().add(string);
+        if (result != PixelColor.NONE) {
+            telemetry.log().add(string);
+        }
         telemetry.addLine(string);
 
         // Return the result that was decided in the if statements above

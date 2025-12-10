@@ -6,14 +6,13 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
 import com.acmerobotics.roadrunner.PoseMap;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.wilyworks.common.WilyWorks;
-
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
@@ -24,13 +23,12 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
-import java.util.ArrayList;
 
 /**
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
-@Autonomous(name = "Auto", group = "Competition", preselectTeleOp = "CompetitionTeleOp")
+@TeleOp(name = "Auto", group = "Competition")
 public class CompetitionAuto extends BaseOpMode {
     public enum Alliance {
         RED,
@@ -55,9 +53,6 @@ public class CompetitionAuto extends BaseOpMode {
 
 
     public Action getPath(SlowBotMovement chosenMovement, Alliance chosenAlliance, double intakeCycles, MecanumDrive drive, MechGlob mechGlob, GetColor countBalls) {
-
-
-
         PoseMap poseMap = pose -> new Pose2dDual<>(
                 pose.position.x,
                 pose.position.y,
@@ -73,8 +68,9 @@ public class CompetitionAuto extends BaseOpMode {
             case NEAR:
                 trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(-51))
+                        .afterDisp(0,new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
-                        .splineToConstantHeading(new Vector2d(-12, 12), Math.toRadians(-51))
+                        .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(139)), Math.toRadians(-51))
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
@@ -82,6 +78,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .setTangent(Math.toRadians(90))
                         .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
+                        //.afterDisp(0, new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
@@ -188,8 +185,8 @@ public class CompetitionAuto extends BaseOpMode {
 
         Pose2d startPose = new Pose2d(0, 0, 0);
 
-        Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
-        Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
+        Pose2d SBNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), 24+(ROBOT_LENGTH/2), Math.toRadians(-90));
+        Pose2d SBFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, ROBOT_WIDTH/2, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
         PixelColor[] preloads = new PixelColor[]{PixelColor.PURPLE, PixelColor.GREEN, PixelColor.PURPLE};
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
@@ -227,7 +224,7 @@ public class CompetitionAuto extends BaseOpMode {
             }
             telemetry.update();
         }
-        GetColor countBalls = new GetColor(pattern);
+        GetColor countBalls = new GetColor();
         Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
@@ -235,11 +232,7 @@ public class CompetitionAuto extends BaseOpMode {
 
 
 
-        if (chosenMovement == SlowBotMovement.NEAR) {
-            mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
-        } else {
-            mechGlob.setLaunchVelocity(LaunchDistance.FAR);
-        }
+
 
 
         // the first parameter is the type to return as
@@ -264,6 +257,7 @@ public class CompetitionAuto extends BaseOpMode {
                 break;
         }
         // this lets us move the robot to see the obelisk before start and after init
+        gamepad1.aWasPressed();   //clear
         while (opModeIsActive()) {
             telemetry.addLine("Ok to move \n A to start");
             telemetry.update();
@@ -294,7 +288,9 @@ public class CompetitionAuto extends BaseOpMode {
         // (This try-with-resources statement automatically calls detector.close() when it exits
         //  the try-block.)
         pattern = Pattern.UNKNOWN;
-        pattern = Pattern.PPG; //temporary until hankang limelight
+        pattern = Pattern.PPG;
+        countBalls.setPattern(pattern); //temporary until hankang limelight
+
         try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
 
             while (opModeInInit()) {
@@ -330,11 +326,18 @@ public class CompetitionAuto extends BaseOpMode {
             WilyWorks.updateSimulation(0); // Advance the simulation when not driving
             // Only send the packet if there's more to do in order to keep the very last
             // drawing up on the field once the robot is done:
+            if (gamepad1.b) {
+                drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0,0),0));
+                break;
+            }
             if (more)
                 MecanumDrive.sendTelemetryPacket(packet);
+
             telemetry.update();
         }
-
+        while (opModeIsActive()){
+            sleep(1000);
+        }
         // Stores these so they can be transferred to teleop
         TransferState.chosenAlliance = chosenAlliance;
         TransferState.storedColors = new PixelColor[] {mechGlob.getSlotColor(0), mechGlob.getSlotColor(1), mechGlob.getSlotColor(2)};
@@ -376,6 +379,19 @@ class LaunchAction extends RobotAction {
     }
 
 }
+class SpinUpAction extends RobotAction {
+    MechGlob mechGlob;
+    LaunchDistance launchDistance;
+    public SpinUpAction(MechGlob mechGlob, LaunchDistance distance) {
+        this.mechGlob = mechGlob;
+        this.launchDistance = distance;
+    }
+    @Override
+    public boolean run(double elapsedTime) {
+        mechGlob.setLaunchVelocity(launchDistance);
+        return false;
+    }
+}
 
 class PreLaunchAction extends RobotAction {
     MechGlob mechGlob;
@@ -413,7 +429,7 @@ class IntakeAction extends RobotAction {
 class GetColor {
     public int orderCount;   // 0, 1 or 2 to find color pattern
     public RequestedColor[] array;
-    public GetColor(Pattern pattern) {
+    public void setPattern(Pattern pattern) {
         if (pattern == Pattern.GPP) {
             array = new RequestedColor[] {RequestedColor.GREEN, RequestedColor.PURPLE, RequestedColor.PURPLE};
         } else if (pattern == Pattern.PGP) {
@@ -422,7 +438,6 @@ class GetColor {
             array = new RequestedColor[] {RequestedColor.PURPLE, RequestedColor.PURPLE, RequestedColor.GREEN};
         }
         orderCount = 0;
-
     }
     public void increment() {
         if (orderCount == 2) {
