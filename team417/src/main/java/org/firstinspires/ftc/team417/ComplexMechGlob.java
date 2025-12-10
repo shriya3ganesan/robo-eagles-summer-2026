@@ -363,10 +363,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
-                waitState = WaitState.INTAKE;
                 int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
                 if (minSlot != -1) {
                     addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+                    waitState = WaitState.INTAKE;
                 }
             }
         }
