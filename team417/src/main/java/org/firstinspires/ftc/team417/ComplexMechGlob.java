@@ -124,6 +124,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
     double feederPower;
+    LaunchDistance launchDistance = LaunchDistance.OFF;
 
 
     HardwareMap hardwareMap;
@@ -201,7 +202,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        setLaunchVelocity(LaunchDistance.NEAR);
 
 
     }
@@ -252,6 +252,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
         }
+        if (launchDistance == LaunchDistance.OFF) {
+            launchDistance = LaunchDistance.NEAR;
+        }
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){
@@ -290,6 +293,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
+        this.launchDistance = launchDistance;
+    }
+    void calculateLaunchVelocity () {
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
@@ -338,6 +344,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void update () {
         double intakePower = 0;
+
+        calculateLaunchVelocity();
+
         if (userIntakeSpeed < 0) {
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
