@@ -57,7 +57,9 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    void launch (RequestedColor requestedColor) {}
+    boolean launch (RequestedColor requestedColor) {
+        return true;
+    }
 
     void update () {}
 
@@ -83,21 +85,21 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     // TODO tune constants via FTC Dashboard:
-    static double FEEDER_POWER = 1;
-    static double TRANSFER_TIME_UP = 2;
-    static double TRANSFER_TIME_TOTAL = 5; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
-    static double NEAR_FLYWHEEL_VELOCITY = 933; //was 1500
-    static double FLYWHEEL_BACK_SPIN = 150; //was 300
-    static double TRANSFER_INACTIVE_POSITION = 0.45;
-    static double TRANSFER_ACTIVE_POSITION = 0.7;
-    static double REVERSE_INTAKE_SPEED = -1;
-    static double INTAKE_SPEED = 1;
-    static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
-    static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
-    static double DRUM_GATE_OPEN_POSITION = 1;
-    static double DRUM_GATE_CLOSED_POSITION = 0.7;
-    static double MOTOR_D_VALUE = 1;
+    public static double FEEDER_POWER = 1;
+    public static double TRANSFER_TIME_UP = 0.5;
+    public static double TRANSFER_TIME_TOTAL = 1; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    public static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    public static double NEAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    public static double FLYWHEEL_BACK_SPIN = 150; //was 300
+    public static double TRANSFER_INACTIVE_POSITION = 0.45;
+    public static double TRANSFER_ACTIVE_POSITION = 0.7;
+    public static double REVERSE_INTAKE_SPEED = -1;
+    public static double INTAKE_SPEED = 1;
+    public static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
+    public static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    public static double DRUM_GATE_OPEN_POSITION = 1;
+    public static double DRUM_GATE_CLOSED_POSITION = 0.6555;
+    public static double MOTOR_D_VALUE = 1;
 
 
     ElapsedTime transferTimer;
@@ -106,6 +108,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     ArrayList<PixelColor> slotOccupiedBy = new ArrayList<> (Collections.nCopies(3, PixelColor.NONE));
     enum WaitState {
+        DRUM_MOVE_WAIT, //waiting for the ball to fully enter the slot before moving the drum
         DRUM_MOVE, //waiting for the drum to reach desired position
         INTAKE, //waiting for the intake to finish
         TRANSFER, //waiting for the transfer to finish
@@ -245,16 +248,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
         //a class that controls the launcher and transfer
-    void launch (RequestedColor requestedColor) {
-
+    boolean launch (RequestedColor requestedColor) {
+        if (launchDistance == LaunchDistance.OFF) {
+            launchDistance = LaunchDistance.NEAR;
+        }
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
         if (minSlot != -1){
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
+            return true;
         }
-        if (launchDistance == LaunchDistance.OFF) {
-            launchDistance = LaunchDistance.NEAR;
-        }
+        return false;
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){

@@ -55,11 +55,7 @@ public class CompetitionAuto extends BaseOpMode {
 
 
     public Action getPath(SlowBotMovement chosenMovement, Alliance chosenAlliance, double intakeCycles, MecanumDrive drive, MechGlob mechGlob, GetColor countBalls) {
-        Pose2d startPose = new Pose2d(0, 0, 0);
 
-
-        Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
-        Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
 
 
         PoseMap poseMap = pose -> new Pose2dDual<>(
@@ -75,7 +71,7 @@ public class CompetitionAuto extends BaseOpMode {
         TrajectoryActionBuilder trajectoryAction = null;
         switch (chosenMovement) {
             case NEAR:
-                trajectoryAction = drive.actionBuilder(SBNearStartPose, poseMap);
+                trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(-51))
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
                         .splineToConstantHeading(new Vector2d(-12, 12), Math.toRadians(-51))
@@ -120,7 +116,7 @@ public class CompetitionAuto extends BaseOpMode {
                 break;
 
             case FAR:
-                trajectoryAction = drive.actionBuilder(SBFarStartPose, poseMap);
+                trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 if (intakeCycles == 0) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
                     .stopAndAdd(new LaunchAction(mechGlob, countBalls));
@@ -164,7 +160,7 @@ public class CompetitionAuto extends BaseOpMode {
             case FAR_OUT_OF_WAY:
                 // 3 launch actions
                 // after disp intake action
-                trajectoryAction = drive.actionBuilder(SBFarStartPose, poseMap);
+                trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
                         .splineToLinearHeading(new Pose2d(60, 61, Math.toRadians(0)), Math.toRadians(0))
                         .setTangent(Math.toRadians(-90))
@@ -174,7 +170,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
                 break;
             case FAR_MINIMAL:
-                trajectoryAction = drive.actionBuilder(SBFarStartPose, poseMap);
+                trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(90))
                         .splineToLinearHeading(new Pose2d(48, 32, Math.toRadians(180)), Math.toRadians(180));
 
@@ -267,6 +263,16 @@ public class CompetitionAuto extends BaseOpMode {
                 drive.setPose(SBFarStartPose);
                 break;
         }
+        // this lets us move the robot to see the obelisk before start and after init
+        while (opModeIsActive()) {
+            telemetry.addLine("Ok to move \n A to start");
+            telemetry.update();
+            if (gamepad1.aWasPressed()) {
+                break;
+            }
+
+        }
+
         trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles, drive, mechGlob, countBalls);
         Canvas previewCanvas = new Canvas();
         trajectoryAction.preview(previewCanvas);
@@ -282,12 +288,13 @@ public class CompetitionAuto extends BaseOpMode {
 
 
         // Assume unknown pattern unless detected otherwise.
-        pattern = Pattern.UNKNOWN;
-        pattern = Pattern.PPG; //temporary until hankang limelight
+
         // Detect the pattern with the AprilTags from the camera!
         // Wait for Start to be pressed on the Driver Hub!
         // (This try-with-resources statement automatically calls detector.close() when it exits
         //  the try-block.)
+        pattern = Pattern.UNKNOWN;
+        pattern = Pattern.PPG; //temporary until hankang limelight
         try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
 
             while (opModeInInit()) {
@@ -345,36 +352,23 @@ class LaunchAction extends RobotAction {
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;
     }
-    public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<PixelColor> array = new ArrayList<>();
-        array.add(mechGlob.getSlotColor(0));
-        array.add(mechGlob.getSlotColor(1));
-        array.add(mechGlob.getSlotColor(2));
-        return array.contains(requestedColor.toString());
-    }
 
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
-            if (hasColor(orderCount.getColor())) {
-                mechGlob.launch(orderCount.getColor());
+            if (mechGlob.launch(orderCount.getColor())) {
                 orderCount.increment();
-            } else if (hasColor(RequestedColor.EITHER)) {
-                mechGlob.launch(RequestedColor.EITHER);
+            } else if (mechGlob.launch(RequestedColor.EITHER)) {
                 orderCount.increment();
             }
         }
@@ -390,21 +384,11 @@ class PreLaunchAction extends RobotAction {
         this.orderCount = orderCount;
         this.mechGlob = mechGlob;
     }
-    public boolean hasColor(RequestedColor requestedColor) {
-        ArrayList<PixelColor> array = new ArrayList<>();
-        array.add(mechGlob.getSlotColor(0));
-        array.add(mechGlob.getSlotColor(1));
-        array.add(mechGlob.getSlotColor(2));
-        return array.contains(requestedColor.toString());
-    }
+
 
     @Override
     public boolean run(double elapsedTime) {
-        if (hasColor(orderCount.getColor())) {
-            mechGlob.preLaunch(orderCount.getColor());
-        } else if (hasColor(RequestedColor.EITHER)) {
-            mechGlob.preLaunch(RequestedColor.EITHER);
-        }
+        mechGlob.preLaunch(orderCount.getColor());
         return false;
     }
 }
@@ -448,6 +432,7 @@ class GetColor {
         }
 
     }
+
 
     public RequestedColor getColor() {
         return array[orderCount];

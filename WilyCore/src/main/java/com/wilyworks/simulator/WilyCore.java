@@ -11,16 +11,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.wilyworks.common.Wily;
 import com.wilyworks.common.WilyWorks;
-import com.wilyworks.simulator.framework.MechSim;
+import com.wilyworks.simulator.framework.Field;
 import com.wilyworks.simulator.framework.InputManager;
+import com.wilyworks.simulator.framework.MechSim;
 import com.wilyworks.simulator.framework.Simulation;
 import com.wilyworks.simulator.framework.WilyTelemetry;
-import com.qualcomm.robotcore.hardware.Gamepad;
-
-import com.wilyworks.simulator.framework.Field;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.reflections.Reflections;
@@ -170,6 +169,7 @@ class DashboardWindow extends JFrame {
                 case STARTED:
                     WilyCore.opModeThread.interrupt();
                     WilyCore.status = new WilyCore.Status(WilyCore.State.STOPPED, null, null);
+                    WilyCore.terminateOpMode();
                     button.setText("Init");
                     dropDown.setMaximumSize(new Dimension(400, 100));
                     dropDown.setVisible(true);
@@ -318,7 +318,7 @@ public class WilyCore {
         dashboardWindow.errorLabel.setText(simulation.getErrorLabel());
     }
 
-    // Advance the time:
+    // Advance the time. Zero means to use the realtime clock.
     static double advanceTime(double deltaT) {
         if (deltaT <= 0) {
             deltaT = nanoTime() * 1e-9 - lastUpdateWallClockTime;
@@ -339,24 +339,22 @@ public class WilyCore {
     // Callbacks provided to the guest. These are all called via reflection from the WilyWorks
     // class.
 
-    // The guest can specify the delta-t (which is handy when single stepping):
-    static public void updateSimulation(double deltaT) {
-        // Advance the time then advance the simulation:
-        deltaT = advanceTime(deltaT);
-        simulation.advance(deltaT);
-        mechSim.advance(deltaT);
-
-        // Render everything:
-        render();
-
-        simulationUpdated = true;
-    }
-
     // Set the robot to a given pose and (optional) velocity in the simulation. The
     // localizer will not register a move.
     static public void setStartPose(Pose2d pose, PoseVelocity2d velocity) {
         lastUpdateWallClockTime = nanoTime() * 1e-9; // Reset the detla-t calculations
         simulation.setStartPose(pose, velocity);
+    }
+
+    // The guest can specify the delta-t (which is handy when single stepping). Zero means to
+    // use the real-time clock.
+    static public void updateSimulation(double deltaT) {
+        // Advance the time then advance the simulation:
+        deltaT = advanceTime(deltaT);
+        simulation.advance(deltaT);
+        mechSim.advance(deltaT);
+        simulationUpdated = true;
+        render();
     }
 
     // MecanumDrive uses this while running a trajectory to update the simulator as to its
@@ -559,6 +557,12 @@ public class WilyCore {
             throw new RuntimeException(e);
         }
         return image;
+    }
+
+    // Do some cleanup when an OpMode is terminated:
+    public static void terminateOpMode() {
+        telemetry.clearAll();
+        telemetry.log().clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
