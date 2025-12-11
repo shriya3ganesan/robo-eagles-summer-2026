@@ -12,6 +12,10 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 abstract public class BaseOpMode extends LinearOpMode {
     LimelightDetector detector;
     MecanumDrive drive;
+
+    public static double ROBOT_WIDTH = 16.15;
+    public static double ROBOT_LENGTH = 16.5;
+
 }
 
 

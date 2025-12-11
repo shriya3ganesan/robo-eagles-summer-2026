@@ -4,14 +4,18 @@ import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.team417.utils.WilyConfig;
 
 /**
  * This class exposes the competition version of TeleOp. As a general rule, add code to the
@@ -41,20 +45,56 @@ public class CompetitionTeleOp extends BaseOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
-        Pose2d beginPose = new Pose2d(0, 0, 0);
-        drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
+        Pose2d beginPose;
+        if (TransferState.pose != null) {
+            beginPose = TransferState.pose;
+        } else {
+            beginPose = new Pose2d(0, 0, 0);
+        }
+
+        CompetitionAuto.Alliance alliance;
+        if (TransferState.chosenAlliance != null) {
+            alliance = TransferState.chosenAlliance;
+        } else {
+            alliance = CompetitionAuto.Alliance.BLUE;
+        }
+
+        PixelColor[] storedColors;
+        if (TransferState.storedColors != null) {
+            storedColors = TransferState.storedColors;
+        } else {
+            storedColors = new PixelColor[] {PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        }
+
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, beginPose);
+        PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, storedColors);
+        AmazingAutoAim amazingAutoAim = null;
         detector = new LimelightDetector(hardwareMap, drive);
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, false);
 
         detector.poseCorrectEnabled = true;
 
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
+        //Variable for auto aim
+        double amountToTurn;
         // Initialize motors, servos, LEDs
 
         // Wait for Start to be pressed on the Driver Hub!
         waitForStart();
 
+
         while (opModeIsActive()) {
             telemetry.addLine("Running TeleOp!");
+
+            if (gamepad1.rightBumperWasPressed()) {
+                amazingAutoAim = new AmazingAutoAim(telemetry, alliance);
+            }
+
+            if (gamepad1.right_bumper) {
+                amountToTurn = -amazingAutoAim.get(drive.pose);
+            } else {
+                amountToTurn = halfLinearHalfCubic(-gamepad1.right_stick_x);
+            }
 
             // Set the drive motor powers according to the gamepad input:
             drive.setDrivePowers(new PoseVelocity2d(
@@ -63,7 +103,8 @@ public class CompetitionTeleOp extends BaseOpMode {
                             halfLinearHalfCubic(-gamepad1.left_stick_x * doSLOWMODE())
 
                     ),
-                    halfLinearHalfCubic(-gamepad1.right_stick_x)
+                    amountToTurn
+
             ));
 
             // Update the current pose:
@@ -104,9 +145,30 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.setLaunchVelocity(LaunchDistance.FAR);
             } else if (gamepad2.dpadDownWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.NEAR);
+            } else if (gamepad2.dpadRightWasPressed()) {
+                // turns off the flywheels
+                mechGlob.setLaunchVelocity(LaunchDistance.OFF);
+            } else if (gamepad2.rightBumperWasPressed()) {
+                mechGlob.controlDrumManually();
             }
-            mechGlob.intake(gamepad2.left_stick_x);
+            if (gamepad1.guideWasPressed()) {
+                if (alliance == CompetitionAuto.Alliance.RED) {
+                    drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, -72 + ROBOT_LENGTH/2, Math.toRadians(-90)));
+                } else {
+                    drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, 72 - ROBOT_LENGTH / 2, Math.toRadians(90)));
+                }
+            }
+
+            mechGlob.intake(gamepad2.left_stick_y);
             mechGlob.update();
+
+            PixelColor slot0 = mechGlob.getSlotColor(0);
+            PixelColor slot1 = mechGlob.getSlotColor(1);
+            PixelColor slot2 = mechGlob.getSlotColor(2);
+
+            telemetry.addData("Slot0: ", slot0);
+            telemetry.addData("Slot1: ", slot1);
+            telemetry.addData("Slot2: ", slot2);
 
             telemetry.update();
         }
@@ -128,5 +190,119 @@ public class CompetitionTeleOp extends BaseOpMode {
         return (Math.pow(input, 3) + input) / 2;
     }
 }
+
+class AmazingAutoAim {
+    Telemetry telemetry = null;
+    // Constants to tune in FTC dashboard
+    public static double KP = 1.5;
+    public static double KI = 0;
+    public static double KD = 0.1;
+    double targetX;
+    double targetY;
+    PIDController pid;
+
+    AmazingAutoAim(Telemetry telemetry, CompetitionAuto.Alliance alliance) {
+        this.telemetry = telemetry;
+
+        if (alliance == CompetitionAuto.Alliance.RED) {
+            targetX = -65;
+            targetY = 55;
+        } else {
+            targetX = -65;
+            targetY = -55;
+        }
+        pid = new PIDController(KP, KI, KD);
+
+    }
+
+    public double get(Pose2d pose) {
+        double deltaY = targetY - pose.position.y;
+        double deltaX = targetX - pose.position.x;
+
+        double beta = Math.atan2(deltaY, deltaX);
+        double alpha = pose.heading.toDouble();
+        double angle = beta - alpha;
+        double normalizedAngle = AngleUnit.normalizeRadians(angle);
+
+        double pidOutput = pid.calculate(normalizedAngle);
+
+        if (pidOutput  <= -1) {
+            return -1;
+        } else if (pidOutput >= 1){
+            return 1;
+        } else {
+            return pidOutput;
+        }
+
+
+
+    }
+
+}
+
+
+class PIDController {
+
+    private double kP;
+    private double kI;
+    private double kD;
+
+    private double setpoint;
+    private double previousError = 0;
+    private double integral = 0;
+    private double outputMin = Double.NEGATIVE_INFINITY;
+    private double outputMax = Double.POSITIVE_INFINITY;
+
+    private long lastTimestamp = System.nanoTime();
+
+    public PIDController(double kP, double kI, double kD) {
+        this.kP = kP;
+        this.kI = kI;
+        this.kD = kD;
+    }
+
+    public void setSetpoint(double setpoint) {
+        this.setpoint = setpoint;
+    }
+
+    public void setOutputLimits(double min, double max) {
+        this.outputMin = min;
+        this.outputMax = max;
+    }
+
+    /**
+     * Calculates the PID output based on the current process variable.
+     */
+    public double calculate(double currentValue) {
+        long now = System.nanoTime();
+        double dt = (now - lastTimestamp) / 1e9; // seconds
+        lastTimestamp = now;
+
+        double error = setpoint - currentValue;
+
+        // Integral with basic anti-windup
+        integral += error * dt;
+
+        // Derivative
+        double derivative = (error - previousError) / dt;
+
+        // PID Output
+        double output = (kP * error) + (kI * integral) + (kD * derivative);
+
+        // Clamp output
+        output = Math.max(outputMin, Math.min(outputMax, output));
+
+        previousError = error;
+
+        return output;
+    }
+
+    public void reset() {
+        integral = 0;
+        previousError = 0;
+        lastTimestamp = System.nanoTime();
+    }
+}
+
 
 

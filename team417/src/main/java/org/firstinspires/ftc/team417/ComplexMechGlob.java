@@ -34,7 +34,8 @@ enum PixelColor {
 }
 enum LaunchDistance {
     FAR,
-    NEAR
+    NEAR,
+    OFF //turns the flywheel off
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
@@ -45,9 +46,10 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
-    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, boolean runningAuto){
+    static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads){
+
         if (MecanumDrive.isSlowBot) { //if the robot is slowbot, use ComplexMechGlob.
-            return new ComplexMechGlob(hardwareMap, telemetry); //Go to ComplexMechGlob class
+            return new ComplexMechGlob(hardwareMap, telemetry, preloads); //Go to ComplexMechGlob class
 
         } else { //otherwise, use MechGlob
             return new MechGlob(telemetry); //Go to MechGlob class
@@ -58,7 +60,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    void launch (RequestedColor requestedColor, LimelightDetector detector) {
+    boolean launch (RequestedColor requestedColor) {
+        return true;
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
     }
 
@@ -73,31 +76,48 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
+    public PixelColor getSlotColor(int slotIndex) {
+        return PixelColor.NONE;
+    }
+    void controlDrumManually () {}
+
+
+
+
 }
 
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     // TODO tune constants via FTC Dashboard:
-    static double FEEDER_POWER = 1;
-    static double TRANSFER_TIME_UP = 0.3;
-    static double TRANSFER_TIME_TOTAL = 0.6; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
-    static double FAR_FLYWHEEL_VELOCITY = 1500;
-    static double NEAR_FLYWHEEL_VELOCITY = 1500;
-    static double FLYWHEEL_BACK_SPIN = 300;
-    static double TRANSFER_INACTIVE_POSITION = 0;
-    static double TRANSFER_ACTIVE_POSITION = 1;
-    static double REVERSE_INTAKE_SPEED = -1;
-    static double INTAKE_SPEED = 1;
-    static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
-    static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    public static double FEEDER_POWER = 1;
+    public static double TRANSFER_TIME_UP = 0.7;
+    public static double TRANSFER_TIME_DOWN = 0.3; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+
+    // how long we wait before continuing after the color detector
+    // detects. this is 0 because it will likely become obsolete
+    public static double INTAKE_TIMER = 0;
+    public static double FAR_FLYWHEEL_VELOCITY = 933; //was 1500
+    public static double NEAR_FLYWHEEL_VELOCITY = 850; //was 1500
+    public static double FLYWHEEL_BACK_SPIN = 150; //was 300
+    public static double TRANSFER_INACTIVE_POSITION = 0.45;
+    public static double TRANSFER_ACTIVE_POSITION = 0.7;
+    public static double REVERSE_INTAKE_SPEED = -1;
+    public static double INTAKE_SPEED = 1;
+    public static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
+    public static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    public static double DRUM_GATE_OPEN_POSITION = 1;
+    public static double DRUM_GATE_CLOSED_POSITION = 0.6555;
+    public static double MOTOR_D_VALUE = 1;
 
 
     ElapsedTime transferTimer;
+    ElapsedTime intakeTimer;
     double userIntakeSpeed;
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
     ArrayList<PixelColor> slotOccupiedBy = new ArrayList<> (Collections.nCopies(3, PixelColor.NONE));
     enum WaitState {
+        DRUM_MOVE_WAIT, //waiting for the ball to fully enter the slot before moving the drum
         DRUM_MOVE, //waiting for the drum to reach desired position
         INTAKE, //waiting for the intake to finish
         TRANSFER, //waiting for the transfer to finish
@@ -115,6 +135,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
+    double feederPower;
+    LaunchDistance launchDistance = LaunchDistance.OFF;
 
 
     HardwareMap hardwareMap;
@@ -128,6 +150,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     DcMotorEx motIntake;
     CRServo servoBLaunchFeeder;
     CRServo servoFLaunchFeeder;
+    Servo servoDrumGate;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
 
@@ -142,8 +165,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             this.position = position;
         }
     }
-    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
-        super(telemetry);
+    ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads) {
 
         //this changes some lists if we are using WilyWorks
         if (WilyWorks.isSimulating) {
@@ -164,7 +186,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
+        servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
+        slotOccupiedBy = new ArrayList<>(Arrays.asList(preloads));
+
 
         /*
          * Here we set our flywheels to the RUN_USING_ENCODER runmode.
@@ -181,12 +206,13 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motIntake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        motLLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
+        motULauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, MOTOR_D_VALUE, 10));
 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        setLaunchVelocity(LaunchDistance.NEAR);
 
 
     }
@@ -220,20 +246,29 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
     void intake (double intakeSpeed) {
-
         userIntakeSpeed = intakeSpeed;
+        if (userIntakeSpeed != 0) {
+            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
+        } else {
+            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
+        }
     }
 
     @Override
         //a class that controls the launcher and transfer
-    void launch (RequestedColor requestedColor, LimelightDetector detector) {
+    boolean launch (RequestedColor requestedColor) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
 
+        if (launchDistance == LaunchDistance.OFF) {
+            launchDistance = LaunchDistance.NEAR;
+        }
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
         if (minSlot != -1){
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
+            return true;
         }
+        return false;
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){
@@ -272,12 +307,23 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
+        this.launchDistance = launchDistance;
+    }
+    void calculateLaunchVelocity () {
         if (launchDistance == LaunchDistance.NEAR) {
             upperLaunchVelocity = NEAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = NEAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
-        } else {
+            feederPower = FEEDER_POWER;
+        } else if (launchDistance == LaunchDistance.FAR){
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
+        } else {
+            upperLaunchVelocity = 0;
+            lowerLaunchVelocity = 0;
+            servoBLaunchFeeder.setPower(0);
+            servoFLaunchFeeder.setPower(0);
+            feederPower = 0;
         }
     }
     int findSlotFromPosition (double position, double [] positions) {
@@ -288,12 +334,37 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
         return -1;
     }
+
+    void controlDrumManually () {
+        int currentSlot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+        if (currentSlot != -1) {
+            slotOccupiedBy.set(currentSlot, PixelColor.PURPLE);
+        }
+        int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
+        if (minSlot != -1) {
+            addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+        }
+
+    }
+    @Override
+    public PixelColor getSlotColor(int slotIndex) {
+        PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
+        return artifactColor;
+    }
+
     @Override
     void update () {
         double intakePower = 0;
-        if (userIntakeSpeed < 0) {
+
+        calculateLaunchVelocity();
+        if (waitState == WaitState.DRUM_MOVE_WAIT) {
+            // always run the intake, even while we're waiting for the ball to enter the drum
+            intakePower = INTAKE_SPEED;
+        } else if (userIntakeSpeed < 0 ) {
+            // allow the intake to run if the driver wants it to
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
+            // if we are in the intake waitState, allow the intake to run
             if (waitState == WaitState.INTAKE) {
                 intakePower = INTAKE_SPEED;
             } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
@@ -303,13 +374,18 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
-                waitState = WaitState.INTAKE;
                 int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
                 if (minSlot != -1) {
                     addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+                    waitState = WaitState.INTAKE;
                 }
             }
+            // this makes it so that after we are done launching the drum goes to intake position
+            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
+                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+            }
         }
+
         // let a firing request interrupt an intake
         if (waitState == WaitState.IDLE || waitState == WaitState.INTAKE) {
             if (!drumQueue.isEmpty()) {
@@ -337,7 +413,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
                 transferPosition = TRANSFER_ACTIVE_POSITION;
             }
-            if (transferTimer.seconds() >= TRANSFER_TIME_TOTAL) {
+            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
             }
@@ -347,19 +423,28 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (slotColor != PixelColor.NONE) {
                 int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
                 slotOccupiedBy.set(slot, slotColor);
+                waitState = WaitState.DRUM_MOVE_WAIT;
+                intakeTimer = new ElapsedTime();
+            }
+        }
+        if (waitState == WaitState.DRUM_MOVE_WAIT) {
+            if (intakeTimer.seconds() >= INTAKE_TIMER) {
                 waitState = WaitState.IDLE;
             }
-
-
-
         }
+
         servoDrum.setPosition(hwDrumPosition);
+        //servoTransfer.setPosition(transferPosition);
+
+            // Enable on real hardware once transfer parameters are tuned
         servoTransfer.setPosition(transferPosition);
+
+
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-        servoBLaunchFeeder.setPower(FEEDER_POWER);
-        servoFLaunchFeeder.setPower((FEEDER_POWER));
+        servoBLaunchFeeder.setPower(feederPower);
+        servoFLaunchFeeder.setPower(feederPower);
     }
 }
 

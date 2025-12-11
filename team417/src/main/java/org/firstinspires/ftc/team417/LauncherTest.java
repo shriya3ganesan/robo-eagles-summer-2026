@@ -67,7 +67,7 @@ public class LauncherTest extends CompetitionTeleOp {
                     servoTransfer.setPosition(ComplexMechGlob.TRANSFER_ACTIVE_POSITION);
                     transferState = TransferState.WAIT;
                 }
-                if (transferTimer.seconds() >= ComplexMechGlob.TRANSFER_TIME_TOTAL) {
+                if (transferTimer.seconds() >= ComplexMechGlob.TRANSFER_TIME_DOWN + ComplexMechGlob.TRANSFER_TIME_UP) {
                     servoTransfer.setPosition(ComplexMechGlob.TRANSFER_INACTIVE_POSITION);
                     transferState = TransferState.DONE;
                     transferTimer = null;
