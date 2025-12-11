@@ -19,6 +19,7 @@ import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 enum RequestedColor { //an enum for different color cases for launching
@@ -41,8 +42,7 @@ enum LaunchDistance {
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
     Telemetry telemetry;
 
-    MechGlob(Telemetry telemetry) {
-        this.telemetry = telemetry;
+    MechGlob() {
     }
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
@@ -52,7 +52,7 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
             return new ComplexMechGlob(hardwareMap, telemetry, preloads); //Go to ComplexMechGlob class
 
         } else { //otherwise, use MechGlob
-            return new MechGlob(telemetry); //Go to MechGlob class
+            return new MechGlob(); //Go to MechGlob class
         }
     }
     //a method that controls the intake based on gamepad2.leftstickx
@@ -60,9 +60,9 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    boolean launch (RequestedColor requestedColor) {
-        return true;
+    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
+        return true;
     }
 
     void update () {}
@@ -256,7 +256,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
         //a class that controls the launcher and transfer
-    boolean launch (RequestedColor requestedColor) {
+    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
 
         if (launchDistance == LaunchDistance.OFF) {

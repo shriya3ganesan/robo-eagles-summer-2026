@@ -104,14 +104,14 @@ public class LimelightDetector implements Closeable {
     /**
      * The constant for how far away for a correction pose to be at max to be considered valid.
      */
-    private final double CORRECTION_RANGE = 144;
+    private final double CORRECTION_RANGE = 12;
 
     /**
      * Variables for capturing the details of the last correction.
      */
-    public double lastXDistance = 0;
-    public double lastYDistance = 0;
-    public boolean lastWithinRange = true;
+    public volatile double lastXDistance = 0;
+    public volatile double lastYDistance = 0;
+    public volatile boolean lastWithinRange = false;
 
     /**
      * Initialize the AprilTag processor.
@@ -308,8 +308,8 @@ public class LimelightDetector implements Closeable {
             Pose3D pose = result.getBotpose_MT2();
 
             return new Pose2d(
-                    pose.getPosition().x,
-                    pose.getPosition().y,
+                    pose.getPosition().x * 39.37, // Convert meters to inches
+                    pose.getPosition().y * 39.37, // Convert meters to inches
                     pose.getOrientation().getYaw(AngleUnit.RADIANS));
         }
 
@@ -338,13 +338,13 @@ public class LimelightDetector implements Closeable {
                         + Math.pow(pose.position.y - drive.pose.position.y, 2)
                         <= Math.pow(CORRECTION_RANGE, 2);
 
-                if (closeEnough) {
-                    drive.setPose(pose);
-                }
-
                 lastWithinRange = closeEnough;
                 lastXDistance = pose.position.x - drive.pose.position.x;
                 lastYDistance = pose.position.y - drive.pose.position.y;
+
+                if (closeEnough) {
+                    drive.setPose(pose);
+                }
             }
         }
     }

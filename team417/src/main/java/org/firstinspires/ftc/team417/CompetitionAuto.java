@@ -10,9 +10,9 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.wilyworks.common.WilyWorks;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
@@ -72,7 +72,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0,new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
                         .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(139)), Math.toRadians(-51))
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
                         .afterDisp(0, new IntakeAction(mechGlob, 1))
@@ -83,7 +83,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
 
@@ -95,7 +95,7 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                            .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                            .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
@@ -107,7 +107,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                                .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                                .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     }
                 }
@@ -117,7 +117,7 @@ public class CompetitionAuto extends BaseOpMode {
                 trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 if (intakeCycles == 0) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
-                    .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                    .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                 }
                 trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                         .afterDisp(0,new IntakeAction(mechGlob, 1))
@@ -127,7 +127,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))  //go to launch position
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
@@ -138,7 +138,7 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
-                            .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                            .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
@@ -150,7 +150,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
-                                .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                                .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                     }
                 }
                 break;
@@ -163,7 +163,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .splineToLinearHeading(new Pose2d(60, 61, Math.toRadians(0)), Math.toRadians(0))
                         .setTangent(Math.toRadians(-90))
                         .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .setTangent(Math.toRadians(90))
                         .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
                 break;
@@ -344,29 +344,31 @@ class LaunchAction extends RobotAction {
     MechGlob mechGlob;
     Pattern pattern;
     GetColor orderCount;
+    LimelightDetector detector;
 
-    public LaunchAction(MechGlob mechGlob, GetColor orderCount) {
+    public LaunchAction(MechGlob mechGlob, GetColor orderCount, LimelightDetector detector) {
         this.mechGlob = mechGlob;
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;
+        this.detector = detector;
     }
 
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
-            if (mechGlob.launch(orderCount.getColor())) {
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
                 orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
-                orderCount.increment();
-            }
-            if (mechGlob.launch(orderCount.getColor())) {
-                orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
                 orderCount.increment();
             }
-            if (mechGlob.launch(orderCount.getColor())) {
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
                 orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
+                orderCount.increment();
+            }
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
+                orderCount.increment();
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
                 orderCount.increment();
             }
         }
