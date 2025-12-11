@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.wilyworks.common.WilyWorks;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
 import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
 import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
+import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
@@ -30,6 +32,7 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
  */
 @TeleOp(name = "Auto", group = "Competition")
 public class CompetitionAuto extends BaseOpMode {
+    static public double FEEDER_TIME = 0.5;
     public enum Alliance {
         RED,
         BLUE,
@@ -72,24 +75,26 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
                         .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(139)), Math.toRadians(-51))
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new WaitAction(FEEDER_TIME))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
                         .afterDisp(0, new IntakeAction(mechGlob, 1))
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
+                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(5))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
                         //.afterDisp(0, new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new WaitAction(FEEDER_TIME));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
 
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
                             .afterDisp(0,new IntakeAction(mechGlob, 1))
                             .setTangent(Math.toRadians(90))
-                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(15))
+                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(5))
                             .afterDisp(0, new IntakeAction(mechGlob, 0))
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
@@ -185,8 +190,10 @@ public class CompetitionAuto extends BaseOpMode {
 
         Pose2d startPose = new Pose2d(0, 0, 0);
 
-        Pose2d SBNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), 24+(ROBOT_LENGTH/2), Math.toRadians(-90));
-        Pose2d SBFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, ROBOT_WIDTH/2, Math.toRadians(180));
+        Pose2d SBRedNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), 24+(ROBOT_LENGTH/2), Math.toRadians(-90));
+        Pose2d SBBlueNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), -(24+(ROBOT_LENGTH/2)), Math.toRadians(90));
+        Pose2d SBRedFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, ROBOT_WIDTH/2, Math.toRadians(180));
+        Pose2d SBBlueFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, -ROBOT_WIDTH/2, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
         PixelColor[] preloads = new PixelColor[]{PixelColor.PURPLE, PixelColor.GREEN, PixelColor.PURPLE};
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
@@ -239,33 +246,65 @@ public class CompetitionAuto extends BaseOpMode {
 
 
         Action trajectoryAction;
+        if (chosenAlliance == Alliance.RED) {
+            switch (chosenMovement) {
+                case NEAR:
 
-        switch (chosenMovement) {
-            case NEAR:
+                    drive.setPose(SBRedNearStartPose);
 
-                drive.setPose(SBNearStartPose);
-
-                break;
-            case FAR:
-                drive.setPose(SBFarStartPose);
-                break;
-            case FAR_OUT_OF_WAY:
-                drive.setPose(SBFarStartPose);
-                break;
-            case FAR_MINIMAL:
-                drive.setPose(SBFarStartPose);
-                break;
+                    break;
+                case FAR:
+                    drive.setPose(SBRedFarStartPose);
+                    break;
+                case FAR_OUT_OF_WAY:
+                    drive.setPose(SBRedFarStartPose);
+                    break;
+                case FAR_MINIMAL:
+                    drive.setPose(SBRedFarStartPose);
+                    break;
+            }
         }
+        else {
+            switch (chosenMovement) {
+                case NEAR:
+
+                    drive.setPose(SBBlueNearStartPose);
+
+                    break;
+                case FAR:
+                    drive.setPose(SBBlueFarStartPose);
+                    break;
+                case FAR_OUT_OF_WAY:
+                    drive.setPose(SBBlueFarStartPose);
+                    break;
+                case FAR_MINIMAL:
+                    drive.setPose(SBBlueFarStartPose);
+                    break;
+            }
+        }
+        drive.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        drive.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        drive.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        drive.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         // this lets us move the robot to see the obelisk before start and after init
-        gamepad1.aWasPressed();   //clear
-        while (opModeIsActive()) {
-            telemetry.addLine("Ok to move \n A to start");
+
+        sleep(100);
+        while (opModeInInit()) {
+            telemetry.addLine("Ok to move \n Y to start");
             telemetry.update();
-            if (gamepad1.aWasPressed()) {
+            if (gamepad1.y) {
                 break;
             }
-
+            drive.updatePoseEstimate();
+            TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
+            packet.fieldOverlay().setStroke("#3F51B5");
+            Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
+            MecanumDrive.sendTelemetryPacket(packet);
         }
+        drive.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        drive.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        drive.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        drive.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         trajectoryAction = getPath(chosenMovement, chosenAlliance, intakeCycles, drive, mechGlob, countBalls);
         Canvas previewCanvas = new Canvas();
@@ -378,6 +417,17 @@ class LaunchAction extends RobotAction {
         return !mechGlob.isDoneLaunching();    //we are done
     }
 
+}
+class WaitAction extends RobotAction {
+    double time;
+    public WaitAction(double time) {
+        this.time = time;
+    }
+
+    @Override
+    public boolean run(double elapsedTime) {
+        return elapsedTime < time;
+    }
 }
 class SpinUpAction extends RobotAction {
     MechGlob mechGlob;
