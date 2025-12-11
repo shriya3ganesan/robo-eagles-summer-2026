@@ -77,7 +77,7 @@ public class CoolColorDetector {
         telemetry.addLine(string);
 
         // Return the result that was decided in the if statements above
-        return result;
+        return PixelColor.NONE;
 
 
     }
