@@ -16,6 +16,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
 import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
 import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
+import org.firstinspires.ftc.team417.javatextmenu.MenuSwitch;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.team417.roadrunner.RobotAction;
@@ -176,8 +177,8 @@ public class CompetitionAuto extends BaseOpMode {
         Pose2d SBNearStartPose = new Pose2d(-60, 48, Math.toRadians(139));
         Pose2d SBFarStartPose = new Pose2d(60, 12, Math.toRadians(157.5));
         MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
-        detector = new LimelightDetector(hardwareMap);
 
+        detector = new LimelightDetector(hardwareMap, drive);
 
         // Text menu for FastBot
 
@@ -196,6 +197,9 @@ public class CompetitionAuto extends BaseOpMode {
                 .add()
                 .add("Wait time:")
                 .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
+                .add()
+                .add("Use pose correction:")
+                .add("correction-switch-1", new MenuSwitch(true))
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
@@ -216,6 +220,7 @@ public class CompetitionAuto extends BaseOpMode {
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
+        detector.poseCorrectEnabled = menu.getResult(Boolean.class, "correction-switch-1");
 
         // the first parameter is the type to return as
 
@@ -297,14 +302,8 @@ public class CompetitionAuto extends BaseOpMode {
 class LaunchAction extends RobotAction {
     CompetitionAuto opMode;
 
-    // Pass `this` into here
-    public LaunchAction(CompetitionAuto opMode) {
-        this.opMode = opMode;
-    }
-
     @Override
     public boolean run(double elapsedTime) {
-        opMode.tryResetRobotPose(); // Resets the robot pose only if the robot is not moving
         return false;
     }
 }

@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
@@ -37,7 +38,11 @@ enum LaunchDistance {
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
-    MechGlob(){}
+    Telemetry telemetry;
+
+    MechGlob(Telemetry telemetry) {
+        this.telemetry = telemetry;
+    }
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
     static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, boolean runningAuto){
@@ -45,7 +50,7 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
             return new ComplexMechGlob(hardwareMap, telemetry); //Go to ComplexMechGlob class
 
         } else { //otherwise, use MechGlob
-            return new MechGlob(); //Go to MechGlob class
+            return new MechGlob(telemetry); //Go to MechGlob class
         }
     }
     //a method that controls the intake based on gamepad2.leftstickx
@@ -53,8 +58,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    void launch (RequestedColor requestedColor, CompetitionTeleOp opMode) {
-        opMode.tryResetRobotPose();
+    void launch (RequestedColor requestedColor, LimelightDetector detector) {
+        detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
     }
 
     void update () {}
@@ -113,7 +118,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
 
     HardwareMap hardwareMap;
-    Telemetry telemetry;
 
     //hardware objects
     Servo servoDrum;
@@ -139,6 +143,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
     }
     ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry) {
+        super(telemetry);
 
         //this changes some lists if we are using WilyWorks
         if (WilyWorks.isSimulating) {
@@ -221,14 +226,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
         //a class that controls the launcher and transfer
-    void launch (RequestedColor requestedColor, CompetitionTeleOp opMode) {
+    void launch (RequestedColor requestedColor, LimelightDetector detector) {
+        detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
 
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
         if (minSlot != -1){
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
             slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
         }
-        opMode.tryResetRobotPose(); // Resets the robot pose only if the robot is not moving
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){

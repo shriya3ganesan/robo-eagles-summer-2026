@@ -45,6 +45,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.team417.CompetitionAuto;
+import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -75,6 +76,11 @@ import java.util.List;
  */
 public class LimelightDetector implements Closeable {
     /**
+     * The variable to store our instance of the Mecanum drive.
+     */
+    private final MecanumDrive drive;
+
+    /**
      * The variable to store our instance of the AprilTag processor.
      */
     private final Limelight3A limelight;
@@ -91,15 +97,34 @@ public class LimelightDetector implements Closeable {
     private int lastId = -1;
 
     /**
+     * Whether to do pose correction or not.
+     */
+    public boolean poseCorrectEnabled;
+
+    /**
+     * The constant for how far away for a correction pose to be at max to be considered valid.
+     */
+    private final double CORRECTION_RANGE = 144;
+
+    /**
+     * Variables for capturing the details of the last correction.
+     */
+    public double lastXDistance = 0;
+    public double lastYDistance = 0;
+    public boolean lastWithinRange = true;
+
+    /**
      * Initialize the AprilTag processor.
      */
-    public LimelightDetector(HardwareMap hardwareMap) {
+    public LimelightDetector(HardwareMap hardwareMap, MecanumDrive drive) {
         // Create the AprilTag processor.
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         limelight.pipelineSwitch(7);
 
         limelight.start();
+
+        this.drive = drive;
     }
 
     /**
@@ -296,6 +321,37 @@ public class LimelightDetector implements Closeable {
      */
     public void updateRobotYaw(double yaw) {
         limelight.updateRobotOrientation(Math.toDegrees(yaw));
+    }
+
+    // Resets the robot pose only if the robot is not moving and the new pose is within a certain
+    //  distance from the old.
+    public void tryResetRobotPose(Telemetry telemetry) {
+        boolean notMoving = isZero(drive.poseVelocity.linearVel.x)
+                && isZero(drive.poseVelocity.linearVel.y);
+
+        if (notMoving && poseCorrectEnabled) {
+
+            Pose2d pose = detectRobotPose();
+
+            if (pose != null) {
+                boolean closeEnough = Math.pow(pose.position.x - drive.pose.position.x, 2)
+                        + Math.pow(pose.position.y - drive.pose.position.y, 2)
+                        <= Math.pow(CORRECTION_RANGE, 2);
+
+                if (closeEnough) {
+                    drive.setPose(pose);
+                }
+
+                lastWithinRange = closeEnough;
+                lastXDistance = pose.position.x - drive.pose.position.x;
+                lastYDistance = pose.position.y - drive.pose.position.y;
+            }
+        }
+    }
+
+    // Sees if a number is within one one-hundredths of zero
+    private static boolean isZero(double z) {
+        return Math.abs(z) < 0.01;
     }
 
     /**
