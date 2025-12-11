@@ -15,12 +15,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 enum RequestedColor { //an enum for different color cases for launching
     PURPLE,
@@ -40,7 +40,10 @@ enum LaunchDistance {
 }
 
 class MechGlob { //a placeholder class encompassing all code that ISN'T for slowbot.
-    MechGlob(){}
+    Telemetry telemetry;
+
+    MechGlob() {
+    }
 
     //call DrumGlob.create to create a Glob object for slowbot or fastbot
     static MechGlob create (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads){
@@ -57,7 +60,8 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    boolean launch (RequestedColor requestedColor) {
+    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
+        detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
         return true;
     }
 
@@ -136,7 +140,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
 
     HardwareMap hardwareMap;
-    Telemetry telemetry;
 
     //hardware objects
     Servo servoDrum;
@@ -253,7 +256,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
         //a class that controls the launcher and transfer
-    boolean launch (RequestedColor requestedColor) {
+    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
+        detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
+
         if (launchDistance == LaunchDistance.OFF) {
             launchDistance = LaunchDistance.NEAR;
         }

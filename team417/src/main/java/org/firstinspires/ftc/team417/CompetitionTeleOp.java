@@ -1,20 +1,19 @@
 package org.firstinspires.ftc.team417;
 
+import android.annotation.SuppressLint;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
-import org.firstinspires.ftc.team417.utils.WilyConfig;
 
 /**
  * This class exposes the competition version of TeleOp. As a general rule, add code to the
@@ -41,6 +40,7 @@ public class CompetitionTeleOp extends BaseOpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
         Pose2d beginPose;
@@ -68,6 +68,9 @@ public class CompetitionTeleOp extends BaseOpMode {
         PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, storedColors);
         AmazingAutoAim amazingAutoAim = null;
+        detector = new LimelightDetector(hardwareMap, drive);
+
+        detector.poseCorrectEnabled = true;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
         //Variable for auto aim
@@ -102,13 +105,13 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             ));
 
-
-
             // Update the current pose:
-
             drive.updatePoseEstimate();
 
+            detector.updateRobotYaw(drive.pose.heading.log());
 
+            telemetry.addLine(String.format("Last pose correction %s (%.2f, %.2f) (in inches)",
+                    detector.lastWithinRange ? "✅" : "❌", detector.lastXDistance, detector.lastYDistance));
 
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
@@ -119,16 +122,22 @@ public class CompetitionTeleOp extends BaseOpMode {
             // Draw the robot and field:
             packet.fieldOverlay().setStroke("#3F51B5");
             Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
-            MecanumDrive.sendTelemetryPacket(packet);
 
+            Pose2d cameraPose = detector.detectRobotPose();
+            if (cameraPose != null) {
+                packet.fieldOverlay().setStroke("#3FB578");
+                Drawing.drawRobot(packet.fieldOverlay(), cameraPose);
+            }
+
+            MecanumDrive.sendTelemetryPacket(packet);
 
             //add slowbot teleop controls here
             if (gamepad2.yWasPressed()) {
-                mechGlob.launch(RequestedColor.EITHER);
+                mechGlob.launch(RequestedColor.EITHER, detector);
             } else if (gamepad2.bWasPressed()) {
-                mechGlob.launch(RequestedColor.PURPLE);
+                mechGlob.launch(RequestedColor.PURPLE, detector);
             } else if (gamepad2.aWasPressed()) {
-                mechGlob.launch(RequestedColor.GREEN);
+                mechGlob.launch(RequestedColor.GREEN, detector);
             }
             if (gamepad2.dpadUpWasPressed()) {
                 mechGlob.setLaunchVelocity(LaunchDistance.FAR);
@@ -159,10 +168,10 @@ public class CompetitionTeleOp extends BaseOpMode {
             telemetry.addData("Slot1: ", slot1);
             telemetry.addData("Slot2: ", slot2);
 
-
-            MecanumDrive.sendTelemetryPacket(packet);
             telemetry.update();
         }
+
+        detector.close();
     }
 
 
