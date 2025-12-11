@@ -342,7 +342,7 @@ public class CompetitionAuto extends BaseOpMode {
                         break;
                     }
                 }
-
+        countBalls.setPattern(pattern);
         sleep((long) waitTime * 1000);
         boolean more = true;
         while (opModeIsActive() && more) {
