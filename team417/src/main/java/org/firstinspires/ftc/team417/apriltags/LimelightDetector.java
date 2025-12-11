@@ -32,6 +32,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.team417.apriltags;
 
+import android.annotation.SuppressLint;
+
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLStatus;
@@ -39,30 +42,32 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.team417.CompetitionAuto;
+import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/*
+/**
  * This class is used to detect AprilTags using the Limelight3A Vision Sensor.
  *
  * @see <a href="https://limelightvision.io/">Limelight</a>
- *
+ * <p>
  * Notes on configuration:
- *
+ * <p>
  *   The device presents itself, when plugged into a USB port on a Control Hub as an ethernet
  *   interface.  A DHCP server running on the Limelight automatically assigns the Control Hub an
  *   ip address for the new ethernet interface.
- *
+ * <p>
  *   Since the Limelight is plugged into a USB port, it will be listed on the top level configuration
  *   activity along with the Control Hub Portal and other USB devices such as webcams.  Typically
  *   serial numbers are displayed below the device's names.  In the case of the Limelight device, the
  *   Control Hub's assigned ip address for that ethernet interface is used as the "serial number".
- *
+ * <p>
  *   Tapping the Limelight's name, transitions to a new screen where the user can rename the Limelight
  *   and specify the Limelight's ip address.  Users should take care not to confuse the ip address of
  *   the Limelight itself, which can be configured through the Limelight settings page via a web browser,
@@ -71,9 +76,14 @@ import java.util.List;
  */
 public class LimelightDetector implements Closeable {
     /**
+     * The variable to store our instance of the Mecanum drive.
+     */
+    private final MecanumDrive drive;
+
+    /**
      * The variable to store our instance of the AprilTag processor.
      */
-    private Limelight3A limelight;
+    private final Limelight3A limelight;
 
     /**
      * The variable for how long ago the detection last changed.
@@ -87,15 +97,34 @@ public class LimelightDetector implements Closeable {
     private int lastId = -1;
 
     /**
+     * Whether to do pose correction or not.
+     */
+    public boolean poseCorrectEnabled;
+
+    /**
+     * The constant for how far away for a correction pose to be at max to be considered valid.
+     */
+    private final double CORRECTION_RANGE = 12;
+
+    /**
+     * Variables for capturing the details of the last correction.
+     */
+    public volatile double lastXDistance = 0;
+    public volatile double lastYDistance = 0;
+    public volatile boolean lastWithinRange = false;
+
+    /**
      * Initialize the AprilTag processor.
      */
-    public LimelightDetector(HardwareMap hardwareMap) {
+    public LimelightDetector(HardwareMap hardwareMap, MecanumDrive drive) {
         // Create the AprilTag processor.
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         limelight.pipelineSwitch(7);
 
         limelight.start();
+
+        this.drive = drive;
     }
 
     /**
@@ -108,6 +137,7 @@ public class LimelightDetector implements Closeable {
     /**
      * Add telemetry about AprilTag detections.
      */
+    @SuppressLint("DefaultLocale")
     public Pattern detectPatternAndTelemeter(CompetitionAuto.Alliance alliance, Telemetry telemetry, boolean verbose) {
         LLResult result = limelight.getLatestResult();
 
@@ -120,9 +150,9 @@ public class LimelightDetector implements Closeable {
             telemetry.addData("Pipeline", "Index: %d, Type: %s",
                     status.getPipelineIndex(), status.getPipelineType());
 
-            if (result.isValid()) {
+            if (result != null && result.isValid()) {
                 // Access general information
-                Pose3D botpose = result.getBotpose();
+                Pose3D botPose = result.getBotpose();
                 double captureLatency = result.getCaptureLatency();
                 double targetingLatency = result.getTargetingLatency();
                 double parseLatency = result.getParseLatency();
@@ -135,7 +165,7 @@ public class LimelightDetector implements Closeable {
                 telemetry.addData("ty", result.getTy());
                 telemetry.addData("tync", result.getTyNC());
 
-                telemetry.addData("Botpose", botpose.toString());
+                telemetry.addData("Botpose", botPose.toString());
 
 
                 // Access fiducial results
@@ -158,7 +188,7 @@ public class LimelightDetector implements Closeable {
         // The `\\u...` are escape sequences for green and purple circle emojis.
         // \uD83D\uDFE3 -> Purple circle
         // \uD83D\uDFE2 -> Green circle
-        // \u26AA -> White circle
+        // ⚪ -> White circle
         switch (pattern) {
             case PPG:
                 patternDisplay = "\uD83D\uDFE3\uD83D\uDFE3\uD83D\uDFE2";
@@ -170,7 +200,7 @@ public class LimelightDetector implements Closeable {
                 patternDisplay = "\uD83D\uDFE2\uD83D\uDFE3\uD83D\uDFE3";
                 break;
             default:
-                patternDisplay = "\u26AA\u26AA\u26AA";
+                patternDisplay = "⚪⚪⚪";
                 break;
         }
 
@@ -207,7 +237,7 @@ public class LimelightDetector implements Closeable {
 
         List<LLResultTypes.FiducialResult> currentDetections = new ArrayList<>();
 
-        if (result.isValid())
+        if (result != null && result.isValid())
             currentDetections = result.getFiducialResults();
 
         // Remove all AprilTags that don't have ID 21, 22, or 23
@@ -219,7 +249,7 @@ public class LimelightDetector implements Closeable {
                         && detection.getFiducialId() != 23
         );
 
-        // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot
+        // FiducialResult objects contain the x (left) and y (up) degrees relative to the robot.
         //  When we're on the red alliance, we want the leftmost valid
         //  AprilTag, and when we're on the blue alliance, we want the rightmost valid AprilTag.
         //  This is because, in our near position, we see two AprilTags on the obelisk: the front
@@ -232,13 +262,13 @@ public class LimelightDetector implements Closeable {
                 // Set detection to the leftmost (min x degrees) detection relative to the robot
                 // If there are no detections, set it to null
                 detection = currentDetections.stream()
-                        .min(Comparator.comparingDouble(aprilTagDetection -> aprilTagDetection.getTargetXDegrees())).orElse(null);
+                        .min(Comparator.comparingDouble(LLResultTypes.FiducialResult::getTargetXDegrees)).orElse(null);
                 break;
             case BLUE:
                 // Set detection to the rightmost (max x degrees) detection relative to the robot
                 // If there are no detections, set it to null
                 detection = currentDetections.stream()
-                        .max(Comparator.comparingDouble(aprilTagDetection -> aprilTagDetection.getTargetXDegrees())).orElse(null);
+                        .max(Comparator.comparingDouble(LLResultTypes.FiducialResult::getTargetXDegrees)).orElse(null);
         }
 
         if (detection == null) {
@@ -266,6 +296,62 @@ public class LimelightDetector implements Closeable {
             default:
                 return Pattern.UNKNOWN;
         }
+    }
+
+    /**
+     * Detect the pose of the robot with the AprilTag.
+     */
+    public Pose2d detectRobotPose() {
+        LLResult result = limelight.getLatestResult();
+
+        if (result != null && result.isValid()) {
+            Pose3D pose = result.getBotpose_MT2();
+
+            return new Pose2d(
+                    pose.getPosition().x * 39.37, // Convert meters to inches
+                    pose.getPosition().y * 39.37, // Convert meters to inches
+                    pose.getOrientation().getYaw(AngleUnit.RADIANS));
+        }
+
+        return null;
+    }
+
+    /**
+     * Feed in the yaw from the IMU for MT2.
+     */
+    public void updateRobotYaw(double yaw) {
+        limelight.updateRobotOrientation(Math.toDegrees(yaw));
+    }
+
+    // Resets the robot pose only if the robot is not moving and the new pose is within a certain
+    //  distance from the old.
+    public void tryResetRobotPose(Telemetry telemetry) {
+        boolean notMoving = isZero(drive.poseVelocity.linearVel.x)
+                && isZero(drive.poseVelocity.linearVel.y);
+
+        if (notMoving && poseCorrectEnabled) {
+
+            Pose2d pose = detectRobotPose();
+
+            if (pose != null) {
+                boolean closeEnough = Math.pow(pose.position.x - drive.pose.position.x, 2)
+                        + Math.pow(pose.position.y - drive.pose.position.y, 2)
+                        <= Math.pow(CORRECTION_RANGE, 2);
+
+                lastWithinRange = closeEnough;
+                lastXDistance = pose.position.x - drive.pose.position.x;
+                lastYDistance = pose.position.y - drive.pose.position.y;
+
+                if (closeEnough) {
+                    drive.setPose(pose);
+                }
+            }
+        }
+    }
+
+    // Sees if a number is within one one-hundredths of zero
+    private static boolean isZero(double z) {
+        return Math.abs(z) < 0.01;
     }
 
     /**

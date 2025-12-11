@@ -10,10 +10,10 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.wilyworks.common.WilyWorks;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
@@ -21,6 +21,7 @@ import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
 import org.firstinspires.ftc.team417.javatextmenu.MenuInput;
 import org.firstinspires.ftc.team417.javatextmenu.MenuSlider;
+import org.firstinspires.ftc.team417.javatextmenu.MenuSwitch;
 import org.firstinspires.ftc.team417.javatextmenu.TextMenu;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
@@ -74,7 +75,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0,new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
                         .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(139)), Math.toRadians(-51))
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME))
                         .setTangent(Math.toRadians(0))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
@@ -86,7 +87,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
@@ -99,7 +100,7 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                            .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                            .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
@@ -111,7 +112,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
-                                .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                                .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     }
                 }
@@ -121,7 +122,7 @@ public class CompetitionAuto extends BaseOpMode {
                 trajectoryAction = drive.actionBuilder(drive.pose, poseMap);
                 if (intakeCycles == 0) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
-                    .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                    .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                 }
                 trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                         .afterDisp(0,new IntakeAction(mechGlob, 1))
@@ -131,7 +132,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))  //go to launch position
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
@@ -142,7 +143,7 @@ public class CompetitionAuto extends BaseOpMode {
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
-                            .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                            .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
@@ -154,7 +155,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
                                 .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90)) //go to launch position
-                                .stopAndAdd(new LaunchAction(mechGlob, countBalls));
+                                .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
                     }
                 }
                 break;
@@ -167,7 +168,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .splineToLinearHeading(new Pose2d(60, 61, Math.toRadians(0)), Math.toRadians(0))
                         .setTangent(Math.toRadians(-90))
                         .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
-                        .stopAndAdd(new LaunchAction(mechGlob, countBalls))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .setTangent(Math.toRadians(90))
                         .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
                 break;
@@ -199,9 +200,10 @@ public class CompetitionAuto extends BaseOpMode {
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
 
 
-
+        detector = new LimelightDetector(hardwareMap, drive);
 
         // Text menu for FastBot
+
 
         // Text menu for SlowBot
         menu.add(new MenuHeader("AUTO SETUP"))
@@ -217,6 +219,9 @@ public class CompetitionAuto extends BaseOpMode {
                 .add()
                 .add("Wait time:")
                 .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
+                .add()
+                .add("Use pose correction:")
+                .add("correction-switch-1", new MenuSwitch(true))
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
@@ -236,11 +241,7 @@ public class CompetitionAuto extends BaseOpMode {
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
-
-
-
-
-
+        detector.poseCorrectEnabled = menu.getResult(Boolean.class, "correction-switch-1");
 
         // the first parameter is the type to return as
 
@@ -324,31 +325,23 @@ public class CompetitionAuto extends BaseOpMode {
 
         // Detect the pattern with the AprilTags from the camera!
         // Wait for Start to be pressed on the Driver Hub!
-        // (This try-with-resources statement automatically calls detector.close() when it exits
-        //  the try-block.)
-        pattern = Pattern.UNKNOWN;
-        pattern = Pattern.PPG;
-        countBalls.setPattern(pattern); //temporary until hankang limelight
-
-        try (LimelightDetector detector = new LimelightDetector(hardwareMap)) {
-
-            while (opModeInInit()) {
-                Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
-                if (last != Pattern.UNKNOWN) {
-                    pattern = last;
-                }
+        while (opModeInInit()) {
+            Pattern last = detector.detectPatternAndTelemeter(chosenAlliance, telemetry);
+            if (last != Pattern.UNKNOWN) {
+                pattern = last;
+            }
 
                 telemetry.addData("Chosen alliance: ", chosenAlliance);
                 telemetry.addData("Chosen movement: ", chosenMovement);
                 telemetry.addData("Chosen wait time: ", waitTime);
                 telemetry.addData("Last valid pattern: ", pattern);
 
-                telemetry.update();
-                if (isStopRequested()) {
-                    break;
+                    telemetry.update();
+
+                    if (isStopRequested()) {
+                        break;
+                    }
                 }
-            }
-        }
 
         sleep((long) waitTime * 1000);
         boolean more = true;
@@ -382,35 +375,39 @@ public class CompetitionAuto extends BaseOpMode {
         TransferState.storedColors = new PixelColor[] {mechGlob.getSlotColor(0), mechGlob.getSlotColor(1), mechGlob.getSlotColor(2)};
         TransferState.pose = drive.pose;
 
+        detector.close();
     }
 }
+
 class LaunchAction extends RobotAction {
     MechGlob mechGlob;
     Pattern pattern;
     GetColor orderCount;
+    LimelightDetector detector;
 
-    public LaunchAction(MechGlob mechGlob, GetColor orderCount) {
+    public LaunchAction(MechGlob mechGlob, GetColor orderCount, LimelightDetector detector) {
         this.mechGlob = mechGlob;
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;
+        this.detector = detector;
     }
 
     @Override
     public boolean run(double elapsedTime) {
         if (elapsedTime == 0) {
-            if (mechGlob.launch(orderCount.getColor())) {
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
                 orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
-                orderCount.increment();
-            }
-            if (mechGlob.launch(orderCount.getColor())) {
-                orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
                 orderCount.increment();
             }
-            if (mechGlob.launch(orderCount.getColor())) {
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
                 orderCount.increment();
-            } else if (mechGlob.launch(RequestedColor.EITHER)) {
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
+                orderCount.increment();
+            }
+            if (mechGlob.launch(orderCount.getColor(), detector)) {
+                orderCount.increment();
+            } else if (mechGlob.launch(RequestedColor.EITHER, detector)) {
                 orderCount.increment();
             }
         }
