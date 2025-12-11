@@ -40,6 +40,9 @@ public class CompetitionTeleOp extends BaseOpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
+    private double lastXError = 0;
+    private double lastYError = 0;
+
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
@@ -112,6 +115,8 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             telemetry.addLine(String.format("Last pose correction %s (%.2f, %.2f) (in inches)",
                     detector.lastWithinRange ? "✅" : "❌", detector.lastXDistance, detector.lastYDistance));
+            telemetry.addData("X error of last manual reset (in.)", lastXError);
+            telemetry.addData("Y error of last manual reset (in.)", lastYError);
 
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
@@ -150,11 +155,18 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.controlDrumManually();
             }
             if (gamepad1.guideWasPressed()) {
+                Pose2d lastPose = new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.log());
+
+                // Reset pose to alliance's human player zone
                 if (alliance == CompetitionAuto.Alliance.RED) {
                     drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, -72 + ROBOT_LENGTH/2, Math.toRadians(-90)));
                 } else {
                     drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, 72 - ROBOT_LENGTH / 2, Math.toRadians(90)));
                 }
+
+                // Remember what the error in X and Y was
+                lastXError = lastPose.position.x - drive.pose.position.x;
+                lastYError = lastPose.position.y - drive.pose.position.y;
             }
 
             mechGlob.intake(gamepad2.left_stick_y);
