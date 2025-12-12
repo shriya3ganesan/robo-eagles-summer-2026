@@ -353,9 +353,19 @@ public class CompetitionAuto extends BaseOpMode {
 
             // Draw the preview and then run the next step of the trajectory on top:
             packet.fieldOverlay().getOperations().addAll(previewCanvas.getOperations());
+
+            Pose2d cameraPose = detector.detectRobotPose();
+            if (cameraPose != null) {
+                packet.fieldOverlay().setStroke("#3FB578");
+                Drawing.drawRobot(packet.fieldOverlay(), cameraPose);
+            }
+
             more = trajectoryAction.run(packet);
             mechGlob.update();
             WilyWorks.updateSimulation(0); // Advance the simulation when not driving
+
+            detector.updateRobotYaw(drive.pose.heading.log());
+
             // Only send the packet if there's more to do in order to keep the very last
             // drawing up on the field once the robot is done:
             if (gamepad1.b) {

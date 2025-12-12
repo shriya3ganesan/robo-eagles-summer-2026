@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -40,8 +41,7 @@ public class CompetitionTeleOp extends BaseOpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
-    private double lastXError = 0;
-    private double lastYError = 0;
+    private Twist2d lastError = new Twist2d(new Vector2d(0, 0), 0);
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -113,10 +113,11 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             detector.updateRobotYaw(drive.pose.heading.log());
 
-            telemetry.addLine(String.format("Last pose correction %s (%.2f, %.2f) (in inches)",
+            telemetry.addLine(String.format("Last pose correction %s (%.2f\", %.2f\")",
                     detector.lastWithinRange ? "✅" : "❌", detector.lastXDistance, detector.lastYDistance));
-            telemetry.addData("X error of last manual reset (in.)", lastXError);
-            telemetry.addData("Y error of last manual reset (in.)", lastYError);
+            telemetry.addLine(String.format("Last manual reset (%.2f\", %.2f\", %.2f°)",
+                    lastError.line.x, lastError.line.y,
+                    AngleUnit.normalizeDegrees(Math.toDegrees(lastError.angle))));
 
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
@@ -164,9 +165,8 @@ public class CompetitionTeleOp extends BaseOpMode {
                     drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, 72 - ROBOT_LENGTH / 2, Math.toRadians(90)));
                 }
 
-                // Remember what the error in X and Y was
-                lastXError = lastPose.position.x - drive.pose.position.x;
-                lastYError = lastPose.position.y - drive.pose.position.y;
+                // Remember what the error was
+                lastError = drive.pose.minus(lastPose);
             }
 
             mechGlob.intake(gamepad2.left_stick_y);
