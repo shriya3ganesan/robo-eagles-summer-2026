@@ -45,6 +45,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.team417.CompetitionAuto;
+import org.firstinspires.ftc.team417.TransferState;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.io.Closeable;
@@ -330,7 +331,7 @@ public class LimelightDetector implements Closeable {
         boolean notMoving = isZero(drive.poseVelocity.linearVel.x)
                 && isZero(drive.poseVelocity.linearVel.y);
 
-        if (notMoving && poseCorrectEnabled) {
+        if (notMoving && poseCorrectEnabled && TransferState.trustPose) {
 
             Pose2d pose = detectRobotPose();
 
