@@ -385,9 +385,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 }
             }
             // this makes it so that after we are done launching the drum goes to intake position
-            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
-                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
-            }
+//            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
+//                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+//            }
         }
 
         // let a firing request interrupt an intake
@@ -449,6 +449,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motIntake.setPower(intakePower);
         servoBLaunchFeeder.setPower(feederPower);
         servoFLaunchFeeder.setPower(feederPower);
+
+        telemetry.addData("hwDrumPos", hwDrumPosition);
+        telemetry.addData("currVoltage ", "%.2f", analogDrum.getVoltage());
     }
 }
 

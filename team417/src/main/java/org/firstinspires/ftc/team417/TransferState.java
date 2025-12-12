@@ -7,4 +7,6 @@ public class TransferState {
     public static CompetitionAuto.Alliance chosenAlliance;
     public static PixelColor[] storedColors;
     public static Pose2d pose;
+    public static boolean trustPose = false;
+    public static boolean usePoseCorrection = true;
 }

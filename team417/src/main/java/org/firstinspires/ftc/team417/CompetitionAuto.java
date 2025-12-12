@@ -251,7 +251,7 @@ public class CompetitionAuto extends BaseOpMode {
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
-        detector.poseCorrectEnabled = menu.getResult(Boolean.class, "correction-switch-1");
+        TransferState.usePoseCorrection = menu.getResult(Boolean.class, "correction-switch-1");
 
         // the first parameter is the type to return as
 
@@ -293,6 +293,9 @@ public class CompetitionAuto extends BaseOpMode {
                     break;
             }
         }
+
+        TransferState.trustPose = true;
+
         drive.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         drive.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         drive.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

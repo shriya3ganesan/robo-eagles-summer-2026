@@ -73,7 +73,7 @@ public class CompetitionTeleOp extends BaseOpMode {
         AmazingAutoAim amazingAutoAim = null;
         detector = new LimelightDetector(hardwareMap, drive);
 
-        detector.poseCorrectEnabled = true;
+        detector.poseCorrectEnabled = TransferState.usePoseCorrection;
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
         //Variable for auto aim
@@ -91,7 +91,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                 amazingAutoAim = new AmazingAutoAim(telemetry, alliance);
             }
 
-            if (gamepad1.right_bumper) {
+            if (gamepad1.right_bumper && TransferState.trustPose) {
                 amountToTurn = -amazingAutoAim.get(drive.pose);
             } else {
                 amountToTurn = halfLinearHalfCubic(-gamepad1.right_stick_x);
@@ -113,6 +113,7 @@ public class CompetitionTeleOp extends BaseOpMode {
 
             detector.updateRobotYaw(drive.pose.heading.log());
 
+            telemetry.addData("Pose trusted", TransferState.trustPose ? "✅" : "❌");
             telemetry.addLine(String.format("Last pose correction %s (%.2f\", %.2f\")",
                     detector.lastWithinRange ? "✅" : "❌", detector.lastXDistance, detector.lastYDistance));
             telemetry.addLine(String.format("Last manual reset (%.2f\", %.2f\", %.2f°)",
@@ -155,6 +156,11 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.rightBumperWasPressed()) {
                 mechGlob.controlDrumManually();
             }
+
+            if (gamepad2.backWasPressed()) {
+                telemetry.log().clear();
+            }
+
             if (gamepad1.guideWasPressed()) {
                 Pose2d lastPose = new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.log());
 
@@ -164,6 +170,8 @@ public class CompetitionTeleOp extends BaseOpMode {
                 } else {
                     drive.setPose(new Pose2d(72 - ROBOT_WIDTH/2, 72 - ROBOT_LENGTH / 2, Math.toRadians(90)));
                 }
+
+                TransferState.trustPose = true;
 
                 // Remember what the error was
                 lastError = drive.pose.minus(lastPose);
