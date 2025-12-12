@@ -626,38 +626,40 @@ public class Limelight3A implements HardwareDevice
      * @return true if successful, false otherwise.
      */
     private boolean sendPostRequest(String endpoint, String data) {
-        HttpURLConnection connection = null;
-        try {
-            String urlString = baseUrl + endpoint;
-            URL url = new URL(urlString);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setReadTimeout(POSTREQUEST_TIMEOUT);
-            connection.setConnectTimeout(CONNECTION_TIMEOUT);
+        return false; // Wily Works override without a timeout
 
-            if (data != null) {
-                try (OutputStream os = connection.getOutputStream()) {
-                    byte[] input = data.getBytes(StandardCharsets.UTF_8);
-                    os.write(input, 0, input.length);
-                }
-            }
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                return true;
-            } else {
-                //System.out.println("HTTP POST Error: " + responseCode);
-            }
-        } catch (Exception e) {
-            //e.printStackTrace();
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-        return false;
+//        HttpURLConnection connection = null;
+//        try {
+//            String urlString = baseUrl + endpoint;
+//            URL url = new URL(urlString);
+//            connection = (HttpURLConnection) url.openConnection();
+//            connection.setRequestMethod("POST");
+//            connection.setDoOutput(true);
+//            connection.setRequestProperty("Content-Type", "application/json");
+//            connection.setReadTimeout(POSTREQUEST_TIMEOUT);
+//            connection.setConnectTimeout(CONNECTION_TIMEOUT);
+//
+//            if (data != null) {
+//                try (OutputStream os = connection.getOutputStream()) {
+//                    byte[] input = data.getBytes(StandardCharsets.UTF_8);
+//                    os.write(input, 0, input.length);
+//                }
+//            }
+//
+//            int responseCode = connection.getResponseCode();
+//            if (responseCode == HttpURLConnection.HTTP_OK) {
+//                return true;
+//            } else {
+//                //System.out.println("HTTP POST Error: " + responseCode);
+//            }
+//        } catch (Exception e) {
+//            //e.printStackTrace();
+//        } finally {
+//            if (connection != null) {
+//                connection.disconnect();
+//            }
+//        }
+//        return false;
     }
 
     /**
