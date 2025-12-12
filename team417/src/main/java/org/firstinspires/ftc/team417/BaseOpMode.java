@@ -3,7 +3,6 @@ package org.firstinspires.ftc.team417;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
-import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 /**
  * This class contains all of the base logic that is shared between all of the TeleOp and
@@ -11,7 +10,6 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  */
 abstract public class BaseOpMode extends LinearOpMode {
     LimelightDetector detector;
-    MecanumDrive drive;
 
     public static double ROBOT_WIDTH = 16.15;
     public static double ROBOT_LENGTH = 16.5;

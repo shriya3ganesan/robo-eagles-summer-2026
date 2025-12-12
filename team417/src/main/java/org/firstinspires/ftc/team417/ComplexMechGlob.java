@@ -230,12 +230,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             //each conditional checks if what we requested and what we have in a specific slot matches.
             if (distance < minDistance){
                 if (requestedColor == RequestedColor.PURPLE && slotOccupiedBy.get (i) == PixelColor.PURPLE){
+                    minDistance = distance;
                     minSlot = i;// if it does, mark the current slot as the nearest slot
                 } else if (requestedColor == RequestedColor.GREEN && slotOccupiedBy.get (i) == PixelColor.GREEN){
+                    minDistance = distance;
                     minSlot = i;
                 } else if (requestedColor == RequestedColor.EITHER && slotOccupiedBy.get (i) != PixelColor.NONE){
+                    minDistance = distance;
                     minSlot = i;
                 } else if (requestedColor == RequestedColor.NONE && slotOccupiedBy.get (i) == PixelColor.NONE){
+                    minDistance = distance;
                     minSlot = i;
                 }
             }
