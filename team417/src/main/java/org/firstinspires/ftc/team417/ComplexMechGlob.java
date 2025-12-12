@@ -91,7 +91,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     // TODO tune constants via FTC Dashboard:
     public static double FEEDER_POWER = 1;
     public static double TRANSFER_TIME_UP = 0.6;
-    public static double TRANSFER_TIME_DOWN = 0.25; //TRANSFER_TIME_TOTAL must be more than TRANSFER_TIME_UP
+    public static double TRANSFER_TIME_DOWN = 0.25;
 
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
