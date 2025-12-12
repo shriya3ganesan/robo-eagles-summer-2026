@@ -104,7 +104,7 @@ public class LimelightDetector implements Closeable {
     /**
      * The constant for how far away for a correction pose to be at max to be considered valid.
      */
-    private final double CORRECTION_RANGE = 12;
+    private final double CORRECTION_RANGE = 6;
 
     /**
      * Variables for capturing the details of the last correction.
@@ -325,6 +325,7 @@ public class LimelightDetector implements Closeable {
 
     // Resets the robot pose only if the robot is not moving and the new pose is within a certain
     //  distance from the old.
+    @SuppressLint("DefaultLocale")
     public void tryResetRobotPose(Telemetry telemetry) {
         boolean notMoving = isZero(drive.poseVelocity.linearVel.x)
                 && isZero(drive.poseVelocity.linearVel.y);
@@ -341,6 +342,9 @@ public class LimelightDetector implements Closeable {
                 lastWithinRange = closeEnough;
                 lastXDistance = pose.position.x - drive.pose.position.x;
                 lastYDistance = pose.position.y - drive.pose.position.y;
+
+                telemetry.log().add(String.format("Last pose correction %s (%.2f\", %.2f\")",
+                        lastWithinRange ? "✅" : "❌", lastXDistance, lastYDistance));
 
                 if (closeEnough) {
                     drive.setPose(pose);
