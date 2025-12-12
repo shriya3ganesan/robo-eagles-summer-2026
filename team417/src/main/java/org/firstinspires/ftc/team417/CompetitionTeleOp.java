@@ -154,6 +154,11 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.rightBumperWasPressed()) {
                 mechGlob.controlDrumManually();
             }
+
+            if (gamepad2.backWasPressed()) {
+                telemetry.log().clear();
+            }
+
             if (gamepad1.guideWasPressed()) {
                 Pose2d lastPose = new Pose2d(drive.pose.position.x, drive.pose.position.y, drive.pose.heading.log());
 
