@@ -86,7 +86,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0, new IntakeAction(mechGlob, 1))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(1))
+                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
                         //.afterDisp(0, new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
@@ -96,11 +96,12 @@ public class CompetitionAuto extends BaseOpMode {
                         .stopAndAdd(new WaitAction(FEEDER_TIME));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(45))
-                            .afterDisp(0, new IntakeAction(mechGlob, 0))
+                            .afterDisp(0, new IntakeAction(mechGlob, 1))
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(45)) //go to intake middle from goal
-                            .afterDisp(0,new IntakeAction(mechGlob, 1))
+
                             .setTangent(Math.toRadians(90))
-                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(1))
+                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
+                            .afterDisp(0,new IntakeAction(mechGlob, 0))
 
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-123))
@@ -112,7 +113,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake  farthest from goal
                                 .afterDisp(0,new IntakeAction(mechGlob, 1))
                                 .setTangent(Math.toRadians(90))
-                                .splineToConstantHeading(new Vector2d(36, 50), Math.toRadians(90),new TranslationalVelConstraint(1))
+                                .splineToConstantHeading(new Vector2d(36, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
                                 .afterDisp(0, new IntakeAction(mechGlob, 0))
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
@@ -175,13 +176,36 @@ public class CompetitionAuto extends BaseOpMode {
                 // 3 launch actions
                 // after disp intake action
                 trajectoryAction = drive.actionBuilder(beginPose, poseMap);
-                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(180))
-                        .splineToLinearHeading(new Pose2d(60, 61, Math.toRadians(0)), Math.toRadians(0))
-                        .setTangent(Math.toRadians(-90))
-                        .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
+                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(157.5))
+                        .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-157.5))
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .setTangent(Math.toRadians(90))
-                        .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
+                        .afterDisp(0, new IntakeAction(mechGlob, 1))
+                        .splineToSplineHeading(new Pose2d(60, 61, Math.toRadians(90)), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .splineToSplineHeading(new Pose2d(60,46,Math.toRadians(90)), Math.toRadians(-90))
+                        .setTangent(Math.toRadians(90))
+                        .splineToSplineHeading(new Pose2d(71-(ROBOT_WIDTH/2), 61, Math.toRadians(90)), Math.toRadians(90))
+                        .setTangent(Math.toRadians(-90))
+                        .afterDisp(0,new IntakeAction(mechGlob, 0))
+                        .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
+                        .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
+
+                if (intakeCycles > 1) {
+                    trajectoryAction = trajectoryAction.setTangent(Math.toRadians(90))
+                            .afterDisp(0, new IntakeAction(mechGlob, 1))
+                            .splineToSplineHeading(new Pose2d(60, 61, Math.toRadians(90)), Math.toRadians(90))
+                            .setTangent(Math.toRadians(-90))
+                            .splineToSplineHeading(new Pose2d(60,46,Math.toRadians(90)), Math.toRadians(-90))
+                            .setTangent(Math.toRadians(90))
+                            .splineToSplineHeading(new Pose2d(71-(ROBOT_WIDTH/2), 61, Math.toRadians(90)), Math.toRadians(90))
+                            .setTangent(Math.toRadians(-90))
+                            .afterDisp(0,new IntakeAction(mechGlob, 0))
+                            .splineToLinearHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))
+                            .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
+                }
+                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(90))
+                    .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
                 break;
             case FAR_MINIMAL:
                 trajectoryAction = drive.actionBuilder(beginPose, poseMap);
