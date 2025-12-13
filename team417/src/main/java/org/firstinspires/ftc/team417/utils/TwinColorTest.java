@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.team417.CoolColorDetector;
 
 @TeleOp(name = "Twin Color Sensor Test", group = "Sensor")
 public class TwinColorTest extends LinearOpMode {
@@ -55,8 +56,8 @@ public class TwinColorTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         NormalizedColorSensor sensor1;
         NormalizedColorSensor sensor2;
-        double gain1 = 140f; // Brushlands
-        double gain2 = 140f; // REV
+        double gain1 = CoolColorDetector.GAIN; // Brushlands
+        double gain2 = CoolColorDetector.GAIN; // REV
 
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
