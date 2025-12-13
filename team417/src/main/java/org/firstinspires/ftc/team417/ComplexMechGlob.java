@@ -251,11 +251,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void intake (double intakeSpeed) {
         userIntakeSpeed = intakeSpeed;
-        if (userIntakeSpeed != 0) {
-            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
-        } else {
-            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
-        }
+
     }
 
     @Override
@@ -374,6 +370,11 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
                 intakePower = INTAKE_SPEED;
             }
+        }
+        if (intakePower > 0 && waitState != WaitState.DRUM_MOVE) {
+            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
+        } else {
+            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
         }
 
         if (waitState == WaitState.IDLE) {
