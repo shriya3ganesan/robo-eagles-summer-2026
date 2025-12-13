@@ -23,7 +23,7 @@ public class Preload extends BaseOpMode {
 
         int currentSlot = 0; // Currently active slot
         int targetSlot = 0; // Target slot the drum is moving to
-        double currentDrumPosition = 0; // The drum's current position
+        double currentDrumPosition = mechGlob.LAUNCH_POSITIONS[0]; // Set the drum's current position to slot 0
         ElapsedTime loopTime = new ElapsedTime();
         ElapsedTime timeSinceTransfer = new ElapsedTime();
 
