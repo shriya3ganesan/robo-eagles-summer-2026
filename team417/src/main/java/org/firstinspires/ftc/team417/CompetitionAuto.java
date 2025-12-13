@@ -10,7 +10,8 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.wilyworks.common.WilyWorks;
 
@@ -31,7 +32,7 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
-@TeleOp(name = "Auto", group = "Competition")
+@Autonomous(name = "Auto", group = "Competition")
 public class CompetitionAuto extends BaseOpMode {
     static public double FEEDER_TIME = 0.5;
     public enum Alliance {
@@ -390,9 +391,7 @@ public class CompetitionAuto extends BaseOpMode {
 
             telemetry.update();
         }
-        while (opModeIsActive()){
-            sleep(1000);
-        }
+
         // Stores these so they can be transferred to teleop
         TransferState.chosenAlliance = chosenAlliance;
         TransferState.storedColors = new PixelColor[] {mechGlob.getSlotColor(0), mechGlob.getSlotColor(1), mechGlob.getSlotColor(2)};

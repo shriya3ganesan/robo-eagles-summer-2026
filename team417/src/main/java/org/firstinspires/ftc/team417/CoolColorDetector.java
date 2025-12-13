@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -48,7 +49,9 @@ public class CoolColorDetector {
         } else if (distance2 < MINIMUM_DISTANCE) {
             sensor = sensor2;
         } else {
-            telemetry.addLine(String.format(" %.1f, %.1f\"", distance1, distance2));
+            String string = String.format(" %.1f, %.1f\"", distance1, distance2);
+            telemetry.addLine(string);
+            Log.d("CoolColorDetector", string);
             return PixelColor.NONE;
         }
 
@@ -75,7 +78,7 @@ public class CoolColorDetector {
             telemetry.log().add(string);
         }
         telemetry.addLine(string);
-
+        Log.d("CoolColorDetector", string);
         // Return the result that was decided in the if statements above
         return result;
 
