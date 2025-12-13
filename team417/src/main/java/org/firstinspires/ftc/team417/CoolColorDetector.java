@@ -21,12 +21,12 @@ public class CoolColorDetector {
     public static double GREEN_MIN_HUE = 155;
     public static double GREEN_MAX_HUE = 180;
     public static double MIN_VALUE = 0.3;
+    public static float GAIN = 85f; // adjust for brightness
 
 
     Telemetry telemetry;
     private NormalizedColorSensor sensor1;
     private NormalizedColorSensor sensor2;
-    private final float GAIN = 85f; // adjust for brightness
 
     public CoolColorDetector(HardwareMap map, Telemetry telemetry) {
         sensor1 = map.get(NormalizedColorSensor.class, "sensorColor1");
