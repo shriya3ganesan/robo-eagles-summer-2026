@@ -108,10 +108,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double DRUM_GATE_OPEN_POSITION = .8;
     public static double DRUM_GATE_CLOSED_POSITION = 0.59;
     public static double MOTOR_D_VALUE = 1;
+    public static double INTAKE_BACK_TIME = 0.25;
 
 
     ElapsedTime transferTimer;
     ElapsedTime intakeTimer;
+    ElapsedTime intakeBackTimer;
     double userIntakeSpeed;
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
@@ -358,6 +360,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         double intakePower = 0;
         double gatePosition;
         calculateLaunchVelocity();
+
         if (waitState == WaitState.DRUM_MOVE_WAIT) {
             // always run the intake, even while we're waiting for the ball to enter the drum
             intakePower = INTAKE_SPEED;
@@ -370,6 +373,15 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 intakePower = INTAKE_SPEED;
             } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
                 intakePower = INTAKE_SPEED;
+            }
+        }
+        // whenever we see a ball in the drum then we move the intake back so the ball immediately
+        // doesn't get stuck in the drum
+        if (intakeBackTimer != null) {
+            if(intakeBackTimer.seconds() < INTAKE_BACK_TIME) {
+                intakePower = -1;
+            } else {
+                intakeBackTimer = null;
             }
         }
 
@@ -434,6 +446,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 slotOccupiedBy.set(slot, slotColor);
                 waitState = WaitState.DRUM_MOVE_WAIT;
                 intakeTimer = new ElapsedTime();
+                intakeBackTimer = new ElapsedTime();
             }
         }
         if (waitState == WaitState.DRUM_MOVE_WAIT) {

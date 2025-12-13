@@ -35,6 +35,8 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 @Autonomous(name = "Auto", group = "Competition")
 public class CompetitionAuto extends BaseOpMode {
     static public double FEEDER_TIME = 0.5;
+    static public double ROBOT_SPEED = 1;
+    static public double INTAKE_SPEED = 1;
     public enum Alliance {
         RED,
         BLUE,
@@ -83,12 +85,11 @@ public class CompetitionAuto extends BaseOpMode {
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME))
                         .setTangent(Math.toRadians(90))
-                        .afterDisp(0, new IntakeAction(mechGlob, 1))
+                        .afterDisp(0, new IntakeAction(mechGlob, INTAKE_SPEED))
                         .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest from goal
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
+                        .splineToConstantHeading(new Vector2d(-12, 50), Math.toRadians(90),new TranslationalVelConstraint(ROBOT_SPEED))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
-                        //.afterDisp(0, new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(-90)) //go to launch position
@@ -96,11 +97,11 @@ public class CompetitionAuto extends BaseOpMode {
                         .stopAndAdd(new WaitAction(FEEDER_TIME));
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(45))
-                            .afterDisp(0, new IntakeAction(mechGlob, 1))
+                            .afterDisp(0, new IntakeAction(mechGlob, INTAKE_SPEED))
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(45)) //go to intake middle from goal
 
                             .setTangent(Math.toRadians(90))
-                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
+                            .splineToConstantHeading(new Vector2d(12, 50), Math.toRadians(90),new TranslationalVelConstraint(ROBOT_SPEED))
                             .afterDisp(0,new IntakeAction(mechGlob, 0))
 
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
@@ -111,9 +112,9 @@ public class CompetitionAuto extends BaseOpMode {
                     if (intakeCycles > 2) {
                         trajectoryAction = trajectoryAction.setTangent(Math.toRadians(0))
                                 .splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake  farthest from goal
-                                .afterDisp(0,new IntakeAction(mechGlob, 1))
+                                .afterDisp(0,new IntakeAction(mechGlob, INTAKE_SPEED))
                                 .setTangent(Math.toRadians(90))
-                                .splineToConstantHeading(new Vector2d(36, 50), Math.toRadians(90),new TranslationalVelConstraint(3))
+                                .splineToConstantHeading(new Vector2d(36, 50), Math.toRadians(90),new TranslationalVelConstraint(ROBOT_SPEED))
                                 .afterDisp(0, new IntakeAction(mechGlob, 0))
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
@@ -222,20 +223,7 @@ public class CompetitionAuto extends BaseOpMode {
     @Override
     public void runOpMode() {
 
-        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
-        Pose2d startPose = new Pose2d(0, 0, 0);
-
-        Pose2d SBRedNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), 24+(ROBOT_LENGTH/2), Math.toRadians(-90));
-        Pose2d SBBlueNearStartPose = new Pose2d(-72+(ROBOT_WIDTH/2), -(24+(ROBOT_LENGTH/2)), Math.toRadians(90));
-        Pose2d SBRedFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, ROBOT_WIDTH/2, Math.toRadians(180));
-        Pose2d SBBlueFarStartPose = new Pose2d(72-ROBOT_LENGTH/2, -ROBOT_WIDTH/2, Math.toRadians(180));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
-        PixelColor[] preloads = new PixelColor[]{PixelColor.PURPLE, PixelColor.GREEN, PixelColor.PURPLE};
-        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
-
-
-        detector = new LimelightDetector(hardwareMap, drive);
 
         // Text menu for FastBot
 
@@ -271,15 +259,31 @@ public class CompetitionAuto extends BaseOpMode {
             }
             telemetry.update();
         }
-        GetColor countBalls = new GetColor();
+
         Alliance chosenAlliance = menu.getResult(Alliance.class, "alliance-picker-1");
         SlowBotMovement chosenMovement = menu.getResult(SlowBotMovement.class, "movement-picker-1");
         double waitTime = menu.getResult(Double.class, "wait-slider-1");
         double intakeCycles = menu.getResult(Double.class, "intake-slider");
         TransferState.usePoseCorrection = menu.getResult(Boolean.class, "correction-switch-1");
-
+        processAuto(chosenAlliance, chosenMovement, waitTime, intakeCycles);
+    }
+    void processAuto(Alliance chosenAlliance, SlowBotMovement chosenMovement, double waitTime, double intakeCycles) {
         // the first parameter is the type to return as
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
+        Pose2d startPose = new Pose2d(0, 0, 0);
+
+        Pose2d SBRedNearStartPose = new Pose2d(-72 + (ROBOT_WIDTH / 2), 24 + (ROBOT_LENGTH / 2), Math.toRadians(-90));
+        Pose2d SBBlueNearStartPose = new Pose2d(-72 + (ROBOT_WIDTH / 2), -(24 + (ROBOT_LENGTH / 2)), Math.toRadians(90));
+        Pose2d SBRedFarStartPose = new Pose2d(72 - ROBOT_LENGTH / 2, ROBOT_WIDTH / 2, Math.toRadians(180));
+        Pose2d SBBlueFarStartPose = new Pose2d(72 - ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2, Math.toRadians(180));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, startPose);
+        PixelColor[] preloads = new PixelColor[]{PixelColor.PURPLE, PixelColor.GREEN, PixelColor.PURPLE};
+        MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, preloads);
+        GetColor countBalls = new GetColor();
+
+
+        detector = new LimelightDetector(hardwareMap, drive);
 
         Action trajectoryAction;
         if (chosenAlliance == Alliance.RED) {
