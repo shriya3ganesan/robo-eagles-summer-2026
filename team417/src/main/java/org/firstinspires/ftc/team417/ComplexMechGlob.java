@@ -129,8 +129,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     // arrays with placeholder values for servo positions and voltages relative to intake and launch
     double [] INTAKE_POSITIONS = {0.067, 0.44, 0.803};
     double [] INTAKE_VOLTS = {2.94, 1.83, 0.74};
-    double [] LAUNCH_POSITIONS = {0.258, 0.627, 1};
-    double [] LAUNCH_VOLTS = {2.37, 1.27, 0.155};
+    double [] LAUNCH_POSITIONS = {0.627, 1, 0.258};
+    double [] LAUNCH_VOLTS = {1.27, 0.155, 2.37};
     double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
     double upperLaunchVelocity;
@@ -385,9 +385,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 }
             }
             // this makes it so that after we are done launching the drum goes to intake position
-//            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
-//                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
-//            }
+            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
+                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+            }
         }
 
         // let a firing request interrupt an intake
