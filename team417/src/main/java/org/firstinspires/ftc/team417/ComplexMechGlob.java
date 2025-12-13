@@ -355,7 +355,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     @Override
     void update () {
         double intakePower = 0;
-
+        double gatePosition;
         calculateLaunchVelocity();
         if (waitState == WaitState.DRUM_MOVE_WAIT) {
             // always run the intake, even while we're waiting for the ball to enter the drum
@@ -371,11 +371,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 intakePower = INTAKE_SPEED;
             }
         }
+
         if (intakePower > 0 && waitState != WaitState.DRUM_MOVE) {
-            servoDrumGate.setPosition(DRUM_GATE_OPEN_POSITION);
+            gatePosition = DRUM_GATE_OPEN_POSITION;
         } else {
-            servoDrumGate.setPosition(DRUM_GATE_CLOSED_POSITION);
+            gatePosition = DRUM_GATE_CLOSED_POSITION;
         }
+        telemetry.addLine(String.format("intake: %.1f, waitState: %s, gatePosition: %.1f",
+                intakePower, waitState, gatePosition));
 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
@@ -443,14 +446,12 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
             // Enable on real hardware once transfer parameters are tuned
         servoTransfer.setPosition(transferPosition);
-
-
+        servoDrumGate.setPosition(gatePosition);
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
         servoBLaunchFeeder.setPower(feederPower);
         servoFLaunchFeeder.setPower(feederPower);
-
         telemetry.addData("hwDrumPos", hwDrumPosition);
         telemetry.addData("currVoltage ", "%.2f", analogDrum.getVoltage());
     }

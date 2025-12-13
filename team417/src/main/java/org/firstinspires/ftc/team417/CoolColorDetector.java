@@ -17,10 +17,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class CoolColorDetector {
     public static double MINIMUM_DISTANCE = 30;
     public static double PURPLE_MIN_HUE = 200;
-    public static double PURPLE_MAX_HUE = 230;
-    public static double GREEN_MIN_HUE = 155;
+    public static double PURPLE_MAX_HUE = 235;
+    public static double GREEN_MIN_HUE = 145;
     public static double GREEN_MAX_HUE = 180;
-    public static double MIN_VALUE = 0.3;
+    public static double MIN_VALUE = 0.25;
     public static float GAIN = 85f; // adjust for brightness
 
 
