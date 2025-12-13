@@ -287,6 +287,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         } else {
             expectedVolts = LAUNCH_VOLTS[launchSlot];
         }
+        telemetry.addLine(String.format("Position Delta: %.4f",analogDrum.getVoltage() - expectedVolts));
         return Math.abs(analogDrum.getVoltage() - expectedVolts) <= VOLTAGE_TOLERANCE;
     }
     @Override
