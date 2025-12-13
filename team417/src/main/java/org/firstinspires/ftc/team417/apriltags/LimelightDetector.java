@@ -121,7 +121,7 @@ public class LimelightDetector implements Closeable {
         // Create the AprilTag processor.
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
-        limelight.pipelineSwitch(7);
+        limelight.pipelineSwitch(1);
 
         limelight.start();
 
