@@ -103,8 +103,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double TRANSFER_ACTIVE_POSITION = 0.7;
     public static double REVERSE_INTAKE_SPEED = -1;
     public static double INTAKE_SPEED = 1;
-    public static double FLYWHEEL_VELOCITY_TOLERANCE = 25; //this is an epsiiiiiiiiilon
-    public static double VOLTAGE_TOLERANCE = 0.01; //THIS IS AN EPSILON AS WELLLLLL
+    public static double FLYWHEEL_VELOCITY_TOLERANCE = 10; //this is an epsiiiiiiiiilon
+    public static double VOLTAGE_TOLERANCE = 0.04; //THIS IS AN EPSILON AS WELLLLLL
     public static double DRUM_GATE_OPEN_POSITION = .8;
     public static double DRUM_GATE_CLOSED_POSITION = 0.59;
     public static double MOTOR_D_VALUE = 1;

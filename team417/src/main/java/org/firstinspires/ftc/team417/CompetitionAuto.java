@@ -81,7 +81,7 @@ public class CompetitionAuto extends BaseOpMode {
                 trajectoryAction = trajectoryAction.setTangent(Math.toRadians(-51))
                         .afterDisp(0,new SpinUpAction(mechGlob, LaunchDistance.NEAR))
                         .afterDisp(0,new PreLaunchAction(mechGlob, countBalls))
-                        .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(139)), Math.toRadians(-51))
+                        .splineToSplineHeading(new Pose2d(-12, 12,Math.toRadians(135)), Math.toRadians(-51))
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME))
                         .setTangent(Math.toRadians(90))
@@ -92,7 +92,7 @@ public class CompetitionAuto extends BaseOpMode {
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
-                        .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(-90)) //go to launch position
+                        .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(135)), Math.toRadians(-90)) //go to launch position
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME));
                 if (intakeCycles > 1) {
@@ -106,7 +106,7 @@ public class CompetitionAuto extends BaseOpMode {
 
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-123))
-                            .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(-123)) //go to launch position
+                            .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(135)), Math.toRadians(-123)) //go to launch position
                             .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
                     if (intakeCycles > 2) {
@@ -118,7 +118,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .afterDisp(0, new IntakeAction(mechGlob, 0))
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
-                                .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(139)), Math.toRadians(180)) //go to launch position
+                                .splineToSplineHeading(new Pose2d(-12, 12, Math.toRadians(135)), Math.toRadians(180)) //go to launch position
                                 .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector));
 
 
