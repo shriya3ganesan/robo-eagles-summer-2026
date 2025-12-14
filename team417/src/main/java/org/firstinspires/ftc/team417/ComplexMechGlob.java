@@ -371,7 +371,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         engageOhCrap = engage;
         if (engage) {
             if (drumQueue.size() == 1) {
-                DrumRequest request = drumQueue.remove(0);
+                DrumRequest request = drumQueue.get(0);
                 hwDrumPosition = request.oldPosition;
                 lastQueuedPosition = request.oldPosition;
             }
