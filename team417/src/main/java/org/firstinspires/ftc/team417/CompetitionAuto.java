@@ -181,6 +181,8 @@ class BaseCompetitonMode extends BaseOpMode {
                                 .stopAndAdd(new WaitAction(FEEDER_TIME));
                     }
                 }
+                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(157.5))
+                        .splineToConstantHeading(new Vector2d(48,24), Math.toRadians(157.5));
                 break;
 
             case FAR_OUT_OF_WAY:
@@ -193,7 +195,7 @@ class BaseCompetitonMode extends BaseOpMode {
                         .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                         .stopAndAdd(new WaitAction(FEEDER_TIME))
                         .setTangent(Math.toRadians(90))
-                        .afterDisp(0, new IntakeAction(mechGlob, 1))
+                        .afterDisp(5, new IntakeAction(mechGlob, 1))
                         .splineToSplineHeading(new Pose2d(60, 61, Math.toRadians(90)), Math.toRadians(90))
                         .setTangent(Math.toRadians(-90))
                         .splineToSplineHeading(new Pose2d(60,46,Math.toRadians(90)), Math.toRadians(-90))
@@ -209,7 +211,7 @@ class BaseCompetitonMode extends BaseOpMode {
 
                 if (intakeCycles > 1) {
                     trajectoryAction = trajectoryAction.setTangent(Math.toRadians(90))
-                            .afterDisp(0, new IntakeAction(mechGlob, 1))
+                            .afterDisp(5, new IntakeAction(mechGlob, 1))
                             .splineToSplineHeading(new Pose2d(60, 61, Math.toRadians(90)), Math.toRadians(90))
                             .setTangent(Math.toRadians(-90))
                             .splineToSplineHeading(new Pose2d(60,46,Math.toRadians(90)), Math.toRadians(-90))
@@ -223,8 +225,8 @@ class BaseCompetitonMode extends BaseOpMode {
                             .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
                             .stopAndAdd(new WaitAction(FEEDER_TIME));
                 }
-                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(90))
-                    .splineToLinearHeading(new Pose2d(50, 32, Math.toRadians(180)), Math.toRadians(180));
+                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(157.5))
+                        .splineToConstantHeading(new Vector2d(48,24), Math.toRadians(157.5));
                 break;
             case FAR_MINIMAL:
                 trajectoryAction = drive.actionBuilder(beginPose, poseMap);
