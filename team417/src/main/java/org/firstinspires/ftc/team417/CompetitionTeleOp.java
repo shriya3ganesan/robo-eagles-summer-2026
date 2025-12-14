@@ -156,7 +156,7 @@ public class CompetitionTeleOp extends BaseOpMode {
             } else if (gamepad2.rightBumperWasPressed()) {
                 mechGlob.controlDrumManually();
             }
-
+            mechGlob.ohCrap(gamepad2.right_trigger > 0);
             if (gamepad2.backWasPressed()) {
                 telemetry.log().clear();
             }

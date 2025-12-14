@@ -34,6 +34,8 @@ enum PixelColor {
     NONE
 }
 enum LaunchDistance {
+    FAR_AUTO,
+    NEAR_AUTO,
     FAR,
     NEAR,
     OFF //turns the flywheel off
@@ -80,6 +82,7 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
         return PixelColor.NONE;
     }
     void controlDrumManually () {}
+    void ohCrap(boolean engage) {}
 
 
 
@@ -103,12 +106,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double TRANSFER_ACTIVE_POSITION = 0.7;
     public static double REVERSE_INTAKE_SPEED = -1;
     public static double INTAKE_SPEED = 1;
-    public static double FLYWHEEL_VELOCITY_TOLERANCE = 10; //this is an epsiiiiiiiiilon
+    public static double FLYWHEEL_VELOCITY_TOLERANCE = 22; //this is an epsiiiiiiiiilon  was 10
     public static double VOLTAGE_TOLERANCE = 0.04; //THIS IS AN EPSILON AS WELLLLLL
     public static double DRUM_GATE_OPEN_POSITION = .8;
     public static double DRUM_GATE_CLOSED_POSITION = 0.59;
     public static double MOTOR_D_VALUE = 1;
     public static double INTAKE_BACK_TIME = 0.25;
+    public static double NEAR_AUTO_VELOCTIY = 835;
+    public static double FAR_AUTO_VELOCITY = 1040;
 
 
     ElapsedTime transferTimer;
@@ -138,6 +143,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double upperLaunchVelocity;
     double lowerLaunchVelocity;
     double feederPower;
+    boolean engageOhCrap;
     LaunchDistance launchDistance = LaunchDistance.OFF;
 
 
@@ -159,12 +165,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     CoolColorDetector coolColorDetector;
 
     class DrumRequest {
-        double position;
+        double newPosition;
+        double oldPosition;
         WaitState nextState;
 
-        public DrumRequest(double position, WaitState nextState) {
+        public DrumRequest(double newPosition, double oldPosition, WaitState nextState) {
             this.nextState = nextState;
-            this.position = position;
+            this.newPosition = newPosition;
+            this.oldPosition = oldPosition;
         }
     }
     ComplexMechGlob (HardwareMap hardwareMap, Telemetry telemetry, PixelColor[] preloads) {
@@ -274,7 +282,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){
-        drumQueue.add(new DrumRequest(position, nextState));
+        drumQueue.add(new DrumRequest(position, lastQueuedPosition, nextState));
         lastQueuedPosition = position;
     }
 
@@ -306,7 +314,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.IDLE);
             return true;
         }
-
     }
     @Override
     void setLaunchVelocity (LaunchDistance launchDistance) {
@@ -321,7 +328,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             upperLaunchVelocity = FAR_FLYWHEEL_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
             lowerLaunchVelocity = FAR_FLYWHEEL_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
             feederPower = FEEDER_POWER;
-        } else {
+        } else if (launchDistance == LaunchDistance.NEAR_AUTO){
+            upperLaunchVelocity = NEAR_AUTO_VELOCTIY - (0.5 * FLYWHEEL_BACK_SPIN);
+            lowerLaunchVelocity = NEAR_AUTO_VELOCTIY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
+        } else if (launchDistance == LaunchDistance.FAR_AUTO){
+            upperLaunchVelocity = FAR_AUTO_VELOCITY - (0.5 * FLYWHEEL_BACK_SPIN);
+            lowerLaunchVelocity = FAR_AUTO_VELOCITY + (0.5 * FLYWHEEL_BACK_SPIN);
+            feederPower = FEEDER_POWER;
+        }
+        else {
             upperLaunchVelocity = 0;
             lowerLaunchVelocity = 0;
             servoBLaunchFeeder.setPower(0);
@@ -349,6 +365,19 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
 
     }
+    //if the gate is stuck, move the drum back to get the stuck ball out, along with opening gate
+    @Override
+    void ohCrap(boolean engage) {
+        engageOhCrap = engage;
+        if (engage) {
+            if (drumQueue.size() == 1) {
+                DrumRequest request = drumQueue.remove(0);
+                hwDrumPosition = request.oldPosition;
+                lastQueuedPosition = request.oldPosition;
+            }
+        }
+    }
+
     @Override
     public PixelColor getSlotColor(int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
@@ -390,6 +419,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         } else {
             gatePosition = DRUM_GATE_CLOSED_POSITION;
         }
+        if (engageOhCrap) {
+            gatePosition = DRUM_GATE_OPEN_POSITION;
+        }
         telemetry.addLine(String.format("intake: %.1f, waitState: %s, gatePosition: %.1f",
                 intakePower, waitState, gatePosition));
 
@@ -404,14 +436,13 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             // this makes it so that after we are done launching the drum goes to intake position
             if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
                 addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
-
             }
         }
 
         // let a firing request interrupt an intake
         if (waitState == WaitState.IDLE || waitState == WaitState.INTAKE) {
             if (!drumQueue.isEmpty()) {
-                hwDrumPosition = drumQueue.get(0).position;
+                hwDrumPosition = drumQueue.get(0).newPosition;
                 waitState = WaitState.DRUM_MOVE;
             }
         }

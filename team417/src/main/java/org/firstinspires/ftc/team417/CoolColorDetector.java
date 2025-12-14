@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class CoolColorDetector {
     public static double MAXIMUM_DISTANCE = 30;
 
-    public static double MINIMUM_DISTANCE = 18;
+    public static double MINIMUM_DISTANCE = 21;
     public static double PURPLE_MIN_HUE = 200;
     public static double PURPLE_MAX_HUE = 235;
     public static double GREEN_MIN_HUE = 150;
@@ -44,13 +44,17 @@ public class CoolColorDetector {
     PixelColor detectArtifactColor() {
         double distance1 = ((DistanceSensor) sensor1).getDistance(DistanceUnit.MM);
         double distance2 = ((DistanceSensor) sensor2).getDistance(DistanceUnit.MM);
+        double minDistance;
         NormalizedColorSensor sensor;
 
-        if (distance1 < MAXIMUM_DISTANCE && distance1 > MINIMUM_DISTANCE) {
+        if (distance1 < MAXIMUM_DISTANCE && distance1 > MINIMUM_DISTANCE && distance2 > MINIMUM_DISTANCE) {
             sensor = sensor1;
-        } else if (distance2 < MAXIMUM_DISTANCE && distance2 > MINIMUM_DISTANCE) {
-            sensor = sensor2;
+            minDistance = distance1;
         } else {
+            sensor = sensor2;
+            minDistance = distance2;
+        }
+        if (minDistance > MAXIMUM_DISTANCE || minDistance < MINIMUM_DISTANCE) {
             String string = String.format(" %.1f, %.1f\"", distance1, distance2);
             telemetry.addLine(string);
             Log.d("CoolColorDetector", string);
