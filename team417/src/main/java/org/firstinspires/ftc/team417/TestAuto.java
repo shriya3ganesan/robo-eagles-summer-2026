@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.team417;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-@TeleOp(name = "Auto", group = "Test")
+@TeleOp(name = "Test", group = "Auto")
 @Config
 public class TestAuto extends CompetitionAuto{
-    public static double LAUNCH_SPEED = 850;
-    public static double DRIVE_SPEED = 1;
+    public static double LAUNCH_SPEED = 835;
+    public static double DRIVE_SPEED = 5;
     public static double INTAKE_SPEED = 1;
-    public static double INTAKE_BACK_TIME = 0.25;
+    public static double INTAKE_BACK_TIME = 0.1;
     public static double DRUM_VOLTAGE_EPS = 0.03;
 
     @Override

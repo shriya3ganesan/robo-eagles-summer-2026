@@ -404,6 +404,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             // this makes it so that after we are done launching the drum goes to intake position
             if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
                 addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+
             }
         }
 
@@ -440,6 +441,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             }
         }
         if (waitState == WaitState.INTAKE) {
+            launchDistance = LaunchDistance.OFF;
             PixelColor slotColor = coolColorDetector.detectArtifactColor();
             if (slotColor != PixelColor.NONE) {
                 int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);

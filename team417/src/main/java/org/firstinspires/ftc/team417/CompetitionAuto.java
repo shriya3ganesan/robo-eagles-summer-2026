@@ -32,10 +32,10 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
  * This class exposes the competition version of Autonomous. As a general rule, add code to the
  * BaseOpMode class rather than here so that it can be shared between both TeleOp and Autonomous.
  */
-@Autonomous(name = "Auto", group = "Competition")
-public class CompetitionAuto extends BaseOpMode {
+
+class BaseCompetitonMode extends BaseOpMode {
     static public double FEEDER_TIME = 0.5;
-    static public double ROBOT_SPEED = 1;
+    static public double ROBOT_SPEED = 10;
     static public double INTAKE_SPEED = 1;
     public enum Alliance {
         RED,
@@ -125,8 +125,10 @@ public class CompetitionAuto extends BaseOpMode {
 
                     }
                 }
-                trajectoryAction = trajectoryAction.setTangent(Math.toRadians(45))
+                trajectoryAction = trajectoryAction.stopAndAdd(new WaitAction(FEEDER_TIME))
+                        .setTangent(Math.toRadians(45))
                         .splineToConstantHeading(new Vector2d(0,24), Math.toRadians(45));
+
                 break;
 
             case FAR:
@@ -140,7 +142,7 @@ public class CompetitionAuto extends BaseOpMode {
                 trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                         .afterDisp(0, new IntakeAction(mechGlob, 1))
                         .setTangent(Math.toRadians(90))
-                        .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90), new TranslationalVelConstraint(10))
+                        .splineToConstantHeading(new Vector2d(36, 60), Math.toRadians(90), new TranslationalVelConstraint(ROBOT_SPEED))
                         .afterDisp(0, new IntakeAction(mechGlob, 0))
                         .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                         .setTangent(Math.toRadians(-90))
@@ -151,7 +153,7 @@ public class CompetitionAuto extends BaseOpMode {
                             .splineToSplineHeading(new Pose2d(12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake middle from goal
                             .afterDisp(0,new IntakeAction(mechGlob, 1))
                             .setTangent(Math.toRadians(90))
-                            .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90), new TranslationalVelConstraint(10))
+                            .splineToConstantHeading(new Vector2d(12, 60), Math.toRadians(90), new TranslationalVelConstraint(ROBOT_SPEED))
                             .afterDisp(0, new IntakeAction(mechGlob, 0))
                             .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                             .setTangent(Math.toRadians(-90))
@@ -163,7 +165,7 @@ public class CompetitionAuto extends BaseOpMode {
                                 .splineToSplineHeading(new Pose2d(-12, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake closest to goal
                                 .afterDisp(0,new IntakeAction(mechGlob, 1))
                                 .setTangent(Math.toRadians(90))
-                                .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90), new TranslationalVelConstraint(10))
+                                .splineToConstantHeading(new Vector2d(-12, 55), Math.toRadians(90), new TranslationalVelConstraint(ROBOT_SPEED))
                                 .afterDisp(0, new IntakeAction(mechGlob, 0))
                                 .afterDisp(1, new PreLaunchAction(mechGlob, countBalls))
                                 .setTangent(Math.toRadians(-90))
@@ -244,7 +246,7 @@ public class CompetitionAuto extends BaseOpMode {
                 .add("wait-slider-1", new MenuSlider(minWaitTime, maxWaitTime))
                 .add()
                 .add("Use pose correction:")
-                .add("correction-switch-1", new MenuSwitch(true))
+                .add("correction-switch-1", new MenuSwitch(false))
                 .add()
                 .add("finish-button-1", new MenuFinishedButton());
 
@@ -552,6 +554,10 @@ class GetColor {
     public RequestedColor getColor() {
         return array[orderCount];
     }
+}
+@Autonomous(name = "Auto", group = "Competition")
+public class CompetitionAuto extends BaseCompetitonMode {
+
 }
 
 

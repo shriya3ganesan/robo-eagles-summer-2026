@@ -15,10 +15,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 public class CoolColorDetector {
-    public static double MINIMUM_DISTANCE = 30;
+    public static double MAXIMUM_DISTANCE = 30;
+
+    public static double MINIMUM_DISTANCE = 18;
     public static double PURPLE_MIN_HUE = 200;
     public static double PURPLE_MAX_HUE = 235;
-    public static double GREEN_MIN_HUE = 145;
+    public static double GREEN_MIN_HUE = 150;
     public static double GREEN_MAX_HUE = 180;
     public static double MIN_VALUE = 0.25;
     public static float GAIN = 85f; // adjust for brightness
@@ -44,9 +46,9 @@ public class CoolColorDetector {
         double distance2 = ((DistanceSensor) sensor2).getDistance(DistanceUnit.MM);
         NormalizedColorSensor sensor;
 
-        if (distance1 < MINIMUM_DISTANCE) {
+        if (distance1 < MAXIMUM_DISTANCE && distance1 > MINIMUM_DISTANCE) {
             sensor = sensor1;
-        } else if (distance2 < MINIMUM_DISTANCE) {
+        } else if (distance2 < MAXIMUM_DISTANCE && distance2 > MINIMUM_DISTANCE) {
             sensor = sensor2;
         } else {
             String string = String.format(" %.1f, %.1f\"", distance1, distance2);
