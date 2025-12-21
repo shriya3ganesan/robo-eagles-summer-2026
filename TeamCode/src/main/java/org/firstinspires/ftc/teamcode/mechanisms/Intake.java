@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
@@ -16,7 +17,7 @@ public class Intake {
             // Set launcher motor to RUN_USING_ENCODER and BRAKE to slow down faster than coasting.
             Intake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             Intake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-            Intake.setDirection(DcMotor.Direction.REVERSE);
+            Intake.setDirection(DcMotor.Direction.FORWARD);
 
             stopIntake();
     }

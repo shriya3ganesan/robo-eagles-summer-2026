@@ -37,6 +37,13 @@ public class RobotTeleOp extends OpMode {
             launcher.stopLauncher();
         }
 
+         if (gamepad2.aWasPressed()) {
+             launcher.incrementLaunchSpeed();
+         } else if (gamepad2.bWasPressed()) {
+             launcher.decrementLaunchSpeed();
+         }
+
+
         //For Intake (test if same buttons works)
         if (gamepad1.right_trigger !=0 ) {
             intake.startIntake();
@@ -52,6 +59,7 @@ public class RobotTeleOp extends OpMode {
         telemetry.addData("State", launcher.getState());
         telemetry.addData("Upper Launch Velocity", launcher.getUpperVelocity());
         telemetry.addData("Lower Launch Velocity", launcher.getLowerVelocity());
+        telemetry.addData("Target Velocity", launcher.getTargetLaunchSpeed());
     }
 }
 
