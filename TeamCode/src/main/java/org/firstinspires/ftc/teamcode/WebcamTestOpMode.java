@@ -47,7 +47,7 @@ public class WebcamTestOpMode  extends OpMode {
             launcher.setMotorVelocityForDistance(distanceToGoalCM);
             // NOTE: use this after distance vs speed has been measured and calibrated
             //launcher.setMotorVelocityForDistance(distanceToGoalCM);
-        } else if (numMissingTagReads < 20){
+        } else if (numMissingTagReads < 100){
             numMissingTagReads++;
         } else {
             // if we can't see the target/            // default back to neutral/default
@@ -117,13 +117,12 @@ public class WebcamTestOpMode  extends OpMode {
 
         //telemetry.addData("Distance to goal: ", distanceToGoalCM);
         // telemetry.addLine("Feeder active: " + launcher.getTriggerActive());
-
-
+        telemetry.addLine("Missed Tag Reads: " + numMissingTagReads);
         telemetry.addLine("Target Velocity: " + launcher.getTargetLaunchSpeed());
         telemetry.addLine("Lower Velocity: " + launcher.getLowerVelocity());
         telemetry.addLine("Upper Velocity: " + launcher.getUpperVelocity());
-        telemetry.addData("State ", launcher.getState());
+        telemetry.addData("State: ", launcher.getState());
         String turretPositionStr = String.format("%.2f",turret.getCurrentPosition());
-        telemetry.addLine("Turret Position " + turretPositionStr);
+        telemetry.addLine("Turret Position: " + turretPositionStr);
     }
 }

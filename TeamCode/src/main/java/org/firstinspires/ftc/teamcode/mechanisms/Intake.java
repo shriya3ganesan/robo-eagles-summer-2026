@@ -23,12 +23,13 @@ public class Intake {
     }
 
     public void stopIntake() {
-                    Intake.setPower(STOP_SPEED);
+        Intake.setPower(STOP_SPEED);
     }
 
     public void startIntake() {
-                    Intake.setPower(FULL_SPEED);
+        Intake.setPower(FULL_SPEED);
     }
 
-    public void reverseIntake() { Intake.setPower(REVERSE_SPEED); }
+    public void reverseIntake() {
+        Intake.setPower(REVERSE_SPEED); }
 }
