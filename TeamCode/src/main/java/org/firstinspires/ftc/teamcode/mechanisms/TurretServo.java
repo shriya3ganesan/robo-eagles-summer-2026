@@ -19,6 +19,7 @@ public class TurretServo {
     /// Set turret servo back to "0" position
     public void resetTurret() {
         // Set feeders to a preset value to stop the servos.
+        currentTurretAngle = TURRET_START_POSITION;
         turretServo.setPosition(TURRET_START_POSITION);
     }
 
@@ -26,10 +27,27 @@ public class TurretServo {
     public void changeTurretByDegrees(double deltaDegrees) {
 
         // try this
-        double currentTargetAngle = (deltaDegrees * 0.5 / 150) + 0.5;
+        currentTurretAngle = currentTurretAngle + (deltaDegrees / 500);
+        if (currentTurretAngle < 0 || currentTurretAngle > 1) {
+            resetTurret();
+        }
 
         // TODO: change currentTurretAngle (range: 0 - 1.0) based on input delta angle as measured by the camera (range: -180 - 180)
         // set the turret to the new angle
         turretServo.setPosition(currentTurretAngle);
+    }
+
+    public void incrementTurretPosition() {
+        currentTurretAngle = currentTurretAngle + .05;
+        turretServo.setPosition(currentTurretAngle);
+    }
+
+    public void decrementTurretPosition() {
+        currentTurretAngle = currentTurretAngle - .05;
+        turretServo.setPosition(currentTurretAngle);
+    }
+
+    public double getCurrentPosition() {
+        return currentTurretAngle;
     }
 }

@@ -6,6 +6,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+//Control HUB
+//Motor 0 = left_front
+//Motor 1 = right_front
+//Motor 2 = left_back
+//Motor 3 = right_back
+
+//Servo 1 = launch_feeder
+//Servo 2 = turret_servo
+
+//Expansion HUB
+//Motor 0 = intake
+//Motor 1 = lower_launch
+//Motor 2 = upper_launch
+//Motor 3 =
 
 public class MecanumDrive {
 
@@ -30,10 +44,10 @@ public class MecanumDrive {
 
         // Set the left motors in reverse which is needed for drive trains where the left
         // motors are opposite to the right ones.
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // This uses RUN_WITHOUT_ENCODER because we are using the dead wheels.
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

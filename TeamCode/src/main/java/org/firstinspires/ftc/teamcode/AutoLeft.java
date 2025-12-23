@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.Launcher;
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 
 @Autonomous
-public class RobotAuto extends OpMode {
+public class AutoLeft extends OpMode {
     MecanumDrive drive = new MecanumDrive();
     Intake intake = new Intake();
     Launcher launcher = new Launcher();
@@ -37,8 +37,8 @@ public class RobotAuto extends OpMode {
         switch (state) {
             case MOVE_FORWARD:
                 driveTimer.reset();
-                while (driveTimer.seconds() < 2) {
-                    drive.drive(0.75, 0, 0);
+                while (driveTimer.seconds() < 5) {
+                    drive.drive(0.3, 0.3, 0.1);
                 }
                 drive.drive(0,0,0);
                 state = State.FINISHED;
