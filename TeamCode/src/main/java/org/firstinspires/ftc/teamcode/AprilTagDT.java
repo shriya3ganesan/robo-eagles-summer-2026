@@ -291,7 +291,7 @@ public class AprilTagDT extends LinearOpMode {
             max = Math.max(max, Math.abs(backLeftPower));
             max = Math.max(max, Math.abs(backRightPower));
 
-            if (gamepad1.dpad_up) {
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
                 push.setPosition(PUSH_FIRE_POS);
             }
             else {
@@ -383,6 +383,9 @@ public class AprilTagDT extends LinearOpMode {
                         currentSpinupTime = SPINUP_TIME_LONG;
                         telemetry.addData(" Launch", "Power Shot - Spinning up...");
                     }
+                    else if(gamepad1.dpad_left || gamepad2.dpad_left){
+                        launchMotor.setPower(-0.4);
+                    }
                     // Right bumper = distance-calculated shot using Limelight
                     else if (gamepad2.right_bumper) {
                         LLResult llResult = limelight.getLatestResult();
@@ -410,14 +413,8 @@ public class AprilTagDT extends LinearOpMode {
                             telemetry.addData("Launch", "Auto Shot - Distance: %.1f in", distanceInches);
                             telemetry.addData("Spinup Time", "%.2f seconds", currentSpinupTime);
                         } else {
-                            // No AprilTag visible - use default long spinup
                             telemetry.addData("Launch ERROR", "No AprilTag visible!");
-                            telemetry.addData("Launch", "Using default spinup time");
-
-                            launchState = LaunchState.SPINNING_UP;
-                            launchTimer.reset();
-                            launchMotor.setPower(1.0);
-                            currentSpinupTime = SPINUP_TIME_LONG;
+                            launchMotor.setPower(0);
                         }
                     }
                     break;
