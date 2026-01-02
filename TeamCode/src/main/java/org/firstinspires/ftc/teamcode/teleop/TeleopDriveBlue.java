@@ -92,7 +92,7 @@ public class TeleopDriveBlue extends OpMode {
         if (state == MechState.SHOOT_STATE || state == MechState.SHOOT_PURPLE || state == MechState.SHOOT_GREEN || bypass_vision) {
             follower.setMaxPower(0.0);
         } else if (state == MechState.INTAKE_STATE) {
-            follower.setMaxPower(MechController.INTAKE_DRIVE_POWER);
+            follower.setMaxPower(MechController.INTAKE_DRIVE_TELEOP);
         } else {
             follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }

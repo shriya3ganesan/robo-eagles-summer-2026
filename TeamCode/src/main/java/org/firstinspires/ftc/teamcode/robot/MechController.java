@@ -23,7 +23,7 @@ public class MechController {
     private static final double MAX_INDEXER_ROTATION = 1800.0; // Degrees
     private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
     private static final long INTAKE_CUTOFF_MS = 4000; // 4 seconds wait time while searching for artifact
-    private static final long POST_ROTATE_WAIT_MS = 50; // After every intake state rotation
+    private static final long POST_ROTATE_WAIT_MS = 90; // After every intake state rotation
     private static final long POST_HUMAN_WAIT_MS = 800; // After every human state rotation
     private static final long MOTOR_WAIT_MS = 1300; // Shooting motor to reach full speed
     private static final long POST_INDEXER_WAIT_MS = 900; // Post Indexer rotation shooting
@@ -32,11 +32,12 @@ public class MechController {
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
     public static final double FULL_DRIVE_POWER = 1.0; // Normal Drive speed
     public static final double INTAKE_DRIVE_POWER = 0.25; // Drive speed during Intake
+    public static final double INTAKE_DRIVE_TELEOP = 0.5; // Drive speed during Intake
     static final double SHOOTER_CPR = 28.0; // REV HD Hex encoder counts/rev
     static final double MOTOR_PULLEY_T = 66.0; // Tooth count on motor
     static final double WHEEL_PULLEY_T = 54.0; // Tooth count on flywheel
     public static double SHOOTING_WHEEL_SPEED_NEAR = 4300; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM
-    public static double SHOOTING_WHEEL_SPEED_FAR = 6680; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM
+    public static double SHOOTING_WHEEL_SPEED_FAR = 6600; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM
     private static final double INDEXER_DEG_PER_SEC_INTAKE = 200.0;
     private static final double INDEXER_SLOW_END_DEG = 40.0;
 
@@ -71,6 +72,7 @@ public class MechController {
     private double intakeIndexerTargetDeg = -1;
     private boolean lastIntake = false;
     private double intakeIndexerStartDeg = -1;
+    private boolean artifactCounted = false;
 
     // Constructor
     public MechController(RobotHardware RoboRoar, VisionController visionController) {
@@ -189,7 +191,7 @@ public class MechController {
                         break;
                 }
                 break;
-
+/*
             case INTAKE_STATE:
                 currentState = MechState.INTAKE_STATE;
 
@@ -276,6 +278,67 @@ public class MechController {
                             intakeStage = 0;
                         }
                         break;
+                }
+                break;
+*/
+
+            case INTAKE_STATE:
+                currentState = MechState.INTAKE_STATE;
+
+                switch (intakeStage) {
+
+                    case 0:
+                        intakeTargetIndex = getEmptyIndex();
+                        if (intakeTargetIndex == -1) { // Stop intake stage
+                            if (lastIntake) {
+                                setIndexer(statusIndexer() + 60);
+                                lastIntake = false;
+                                artifactCounted = false;
+                            }
+                            if (robot.intakeMot.getPower() == 1) {
+                                runIntakeMot(0);
+                            }
+                            setState(MechState.IDLE);
+                            break;
+                        } else {
+                            setIndexer(INTAKE[intakeTargetIndex]);
+                            intakeStageStart = System.currentTimeMillis();
+                            if (robot.intakeMot.getPower() == 0) {
+                                runIntakeMot(1);
+                            }
+                            intakeStage = 1;
+                            break;
+                        }
+                    case 1:
+                        if (System.currentTimeMillis() - intakeStageStart >= POST_ROTATE_WAIT_MS) { // Wait time before detecting artifact
+                            intakeStage = 2;
+                        }
+                        break;
+
+                    case 2:
+                        int color = visionController.artifactColor();
+                        boolean detected = color != 0;
+
+                        if (detected && !artifactCounted) { // Artifact detection
+                            artifactCounted = true;
+                            indexer[intakeTargetIndex] = color;
+                            artifactCount++;
+                            if (artifactCount == 3) { //Checks for last intake
+                                lastIntake = true;
+                            }
+                            intakeStage = 0;
+                            break;
+                        }
+                        if (!detected && artifactCounted) {
+                            artifactCounted = false;
+                        }
+
+                        if (System.currentTimeMillis() - intakeStageStart >= INTAKE_CUTOFF_MS) { // Timer cut-off
+                            runIntakeMot(0);
+                            setState(MechState.IDLE);
+                            intakeStage = 0;
+                            break;
+                        }
                 }
                 break;
 
