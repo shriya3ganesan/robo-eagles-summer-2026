@@ -87,6 +87,7 @@ public class AprilTagDT extends LinearOpMode {
     private DcMotor launchMotor = null;
     private Servo Trigger = null;
     private Servo push = null;
+    private DcMotor transferMotor = null;
     GoBildaPinpointDriver pinpoint;
     private Limelight3A limelight;
 
@@ -169,19 +170,21 @@ public class AprilTagDT extends LinearOpMode {
         launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
         Trigger = hardwareMap.get(Servo.class, "Trigger");
         push = hardwareMap.get(Servo.class, "push");
+        transferMotor = hardwareMap.get(DcMotor.class, "transfer");
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
         // ########################################################################################
-        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         Trigger.setDirection(Servo.Direction.FORWARD);
+        transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status: ", "Initialized");
@@ -220,8 +223,8 @@ public class AprilTagDT extends LinearOpMode {
             // ===== GAMEPAD 1 (DRIVER) CONTROLS =====
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
             double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  -gamepad1.left_stick_x;
-            double yaw = -gamepad1.right_stick_x;
+            double lateral =  gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
 
             // ===== APRILTAG LOCK-ON FEATURE =====
             // Left bumper activates AprilTag lock-on mode
@@ -271,7 +274,7 @@ public class AprilTagDT extends LinearOpMode {
             }
             else {
                 // Normal manual control
-                yaw = -gamepad1.right_stick_x;
+                yaw = gamepad1.right_stick_x;
                 tagVisible = false;
                 isLockedOn = false;
 
@@ -349,9 +352,11 @@ public class AprilTagDT extends LinearOpMode {
             }
             else if (gamepad2.a) {
                 intakeMotor.setPower(1.0);
+                transferMotor.setPower(1.0);
             }
             else if (gamepad1.y) {
                 intakeMotor.setPower(-1.0);
+                transferMotor.setPower(1.0);
             }
             else if (gamepad2.b) {
                 // B button: Slow intake
@@ -360,6 +365,7 @@ public class AprilTagDT extends LinearOpMode {
             else {
                 // No buttons pressed: Stop everything
                 intakeMotor.setPower(0.0);
+                transferMotor.setPower(0.0);
 
             }
 
