@@ -856,7 +856,8 @@ public class MechController {
 
         telemetry.addData("Shooting Mot FAR RPM", SHOOTING_WHEEL_SPEED_FAR);
         telemetry.addData("Shooting Mot NEAR RPM", SHOOTING_WHEEL_SPEED_NEAR);
-
+        telemetry.addData("Shooting Mot Actual RPM", robot.shootingMot.getVelocity());
+        telemetry.addData("Battery Voltage", "%.2f V", visionController.getBatteryVoltage());
 
         //visionController.sensorTelemetry();
         //visionController.aprilTagTelemetry();
