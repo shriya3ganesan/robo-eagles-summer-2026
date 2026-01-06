@@ -38,14 +38,9 @@ public class MoveToTwoPositions extends LinearOpMode {
     private Servo DrumServo;
     private Servo FiringPinServo;
     private DcMotorEx LauncherFL;
-    public double firingangle = 142;
 
-    public double preloadingy = 18;
-    public double ballpickupy = 53.5;
-    public double loadingprepxoffset = 6;
-    public double loadonex = -18;
-    public double loadtwox = 12;
-    public double loadthreex = 30;
+    public static double xdistance = 12;
+    public static double ydistance =12;
 
     @Override
     public void runOpMode() {
@@ -82,21 +77,21 @@ public class MoveToTwoPositions extends LinearOpMode {
 
         // y = x
         // x = -y
-        Pose2d startPose = new Pose2d(-62, 37.5, 0);
+        Pose2d startPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(  hardwareMap,  startPose);
 
         waitForStart();////////////////////////////////////////////////////
 
         while(opModeIsActive()) {
             Action movetoloadingone = drive.actionBuilder(startPose)
-                    .splineToConstantHeading(new Vector2d(50, 10), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(xdistance, ydistance), Math.toRadians(0))
                     .build();
             Actions.runBlocking(movetoloadingone);
             startPose = drive.localizer.getPose();
 
             //splineLaunchPos(drive, startPose, 0);
             Action movetoloadingtwo = drive.actionBuilder(startPose)
-                    .splineToConstantHeading(new Vector2d(-50, 40), Math.toRadians(0))
+                    .splineToConstantHeading(new Vector2d(0, 0), Math.toRadians(0))
                     .build();
             Actions.runBlocking(movetoloadingtwo);
             startPose = drive.localizer.getPose();
