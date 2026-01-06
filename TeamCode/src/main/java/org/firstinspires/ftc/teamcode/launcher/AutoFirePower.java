@@ -6,17 +6,19 @@ import static org.firstinspires.ftc.teamcode.Util.RobotPosition.robottranslation
 import static org.firstinspires.ftc.teamcode.Util.RobotPosition.robotyaw;
 
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
+@Config
 public abstract class AutoFirePower extends LinearOpMode {
     static ElapsedTime timer = new ElapsedTime();
 
-    public static double firingpowermultiplierconst = 3;
+    public static double firingpowermultiplierconst = 1.6;
+    public static double firingpoweraddingconst = 1.7;
     public static void initializeLauncher(DcMotorEx LauncherFL,DcMotorEx LauncherFR) {
 
 
@@ -28,18 +30,10 @@ public abstract class AutoFirePower extends LinearOpMode {
         //LauncherFR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //LauncherFR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-    /**
-     * Estimates the real-world width of an object using pixel width, camera FOV, resolution, and distance.
-     * @param Launcher LauncherFL
-     * @param DrumServo the servo controlling the drum
-     * @param FiringPinServo the servo controlling the pushing ball mechanism
-     * @param TargetBallColor color of the ball that is being launched, 1 is green, 2 is purple
-     *
-     * @return output x, y, and turn motor power values
-     */
 
 
-    public static double  autoLaunch(DcMotorEx Launcher, Servo DrumServo, Servo FiringPinServo, double TargetBallColor, double[] drumBallColors){
+
+    public static double  autoLaunch(){
         double ShootTargetY;
         double ShootTargetX = -3.6576/2.1;
         if( !TeamColorRED) {
@@ -47,7 +41,7 @@ public abstract class AutoFirePower extends LinearOpMode {
         } else{
             ShootTargetY = 3.6576/2.1;
         }
-        double firingpower = (getFiringDistance(ShootTargetX,ShootTargetY) * firingpowermultiplierconst);
+        double firingpower = (getFiringDistance(ShootTargetX,ShootTargetY) * firingpowermultiplierconst) + firingpoweraddingconst;
         
         /*double[] drumLocations = {0.2, 0.5, 0.8};// should probably make the drumb slots into objects
         int i = 0;
@@ -63,8 +57,8 @@ public abstract class AutoFirePower extends LinearOpMode {
         }*/
 
 
-        if (firingpower < 6) firingpower += 0.15;
-        return(firingpower + 3.25);
+        //if (firingpower < 6) firingpower += 0.15;
+        return(firingpower);
 
 
 

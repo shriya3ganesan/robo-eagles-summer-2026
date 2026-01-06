@@ -13,7 +13,11 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.teamcode.Util.Enum.Balls;
 @Config
 public class ColorSensingFunctions {
-    public static double plowbounds = 170;
+    public static double plowbounds = 161;
+    public static double pupbounds = 255;
+    public static double glowbounds = 140;
+    public static double gupbounds = 160;
+
     public static Balls colorDetection (NormalizedColorSensor colorSensor1, NormalizedColorSensor colorSensor2) {
         float[] hsv1 = new float[3];
         float[] hsv2 = new float[3];
@@ -29,10 +33,10 @@ public class ColorSensingFunctions {
 
         double avghue = ((hue1 + hue2) / 2);
 
-        if (avghue >= 140 && avghue <= 160) {
+        if (avghue >= glowbounds && avghue <= gupbounds) {
             return green;
 
-        } else if (avghue >= 170 && avghue <= 255   ) {
+        } else if (avghue >= plowbounds && avghue <= pupbounds) {
             return purple;
         } else{
             return unknown;

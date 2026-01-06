@@ -5,7 +5,9 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.*;
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.HolonomicController;
@@ -14,12 +16,20 @@ import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.MotorFeedforward;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.PoseVelocity2dDual;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.ProfileParams;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TimeTurn;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TrajectoryBuilderParams;
 import com.acmerobotics.roadrunner.TurnConstraints;
+import com.acmerobotics.roadrunner.Twist2d;
+import com.acmerobotics.roadrunner.Twist2dDual;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.Encoder;
@@ -52,43 +62,43 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public class MecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
         //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+                RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         // Drive model parameters
-        public double inPerTick = (double) 1 /500; // adjust to your encoder conversion
-        public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 16; // example: distance between left and right wheels in inches
+        public double inPerTick = (double) 1 / 500; // adjust to your encoder conversion
+        public double lateralInPerTick = (double) 1 / 1000;
+        public double trackWidthTicks = 7500; // example: distance between left and right wheels in inches
 
         // Feedforward parameters
-        public double kS = 0.5;      // voltage to overcome static friction
-        public double kV = 0.025;    // velocity-to-power scaling
+        public double kS = 1.9707797260108069;      // voltage to overcome static friction
+        public double kV = 0.0002924014617464652;    // velocity-to-power scaling
         public double kA = 0.0;      // acceleration feedforward, start at 0
 
         // Path profile parameters (in inches/sec and inches/sec^2)
         public double maxWheelVel = 120;      // max wheel velocity
-        public double minProfileAccel = -60;  // min acceleration
-        public double maxProfileAccel = 60;   // max acceleration
+        public double minProfileAccel = -100;  // min acceleration
+        public double maxProfileAccel = 100;   // max acceleration
 
         // Turn profile parameters (in radians/sec and radians/sec^2)
-        public double maxAngVel = Math.PI; // radians/sec
-        public double maxAngAccel = Math.PI;
+        public double maxAngVel = 6.1; // radians/sec
+        public double maxAngAccel = 5.9;
 
         // Path controller gains
         public double axialGain = 1.0;
         public double lateralGain = 1.0;
-        public double headingGain = 2.0;
+        public double headingGain = 10.0;
 
-        public double axialVelGain = 0.5;
-        public double lateralVelGain = 0.5;
-        public double headingVelGain = 1.0;
+        public double axialVelGain = 0;
+        public double lateralVelGain = 0;
+        public double headingVelGain = 0;
     }
 
     public static Params PARAMS = new Params();

@@ -15,6 +15,7 @@
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 
+
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
@@ -25,5 +26,14 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    implementation 'com.acmerobotics.roadrunner:core:1.0.1'
+    implementation 'com.acmerobotics.roadrunner:actions:1.0.1'
+    implementation 'com.google.ar:core:1.52.0'
+    implementation "com.acmerobotics.roadrunner:ftc:0.1.25"
+
+
+
+
 
 }
+

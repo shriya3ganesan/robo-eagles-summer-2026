@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -44,6 +45,9 @@ public class ServoTestOpMode extends LinearOpMode {
                                   gamepad1.b ? servoOffSet+.92 :
                                   targetdrumangle;
 
+                //.27 - .42   0  -   1
+                //.6 - .76    1   -   2
+                //.92 - .9    2   -    0
             }
             DrumServo.setPosition(targetdrumangle);
             FiringPinServo.setPosition(targetfiringpinangle);

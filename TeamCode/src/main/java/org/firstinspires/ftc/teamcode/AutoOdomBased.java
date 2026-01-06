@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode;
-
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -377,4 +376,3 @@ public class AutoOdomBased extends LinearOpMode {
     private boolean isAtTargetRPM(double targetRPM) {
         return Math.abs(getCurrentRPM() - targetRPM) <= 5.0; // {check} Tolerance might need adjustment
     }
-}

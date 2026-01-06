@@ -6,11 +6,8 @@ import static org.firstinspires.ftc.teamcode.Util.Enum.Balls.purple;
 import static org.firstinspires.ftc.teamcode.Util.Enum.Balls.unknown;
 import static org.firstinspires.ftc.teamcode.Util.RRSplineToLaunchPos.returnToPreLoadY;
 import static org.firstinspires.ftc.teamcode.Util.RRSplineToLaunchPos.splineLaunchPos;
-import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.FIELD_HALF;
-import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.mtoin;
 import static org.firstinspires.ftc.teamcode.Util.constants.RobotStats.firingpinfiringposition;
 import static org.firstinspires.ftc.teamcode.Util.constants.RobotStats.firingpinnullposition;
-import static org.firstinspires.ftc.teamcode.launcher.AutoFirePower.autoLaunch;
 import static org.firstinspires.ftc.teamcode.limelight.LimelightMotifSetting.limelightMotifSet;
 
 import androidx.annotation.NonNull;
@@ -24,9 +21,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -35,28 +30,39 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Util.Enum.Balls;
 
-import java.util.Arrays;
 
-@Autonomous(name="FullRRtestauto")
 @Config
 
-public class AutoWithRoadRunner extends LinearOpMode {
+public class ThreeBallAuto extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
+    ElapsedTime intaketimer = new ElapsedTime();
     private DcMotorEx Scooper;
     private Servo DrumServo;
     private Servo FiringPinServo;
     private DcMotorEx LauncherFL;
-    public static double firingangle = 142;//142 is what it should be based off of logic
+    public static double intaketimelength = 2.25;
+    public static double firingangle = 130;//142 is what it should be based off of logic
 
     public static double preloadingy = 18;
-    public static double ballpickupy = 53.5;
-    public static double loadingprepxoffset = 6;
-    public static double loadonex = -18;
+    public static double ballpickupy = 60;
+
+    public static double loadonex = 0;
     public static double loadtwox = 12;
     public static double loadthreex = 30;
 
+    protected boolean isred;
+
     @Override
     public void runOpMode() {
+        int mirrory;
+        if (isred){
+            mirrory = 1;
+        } else{
+            mirrory = -1;
+            firingangle = 130;
+        }
+        ballpickupy = mirrory * ballpickupy;
+        preloadingy = mirrory * preloadingy;
         Limelight3A limelight = hardwareMap.get(Limelight3A.class, "limelight");// INitilizes the limelights
         limelight.setPollRateHz(100);
         limelight.pipelineSwitch(0);
@@ -90,7 +96,7 @@ public class AutoWithRoadRunner extends LinearOpMode {
 
         // y = x
         // x = -y
-        Pose2d startPose = new Pose2d(-62, 37.5, 0);
+        Pose2d startPose = new Pose2d(-62, 37.5 * mirrory, 0);
         MecanumDrive drive = new MecanumDrive(  hardwareMap,  startPose);
 
         waitForStart();////////////////////////////////////////////////////
@@ -102,20 +108,22 @@ public class AutoWithRoadRunner extends LinearOpMode {
 
 
 
-        splineLaunchPos(drive,startPose,-170,1);//-170
+        splineLaunchPos(drive,startPose,-170*mirrory,mirrory);//-170
         startPose = drive.localizer.getPose();
-
 
 
         //limelight get pattern
 
         targetballcolors = limelightMotifSet(limelight);
-        // TODO add error handling
+        // TODO add error handling default is to not attempt to fire
+        if (targetballcolors[0] == unknown){
+            targetballcolors = new Balls[]{purple,purple,green};
+        }
         telemetry.addData("motif",targetballcolors[0]);
         telemetry.addData("motif",targetballcolors[1]);
         telemetry.addData("motif",targetballcolors[2]);
 
-        splineLaunchPos(drive,startPose,firingangle,1);
+        splineLaunchPos(drive,startPose,firingangle*mirrory,mirrory);
         startPose = drive.localizer.getPose();
 
         telemetry.addLine("moving to first load");
@@ -142,111 +150,63 @@ public class AutoWithRoadRunner extends LinearOpMode {
                 telemetry.addData("in slot color", drumBallColors[j]);
                 telemetry.addData("lookingfor color", targetballcolors[i]);
                 telemetry.update();
-                sleep(500);
+
             }
 
         }
-
+        DrumServo.setPosition(0.27);
 
 
         //launch with pattern
 
         Action movetoloadingone = drive.actionBuilder(startPose)
-                .splineTo(new Vector2d(loadonex + loadingprepxoffset,preloadingy),Math.toRadians(0))
+                .splineTo(new Vector2d(-60, 40 * mirrory),Math.toRadians(85))
                 .build();
         Actions.runBlocking(movetoloadingone);
         startPose = drive.localizer.getPose();
 
 
-
+        /*
         //intake
-
+        intaketimer.reset();
         Action pickUpLoadOne = new ParallelAction(
                 drive.actionBuilder(startPose)
-                        .splineTo(new Vector2d(loadonex, ballpickupy), Math.toRadians(0))
+                        .splineToConstantHeading(new Vector2d(startPose.position.x, ballpickupy),Math.toRadians(90))
                         .build(),
                 new Action() {
+                    int targetdrumslotload = 0;
+                    double targetdrumangleload = 0.27;
                     @Override
                     public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                        int targetdrumslotload = 0;
-                        double targetdrumangleload = 0.27;
 
-                        Balls loadedcolor = colorDetection(colorSensor1, colorSensor2);;
+
+                        // TODO make sure switch this back to color sensing for comp
+                        Balls loadedcolor = colorDetection(colorSensor1, colorSensor2);
 
                         Scooper.setVelocity(-999, AngleUnit.RADIANS);
-                        if (loadedcolor != unknown && targetdrumslot < 3 && timer.milliseconds() > 600){
+                        telemetry.addData("loaded color", loadedcolor);
+                        telemetry.addData("targetdrumslot", targetdrumslotload);
+                        telemetry.addData("timer", timer.milliseconds());
+                        telemetry.addData("drjum imcrament", targetdrumslotload);
+                        telemetry.update();
+                        if (loadedcolor != unknown && targetdrumslotload < 3 && timer.milliseconds() > 600) {
                             timer.reset();
-                            drumBallColors[targetdrumslot] = loadedcolor;
+                            //drumBallColors[targetdrumslotload] = loadedcolor;
                             telemetry.addLine("ball Detected");
                             targetdrumslotload++;
-
-
                         }
-                        targetdrumslotload = Math.min(targetdrumslotload,2);
+                        targetdrumslotload = Math.min(targetdrumslotload, 2);
                         targetdrumangleload = drumlocations[targetdrumslotload];
                         DrumServo.setPosition(targetdrumangleload);
-                        return false;
+
+                        return (intaketimer.seconds() < intaketimelength);//true when below the timer
                     }
                 }
         );
         Actions.runBlocking(pickUpLoadOne);
-        startPose = drive.localizer.getPose();
-
-
-        returnToPreLoadY(drive,startPose,preloadingy,1);
-        startPose = drive.localizer.getPose();
-
-        splineLaunchPos(drive,startPose,firingangle,1);
-        startPose = drive.localizer.getPose();
-        //launch
+        startPose = drive.localizer.getPose();*/
 
 
 
-        Action moveToLoadingTwo = drive.actionBuilder(startPose)
-                .splineTo(new Vector2d(loadtwox-loadingprepxoffset,preloadingy),Math.toRadians(0))
-                .build();
-        Actions.runBlocking(moveToLoadingTwo);
-        startPose = drive.localizer.getPose();
-
-
-        //intake
-
-        Action pickUpLoadTwo = drive.actionBuilder(startPose)
-                .splineTo(new Vector2d(loadtwox,ballpickupy),Math.toRadians(0))
-                .build();
-        Actions.runBlocking(pickUpLoadTwo);
-        startPose = drive.localizer.getPose();
-
-        returnToPreLoadY(drive,startPose,preloadingy,1);
-        startPose = drive.localizer.getPose();
-
-        splineLaunchPos(drive,startPose,firingangle,1);
-        startPose = drive.localizer.getPose();
-
-
-
-        //launch
-
-        Action moveToLoadingThree = drive.actionBuilder(startPose)
-                .splineTo(new Vector2d(loadthreex-loadingprepxoffset,preloadingy),Math.toRadians(0))
-                .build();
-        Actions.runBlocking(moveToLoadingThree);
-        startPose = drive.localizer.getPose();
-
-
-        //intake
-
-        Action pickUpLoadThree = drive.actionBuilder(startPose)
-                .splineTo(new Vector2d(loadthreex,ballpickupy),Math.toRadians(0))
-                .build();
-        Actions.runBlocking(pickUpLoadThree);
-        startPose = drive.localizer.getPose();
-
-        returnToPreLoadY(drive,startPose,preloadingy,1);
-        startPose = drive.localizer.getPose();
-
-        splineLaunchPos(drive,startPose,firingangle,1);
-
-        //fire
     }
 }

@@ -1,11 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.FIELD_HALF;
+
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.PathBuilder;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.google.ar.core.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -24,29 +29,37 @@ public class RoadRunnerTesting extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
 
-        // ----- First trajectory: move to (6, 0) -----
-        com.acmerobotics.roadrunner.Action traj1 =
-                drive.actionBuilder(startPose)
-                        .lineTo(new Vector2d(6, 0))
-                        .build();
-
-// Run first trajectory
-        Actions.runBlocking(traj1);
-
-// ----- Second trajectory: move to (-3, 4) -----
+        Action moveOneWay = drive.actionBuilder(new Pose2d(0,0, 0))
+                .lineToX(2)
+                .build();
+        Actions.runBlocking(moveOneWay);
 
 
-// The second trajectory should start from the robot’s current pose estimate
-        Pose2d secondStart = drive.localizer.getPose();
 
-        com.acmerobotics.roadrunner.Action traj2 =
-                drive.actionBuilder(secondStart)
-                        .lineTo(new Vector2d(-3, 4))
-                        .build();
+        Pose2d newpose = drive.localizer.getPose();
 
-// Run second trajectory
-        Actions.runBlocking(traj2);
+        Double seocndx =  newpose.position.x;
+        Double secondy = newpose.position.y;
+        Double secondtheta = newpose.heading.toDouble();
+        telemetry.addData("poseition",newpose);
+        telemetry.addData("moved 2",1);
+        telemetry.update();
 
+        sleep(50000);
+
+
+        Action movethesecond = drive.actionBuilder(new Pose2d(seocndx,secondy,secondtheta))
+                .splineTo(new Vector2d(seocndx-2,secondy),0)
+                .build();
+
+        Actions.runBlocking(movethesecond);
+
+        /*
+        Action path = new PathBuilder(new Pose2d(0, 0, 0))
+                .splineTo(new Pose2d(15, 15, 0))
+                .lineTo(new Vector2d(30, 15))
+                .build();
+        */
 
 
     }

@@ -167,7 +167,7 @@ public class RedTeamTellyOpOld extends LinearOpMode {
 
             }
 
-            motortargetspeedradians = autoLaunch(LauncherFL, DrumServo, FiringPinServo, 1, drumBallColors);
+            motortargetspeedradians = autoLaunch();
             if (gamepad2.left_trigger >= 0.3) {
                 motortargetspeedradians = 0;
             }
