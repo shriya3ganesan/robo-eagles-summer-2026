@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.NonOpModes.colorsensing.ColorSensin
 import static org.firstinspires.ftc.teamcode.Util.Enum.Balls.unknown;
 import static org.firstinspires.ftc.teamcode.Util.RobotPosition.TeamColorRED;
 import static org.firstinspires.ftc.teamcode.Util.RobotPosition.getRobotCoordinates;
+import static org.firstinspires.ftc.teamcode.Util.RobotPosition.modifyRobotCoordinates;
 import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.shoottargetx;
 import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.shoottargetyblue;
 import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.shoottargetyred;
@@ -50,6 +51,8 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
         TeamColorRED = isred;
 
         double[] firingpositions = {.1,.42,.76};
+
+        double odomoffset;
 
         boolean autoAimLast = false;
 
@@ -283,7 +286,7 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
             boolean autoAimPressed = gamepad2.right_stick_button && !autoAimLast;
             autoAimLast = gamepad2.right_stick_button;
 
-            if (autoAimLast){
+            if (autoAimPressed){
 
                 double[] robotcoordinates = RobotPosition.getRobotCoordinates();
                 double angleinradians = (robotcoordinates[5] * 3.1415926535)/180;
@@ -305,13 +308,15 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
                 telemetry.update();
 
                 //setrobot angle to robot auto aim tareet
-                //while (robotcoordinates[5] - robotautoaimtargetangle < 1)
-                Action rotatetotargetangle = drive.actionBuilder(startPose)
-                        .turnTo(robotautoaimtargetangle)
-                        .build();
-                Actions.runBlocking(rotatetotargetangle);
-
-
+                while (Math.abs(robotcoordinates[5] - robotautoaimtargetangle) > .03) {
+                    Action rotatetotargetangle = drive.actionBuilder(startPose)
+                            .turnTo(robotautoaimtargetangle)
+                            .build();
+                    Actions.runBlocking(rotatetotargetangle);
+                    startPose = drive.localizer.getPose();
+                    modifyRobotCoordinates(robotcoordinates[0],robotcoordinates[1],robotcoordinates[2],robotcoordinates[3],robotcoordinates[4],atan2(startPose.heading.imag, startPose.heading.real));
+                    robotcoordinates = RobotPosition.getRobotCoordinates();
+                }
 
 
 

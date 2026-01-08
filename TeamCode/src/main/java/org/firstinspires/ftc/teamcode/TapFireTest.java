@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Util.RobotPositionCrosby.TeamColorRED;
-import static org.firstinspires.ftc.teamcode.Util.RobotPositionCrosby.getRobotCoordinates;
-import static org.firstinspires.ftc.teamcode.launcher.AutoLaunchingMLGNoobProHacker360NoScopeAbstract.autoLaunch;
+import static org.firstinspires.ftc.teamcode.Util.RobotPosition.TeamColorRED;
+import static org.firstinspires.ftc.teamcode.Util.RobotPosition.getRobotCoordinates;
+import static org.firstinspires.ftc.teamcode.launcher.AutoFirePower.autoLaunch;
 import static org.firstinspires.ftc.teamcode.limelight.LimelightPosSetting.limelightposupdate;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
@@ -142,7 +142,7 @@ public class TapFireTest extends LinearOpMode {
             limelightposupdate(limelight);
 
             //auto rangeing commands
-            motortargetspeedradians = autoLaunch(LauncherFL, DrumServo, FiringPinServo, 1, drumBallColors);
+            motortargetspeedradians = autoLaunch();
             if (gamepad2.left_trigger >= 0.3) {
                 motortargetspeedradians = 0;
             }
