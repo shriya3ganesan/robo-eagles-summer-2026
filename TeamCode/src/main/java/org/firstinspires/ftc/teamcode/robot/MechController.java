@@ -37,7 +37,7 @@ public class MechController {
     static final double MOTOR_PULLEY_T = 66.0; // Tooth count on motor
     static final double WHEEL_PULLEY_T = 54.0; // Tooth count on flywheel
     public static double SHOOTING_WHEEL_SPEED_NEAR = 4300; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM
-    public static double SHOOTING_WHEEL_SPEED_FAR = 5300; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM | 6200
+    public static double SHOOTING_WHEEL_SPEED_FAR = 5700; // Flywheel RPM | Max flywheel RPM: 7333 | Flywheel RPM ≈ 6000 (Motor RPM) * 66/54 = 7333 RPM | Motor RPM ≈ 6000 (Flywheel RPM) * 54/66 = 4909 RPM | 6200
     private static final double INDEXER_DEG_PER_SEC_INTAKE = 180.0;
     private static final double INDEXER_SLOW_END_DEG = 40.0;
 
@@ -47,8 +47,8 @@ public class MechController {
 
     // Variables
     public int[] tagPattern = {0, 0, 0, 0}; // Tag ID & Pattern
-    public int[] indexer = {2, 1, 1}; // GPP - Color of artifact in Indexer 0, 1, 2
-    private int artifactCount = 3;
+    public int[] indexer = {0, 0, 0};//{2, 1, 1}; // GPP - Color of artifact in Indexer 0, 1, 2
+    private int artifactCount = 0;//3;
     private double lastIndexer = 1;
     private int lastLifter = 0;
     private int intakeTargetIndex = -1;
@@ -758,29 +758,28 @@ public class MechController {
             }
         } else {
             robot.shootingMot.setVelocity(0);
-            robot.shootingMot.setPower(0);
         }
     }
 
-    private double getShootingFarRPM() {
-        double voltage = visionController.getBatteryVoltage();
-        if (voltage > 13.5) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR;
-        } else if (voltage > 13.25) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 100;
-        } else if (voltage > 13.0) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 200;
-        } else if (voltage > 12.75) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 300;
-        } else if (voltage > 12.5) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 400;
-        } else if (voltage > 12.25) {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 500;
-        } else {
-            farRPM = SHOOTING_WHEEL_SPEED_FAR + 600;
-        }
-        return farRPM;
-    }
+//    private double getShootingFarRPM() {
+//        double voltage = robot.getBatteryVoltage();
+//        if (voltage > 13.5) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR;
+//        } else if (voltage > 13.25) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 100;
+//        } else if (voltage > 13.0) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 200;
+//        } else if (voltage > 12.75) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 300;
+//        } else if (voltage > 12.5) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 400;
+//        } else if (voltage > 12.25) {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 500;
+//        } else {
+//            farRPM = SHOOTING_WHEEL_SPEED_FAR + 600;
+//        }
+//        return farRPM;
+//    }
 
     public void setLifter(int down0up1) {
         if (lastLifter != down0up1) {
@@ -869,7 +868,7 @@ public class MechController {
                 SHOOTING_WHEEL_SPEED_FAR
         );
 
-        telemetry.addData("Battery Voltage", "%.2f V", visionController.getBatteryVoltage());
+        telemetry.addData("Battery Voltage", "%.2f V", robot.getBatteryVoltage());
 
         //visionController.sensorTelemetry();
         //visionController.aprilTagTelemetry();

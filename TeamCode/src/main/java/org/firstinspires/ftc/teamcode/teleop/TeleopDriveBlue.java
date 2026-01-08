@@ -34,7 +34,6 @@ public class TeleopDriveBlue extends OpMode {
     private final Pose gateEndPose = Blue.GATE_END_POSE;
     private final Pose humanPose = Blue.HUMAN_STATE_POSE;
     private boolean automatedDrive;
-    private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
@@ -43,8 +42,6 @@ public class TeleopDriveBlue extends OpMode {
     VisionController visionController;
     private VisionPortal visionPortal;
     boolean buttonPressed = false;
-    boolean bypass = false;
-    boolean bypass_vision = false;
 
     @Override
     public void init() {
@@ -63,7 +60,6 @@ public class TeleopDriveBlue extends OpMode {
         mechController.handleMechState(MechState.START);
 
         telemetry.addData("Status", "Initialized...");
-        telemetry.addData("Distance Sensor", visionController.distanceSensor());
         telemetry.update();
     }
 
@@ -85,18 +81,14 @@ public class TeleopDriveBlue extends OpMode {
         mechController.allTelemetry();
         mechController.update(); // Keeps running states till IDLE
 
-        bypass = gamepad1.right_bumper;
-        bypass_vision = visionController.distanceSensor() && !bypass;
-
         MechState state = mechController.getCurrentState();
-        if (state == MechState.SHOOT_STATE || state == MechState.SHOOT_PURPLE || state == MechState.SHOOT_GREEN || bypass_vision) {
+        if (state == MechState.SHOOT_STATE || state == MechState.SHOOT_PURPLE || state == MechState.SHOOT_GREEN) {
             follower.setMaxPower(0.0);
         } else if (state == MechState.INTAKE_STATE) {
             follower.setMaxPower(MechController.INTAKE_DRIVE_TELEOP);
         } else {
             follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }
-
 
         if ((gamepad1.right_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
@@ -186,7 +178,6 @@ public class TeleopDriveBlue extends OpMode {
             if (updatedPose != null) {
                 follower.setPose(updatedPose);
             }
-            //automatedDrive = true;
         }
 
         //Human State Pose
@@ -227,13 +218,6 @@ public class TeleopDriveBlue extends OpMode {
             buttonPressed = false;
         }
 
-        //Automated PathFollowing
-//        if (gamepad1.aWasPressed()) {
-//            follower.followPath(pathChain.get());
-//            automatedDrive = true;
-//        }
-
-        //Stop automated following if the follower is done
         if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
             follower.startTeleopDrive();
             automatedDrive = false;

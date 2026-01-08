@@ -234,7 +234,7 @@ public class AutoBlue extends OpMode {
         autonomousPathUpdate();
 
         MechState state = mechController.getCurrentState();
-        if (state == MechState.SHOOT_STATE || visionController.distanceSensor()) {
+        if (state == MechState.SHOOT_STATE) {
             follower.setMaxPower(0.0);
         } else if (state == MechState.INTAKE_STATE) {
             follower.setMaxPower(MechController.INTAKE_DRIVE_POWER);
@@ -246,7 +246,6 @@ public class AutoBlue extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.addData("Distance Sensor", visionController.distanceSensor());
         mechController.allTelemetry();
     }
 
