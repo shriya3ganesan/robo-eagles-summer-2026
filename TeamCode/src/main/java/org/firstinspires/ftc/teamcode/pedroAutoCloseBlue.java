@@ -1,0 +1,214 @@
+package org.firstinspires.ftc.teamcode;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+@Autonomous(name="PedroAutoCloseBlue", group="Autonomous")
+public class pedroAutoCloseBlue extends OpMode{
+    private DcMotor launchMotor = null;
+    private DcMotor transferMotor = null;
+    private Servo trigger = null;
+    private DcMotor intakeMotor = null;
+    private Follower follower;
+    private Timer pathTimer, opModeTimer, shootTimer;
+
+    // Servo positions (servos use 0.0 to 1.0)
+    private double triggerStartPos = 0.0;
+    private double triggerShootPos = 300;  // Adjust this value based on your mechanism
+
+    private int shotsFired = 0;
+    private boolean isShooting = false;
+
+    public enum PathState{
+        DRIVE_STARTPOS_SHOOTPOS,
+        SHOOT_PRELOAD,
+        DRIVE_SHOOTPOS_INTAKEONE,
+        DRIVE_INTAKEONE_SHOOTPOS,
+        SHOOT_SAMPLES,
+        DONE
+    }
+
+    PathState pathState;
+    private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
+    private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
+    private final Pose intakeOne = new Pose(18, 83.4295081967213, Math.toRadians(185));
+    private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
+
+    public void buildPaths(){
+        driveStartShootClose = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, shootPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
+                .build();
+        driveShootIntakeOne = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intakeOne))
+                .setConstantHeadingInterpolation(intakeOne.getHeading())
+                .build();
+        driveIntakeOneShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeOne, shootPose))
+                .setLinearHeadingInterpolation(intakeOne.getHeading(), shootPose.getHeading(), 0.6)
+                .build();
+    }
+
+    public void statePathUpdate(){
+        switch(pathState){
+            case DRIVE_STARTPOS_SHOOTPOS:
+                if (!isShooting) {
+                    follower.followPath(driveStartShootClose, true);
+                    launchMotor.setPower(0.8);  // Start flywheel early
+                    isShooting = true;
+                }
+                if (!follower.isBusy()) {
+                    setPathState(PathState.SHOOT_PRELOAD);
+                    shotsFired = 0;
+                }
+                break;
+
+            case SHOOT_PRELOAD:
+                // Wait a moment for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    launchMotor.setPower(0.8);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 3) {
+                    shootOneShot();
+                } else {
+                    // Done shooting, move to intake
+                    follower.followPath(driveShootIntakeOne, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setPower(0);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKEONE);
+                }
+                break;
+
+            case DRIVE_SHOOTPOS_INTAKEONE:
+                // Keep intake running while driving
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    // Stop intake motors(legacy, really i removed this because the balls were always getting stuck in the intake)
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(0);
+                    follower.followPath(driveIntakeOneShoot, true);
+                    setPathState(PathState.DRIVE_INTAKEONE_SHOOTPOS);
+                }
+                break;
+
+            case DRIVE_INTAKEONE_SHOOTPOS:
+                if (!follower.isBusy()) {
+                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    setPathState(PathState.SHOOT_SAMPLES);
+                    shotsFired = 0;
+                }
+                break;
+
+            case SHOOT_SAMPLES:
+                // Wait for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    launchMotor.setPower(0.8);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 3) {
+                    shootOneShot();
+                } else {
+                    setPathState(PathState.DONE);
+                }
+                break;
+
+            case DONE:
+                telemetry.addLine("Autonomous Complete!");
+                break;
+
+            default:
+                telemetry.addLine("No State Set");
+                break;
+        }
+    }
+
+    private void shootOneShot() {
+        double elapsed = pathTimer.getElapsedTimeSeconds();
+
+        // Each shot cycle takes ~0.8 seconds
+        double cycleTime = elapsed % 0.8;
+
+        if (cycleTime < 0.2) {
+            // Move trigger to shoot position and run transfer
+            trigger.setPosition(triggerShootPos);
+            transferMotor.setPower(1);
+            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
+        } else if (cycleTime < 0.4) {
+            // Stop transfer
+            transferMotor.setPower(0);
+        } else if (cycleTime < 0.6) {
+            // Reset trigger
+            trigger.setPosition(triggerStartPos);
+            telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
+        } else {
+            // Wait before next shot
+            if (elapsed > (shotsFired + 1) * 0.8) {
+                shotsFired++;
+            }
+        }
+    }
+
+    public void setPathState(PathState newState){
+        pathState = newState;
+        pathTimer.resetTimer();
+        isShooting = false;
+    }
+
+    @Override
+    public void init(){
+        pathState = PathState.DRIVE_STARTPOS_SHOOTPOS;
+        pathTimer = new Timer();
+        opModeTimer = new Timer();
+        shootTimer = new Timer();
+        follower = Constants.createFollower(hardwareMap);
+
+        launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        transferMotor = hardwareMap.get(DcMotor.class, "transfer");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        trigger = hardwareMap.get(Servo.class, "Trigger");
+
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        trigger.setDirection(Servo.Direction.FORWARD);
+        transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        trigger.setPosition(triggerStartPos);
+
+        buildPaths();
+        follower.setPose(startPose);
+    }
+
+    public void start(){
+        opModeTimer.resetTimer();
+        setPathState(pathState);
+    }
+
+    @Override
+    public void loop(){
+        follower.update();
+        statePathUpdate();
+        telemetry.addData("path state", pathState.toString());
+        telemetry.addData("shots fired", shotsFired);
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("path time", pathTimer.getElapsedTimeSeconds());
+        telemetry.update();
+    }
+}
