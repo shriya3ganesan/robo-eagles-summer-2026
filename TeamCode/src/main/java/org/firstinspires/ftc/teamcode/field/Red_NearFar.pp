@@ -1,7 +1,7 @@
 {
   "startPoint": {
-    "x": 80,
-    "y": 9,
+    "x": 121,
+    "y": 125,
     "heading": "linear",
     "startDeg": 90,
     "endDeg": 180,
@@ -9,17 +9,17 @@
   },
   "lines": [
     {
-      "id": "line-l4yqeju4nd",
+      "id": "line-9d5odxro1pq",
       "name": "Path 1",
       "endPoint": {
-        "x": 81,
-        "y": 10,
+        "x": 84.7,
+        "y": 80.5,
         "heading": "linear",
-        "startDeg": 90,
+        "startDeg": 37,
         "endDeg": 90
       },
       "controlPoints": [],
-      "color": "#D5B7BD",
+      "color": "#895D9C",
       "locked": false,
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
@@ -27,115 +27,115 @@
       "waitAfterName": ""
     },
     {
-      "id": "mjyqc1b3-pjqazj",
+      "id": "mk1xlto1-ggegp2",
       "name": "Path 2",
       "endPoint": {
-        "x": 85,
-        "y": 15.8,
+        "x": 84.7,
+        "y": 80.5,
         "heading": "linear",
         "reverse": false,
         "startDeg": 90,
-        "endDeg": 70
+        "endDeg": 47
       },
       "controlPoints": [],
-      "color": "#79C896",
+      "color": "#D8C7AC",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqcqno-0qepqr",
+      "id": "mk1xmu5u-si2q5d",
       "name": "Path 3",
       "endPoint": {
         "x": 98.5,
-        "y": 36,
+        "y": 84,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 70,
+        "startDeg": 47,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#8AD6C5",
+      "color": "#5CA758",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqfczj-72pjay",
+      "id": "mk1xnuxn-215jts",
       "name": "Path 4",
       "endPoint": {
         "x": 101.5,
-        "y": 36,
+        "y": 84,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#8B56A9",
+      "color": "#55DC97",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqh1ul-mmovwx",
+      "id": "mk1xo768-e0704j",
       "name": "Path 5",
       "endPoint": {
         "x": 119.5,
-        "y": 36,
+        "y": 84,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#96BD85",
+      "color": "#7A778B",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqi492-wmptu1",
+      "id": "mk1xolum-kplkpy",
       "name": "Path 6",
       "endPoint": {
-        "x": 85,
-        "y": 15.8,
+        "x": 84.7,
+        "y": 80.5,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
-        "endDeg": 70
+        "endDeg": 47
       },
       "controlPoints": [],
-      "color": "#6BA957",
+      "color": "#86885C",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqip7x-yl1x23",
+      "id": "mk1xq2az-ut1tf0",
       "name": "Path 7",
       "endPoint": {
         "x": 98.5,
         "y": 60,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 70,
+        "startDeg": 47,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#66B6C8",
+      "color": "#A5D886",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqj328-lb1jfq",
+      "id": "mk1xq77w-3cla4v",
       "name": "Path 8",
       "endPoint": {
         "x": 101.5,
@@ -146,14 +146,14 @@
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#7876B6",
+      "color": "#BA96B5",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqjalk-a1gmot",
+      "id": "mk1xqc57-ca4kzb",
       "name": "Path 9",
       "endPoint": {
         "x": 119.5,
@@ -164,14 +164,14 @@
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#CCC968",
+      "color": "#7C9B7A",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqk8ju-g7o8s5",
+      "id": "mk1xrn5y-8zmq0n",
       "name": "Path 10",
       "endPoint": {
         "x": 84.7,
@@ -182,79 +182,79 @@
         "endDeg": 47
       },
       "controlPoints": [],
-      "color": "#8C9D98",
+      "color": "#859559",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqmm1r-a1fldp",
+      "id": "mk1xrzuy-5427bd",
       "name": "Path 11",
       "endPoint": {
-        "x": 94,
-        "y": 84,
+        "x": 98.5,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
         "startDeg": 47,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#BDB8CD",
+      "color": "#A79677",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqn8px-h4hl0h",
+      "id": "mk1xshi1-0wkuwk",
       "name": "Path 12",
       "endPoint": {
         "x": 101.5,
-        "y": 84,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#6A5AC6",
+      "color": "#6668DD",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqollk-e9ekzb",
+      "id": "mk1xslul-kzcmml",
       "name": "Path 13",
       "endPoint": {
         "x": 119.5,
-        "y": 84,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#DCABB7",
+      "color": "#5575B6",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyqpfuq-yp3oxz",
+      "id": "mk1xtrn8-ygqqqy",
       "name": "Path 14",
       "endPoint": {
-        "x": 84.7,
-        "y": 80.5,
+        "x": 85,
+        "y": 15.8,
         "heading": "linear",
         "reverse": false,
         "startDeg": 180,
-        "endDeg": 47
+        "endDeg": 65
       },
       "controlPoints": [],
-      "color": "#B8BA67",
+      "color": "#87759B",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -265,61 +265,61 @@
   "sequence": [
     {
       "kind": "path",
-      "lineId": "line-l4yqeju4nd"
+      "lineId": "line-9d5odxro1pq"
     },
     {
       "kind": "path",
-      "lineId": "mjyqc1b3-pjqazj"
+      "lineId": "mk1xlto1-ggegp2"
     },
     {
       "kind": "path",
-      "lineId": "mjyqcqno-0qepqr"
+      "lineId": "mk1xmu5u-si2q5d"
     },
     {
       "kind": "path",
-      "lineId": "mjyqfczj-72pjay"
+      "lineId": "mk1xnuxn-215jts"
     },
     {
       "kind": "path",
-      "lineId": "mjyqh1ul-mmovwx"
+      "lineId": "mk1xo768-e0704j"
     },
     {
       "kind": "path",
-      "lineId": "mjyqi492-wmptu1"
+      "lineId": "mk1xolum-kplkpy"
     },
     {
       "kind": "path",
-      "lineId": "mjyqip7x-yl1x23"
+      "lineId": "mk1xq2az-ut1tf0"
     },
     {
       "kind": "path",
-      "lineId": "mjyqj328-lb1jfq"
+      "lineId": "mk1xq77w-3cla4v"
     },
     {
       "kind": "path",
-      "lineId": "mjyqjalk-a1gmot"
+      "lineId": "mk1xqc57-ca4kzb"
     },
     {
       "kind": "path",
-      "lineId": "mjyqk8ju-g7o8s5"
+      "lineId": "mk1xrn5y-8zmq0n"
     },
     {
       "kind": "path",
-      "lineId": "mjyqmm1r-a1fldp"
+      "lineId": "mk1xrzuy-5427bd"
     },
     {
       "kind": "path",
-      "lineId": "mjyqn8px-h4hl0h"
+      "lineId": "mk1xshi1-0wkuwk"
     },
     {
       "kind": "path",
-      "lineId": "mjyqollk-e9ekzb"
+      "lineId": "mk1xslul-kzcmml"
     },
     {
       "kind": "path",
-      "lineId": "mjyqpfuq-yp3oxz"
+      "lineId": "mk1xtrn8-ygqqqy"
     }
   ],
   "version": "1.2.1",
-  "timestamp": "2026-01-06T05:54:40.893Z"
+  "timestamp": "2026-01-10T01:16:02.446Z"
 }

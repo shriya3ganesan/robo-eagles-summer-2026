@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.field;
 
 import com.pedropathing.geometry.Pose;
 
-public class Red_1 {
+public class Red_NearFar {
     // Auto
     // Start Pose of our robot.
     public static final Pose START_POSE = new Pose(121, 125, Math.toRadians(37));
@@ -10,7 +10,7 @@ public class Red_1 {
 
     // Scoring Pose of our robot. It is facing the goal at a 45 degree angle.
     public static final Pose SCORE_POSE_AUTO = new Pose(85, 15.8, Math.toRadians(70));
-    public static final Pose SCORE_POSE_NEAR = new Pose(84.7, 80.5, Math.toRadians(88));
+    public static final Pose SCORE_POSE_NEAR = new Pose(84.7, 80.5, Math.toRadians(47));
 
     // Highest (First Set) of Artifacts from the Spike Mark.
     public static final Pose READY1_POSE = new Pose(98.5,36, Math.toRadians(0));
@@ -35,5 +35,5 @@ public class Red_1 {
     // Endgame
     public static final Pose ENDGAME_POSE = new Pose(38, 33, Math.toRadians(90));
 
-    private Red_1() {} // Prevent instantiation
+    private Red_NearFar() {} // Prevent instantiation
 }
