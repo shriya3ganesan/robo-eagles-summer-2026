@@ -53,6 +53,7 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private ElapsedTime launchTimer = new ElapsedTime();
     private ElapsedTime intakeJitterTimer = new ElapsedTime();
+    private ElapsedTime tripleShotTimer = new ElapsedTime();
     private static final boolean USE_WEBCAM = true;
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
@@ -84,6 +85,17 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     }
     private IntakeJitterState intakeJitterState = IntakeJitterState.IDLE;
 
+    // Triple shot states
+    private enum TripleShotState {
+        IDLE,
+        TRANSFER_RUNNING,
+        FIRING_BALL,
+        WAITING_BETWEEN_SHOTS,
+        RESETTING_TRIGGER,
+        COMPLETE
+    }
+    private TripleShotState tripleShotState = TripleShotState.IDLE;
+
     // Servo positions - adjust these based on your robot
     private final double TRIGGER_START_POS = 0;
     private final double TRIGGER_FIRE_POS = 300;
@@ -97,14 +109,24 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     // Distance-based motor power constants
     private final double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
     private final double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
-    private final double MIN_LAUNCH_POWER = 0.69;   // motor power at MIN_DISTANCE
-    private final double MAX_LAUNCH_POWER = 0.935;   // motor power at MAX_DISTANCE
+    private final double MIN_LAUNCH_POWER = 0.67;   // motor power at MIN_DISTANCE
+    private final double MAX_LAUNCH_POWER = 0.91967;   // motor power at MAX_DISTANCE
 
     // Default launch powers for manual shots
     private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
     private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
+    // Triple shot constants
+    private final int TRIPLE_SHOT_COUNT = 3;
+    private final double POWER_INCREASE_PER_SHOT = 0.1;
+    private final double TRIPLE_SHOT_DELAY = 0.5; // Delay between shots in seconds
+    private final double TRIPLE_SHOT_START_DELAY = 0.2; // Initial delay for transfer motor
+
     private double currentLaunchPower = MIN_LAUNCH_POWER; // Track current launch motor power
+
+    // Triple shot variables
+    private int shotsFired = 0;
+    private double tripleShotBasePower = 0.0;
 
     // Intake jitter timing
     private final double JITTER_REVERSE_TIME = 0.05;
@@ -200,12 +222,16 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
                 analogShooter = true;
             }
 
-            if (analogShooter) {
+            // Set launch motor power (triple shot overrides this when active)
+            if (tripleShotState != TripleShotState.IDLE) {
+                // Triple shot is controlling the launch motor
+                // Power is set by the triple shot state machine
+            } else if (analogShooter) {
                 launchMotor.setPower(currentLaunchPower);
-            }
-            else if ( !analogShooter ){
+            } else {
                 launchMotor.setPower(0);
             }
+
             //updates the telemetry for the camera
             if (result != null) {
                 if (result.isValid()) {
@@ -258,7 +284,7 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
                 }
 
                 // Override yaw with our correction
-                yaw = -rotationCorrection;
+                yaw = rotationCorrection;
 
                 tagVisible = true;
                 telemetry.addData("TAG LOCK", "ACTIVE");
@@ -336,7 +362,10 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
             }
 
             // Now handle all intake controls based on button priority
-            if (intakeJitterState == IntakeJitterState.REVERSE) {
+            // Don't run intake during triple shot to avoid interference
+            if (tripleShotState != TripleShotState.IDLE) {
+                // Triple shot is controlling the transfer motor, don't interfere
+            } else if (intakeJitterState == IntakeJitterState.REVERSE) {
                 // Jitter mode - reverse phase
                 intakeMotor.setPower(-1.0);
             }
@@ -346,15 +375,19 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
             }
             else if (gamepad2.a) {
                 intakeMotor.setPower(1.0);
-                transferMotor.setPower(1);
             }
             else if (gamepad1.y) {
                 intakeMotor.setPower(-1.0);
-                transferMotor.setPower(1);
             }
             else if (gamepad2.b) {
                 // B button: Slow intake
                 intakeMotor.setPower(0.5);
+            }
+            else if (gamepad2.left_trigger > 0.02) {
+                transferMotor.setPower(-1);
+            }
+            else if (gamepad2.right_trigger > 0.02) {
+                transferMotor.setPower(1);
             }
             else {
                 // No buttons pressed: Stop everything
@@ -363,63 +396,162 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
             }
 
             // ===== LAUNCH SEQUENCE CONTROL =====
-            // State machine for launch sequence
-            switch (launchState) {
-                case IDLE:
-                    // Left trigger = quick shot - just fire with current power
-                    if (gamepad2.left_trigger > 0.1) {
-                        launchState = LaunchState.FIRING;
-                        launchTimer.reset();
-                        Trigger.setPosition(TRIGGER_FIRE_POS);
-                        telemetry.addData("Launch", "Quick Shot - FIRING!");
-                    }
-                    // Right trigger = power shot - just fire with current power
-                    else if (gamepad2.right_trigger > 0.1) {
-                        launchState = LaunchState.FIRING;
-                        launchTimer.reset();
-                        Trigger.setPosition(TRIGGER_FIRE_POS);
-                        telemetry.addData("Launch", "Power Shot - FIRING!");
-                    }
-                    // Right bumper = distance-calculated shot - just fire with current power
-                    else if (gamepad2.right_bumper) {
-                        if (result != null && result.isValid()) {
+            // Only process single shots if triple shot is not active
+            if (tripleShotState == TripleShotState.IDLE) {
+                switch (launchState) {
+                    case IDLE:
+                        // Left trigger = quick shot - just fire with current power
+                        if (gamepad2.left_trigger > 0.1) {
                             launchState = LaunchState.FIRING;
                             launchTimer.reset();
                             Trigger.setPosition(TRIGGER_FIRE_POS);
+                            telemetry.addData("Launch", "Quick Shot - FIRING!");
+                        }
+                        // Right trigger = power shot - just fire with current power
+                        else if (gamepad2.right_trigger > 0.1) {
+                            launchState = LaunchState.FIRING;
+                            launchTimer.reset();
+                            Trigger.setPosition(TRIGGER_FIRE_POS);
+                            telemetry.addData("Launch", "Power Shot - FIRING!");
+                        }
+                        // Right bumper = distance-calculated shot - just fire with current power
+                        else if (gamepad2.right_bumper) {
+                            if (result != null && result.isValid()) {
+                                launchState = LaunchState.FIRING;
+                                launchTimer.reset();
+                                Trigger.setPosition(TRIGGER_FIRE_POS);
 
-                            telemetry.addData("Launch", "Auto Shot - Distance: %.1f in", distance);
-                            telemetry.addData("Launch Power", "%.2f", currentLaunchPower);
+                                telemetry.addData("Launch", "Auto Shot - Distance: %.1f in", distance);
+                                telemetry.addData("Launch Power", "%.2f", currentLaunchPower);
+                            } else {
+                                // No AprilTag visible
+                                telemetry.addData("Launch ERROR", "No AprilTag visible!");
+                            }
+                        }
+                        else {
+                            // When idle, power is already being set by continuous update
+                            telemetry.addData("Launch", "Ready (%.2f power)", currentLaunchPower);
+                        }
+                        break;
+
+                    case FIRING:
+                        // Wait for ball to launch
+                        if (launchTimer.seconds() >= FIRE_TIME) {
+                            launchState = LaunchState.RESETTING;
+                            launchTimer.reset();
+                            Trigger.setPosition(TRIGGER_START_POS);
+                            telemetry.addData("Launch", "Resetting...");
+                        }
+                        else {
+                            telemetry.addData("Launch", "FIRING! (%.2f power)", currentLaunchPower);
+                        }
+                        break;
+
+                    case RESETTING:
+                        // Wait for trigger to reset, then return to idle
+                        if (launchTimer.seconds() >= RESET_TIME) {
+                            launchState = LaunchState.IDLE;
+                            telemetry.addData("Launch", "Ready");
+                        }
+                        break;
+                }
+            }
+
+            // ===== TRIPLE SHOT STATE MACHINE =====
+            switch (tripleShotState) {
+                case IDLE:
+                    // Check if Y button is pressed to start triple shot
+                    if (gamepad2.y && launchState == LaunchState.IDLE) {
+                        if (result != null && result.isValid()) {
+                            // Initialize triple shot sequence
+                            tripleShotState = TripleShotState.TRANSFER_RUNNING;
+                            shotsFired = 0;
+                            tripleShotBasePower = currentLaunchPower;
+                            tripleShotTimer.reset();
+                            transferMotor.setPower(1.0);
+                            telemetry.addData("Triple Shot", "STARTING!");
                         } else {
-                            // No AprilTag visible
-                            telemetry.addData("Launch ERROR", "No AprilTag visible!");
+                            telemetry.addData("Triple Shot ERROR", "No AprilTag visible!");
                         }
                     }
-                    else {
-                        // When idle, power is already being set by continuous update
-                        telemetry.addData("Launch", "Ready (%.2f power)", currentLaunchPower);
+                    break;
+
+                case TRANSFER_RUNNING:
+                    // Transfer motor is running, wait a moment before first shot
+                    if (tripleShotTimer.seconds() >= TRIPLE_SHOT_START_DELAY) {
+                        // Start first shot
+                        tripleShotState = TripleShotState.FIRING_BALL;
+                        tripleShotTimer.reset();
+
+                        // Set launch motor power with compensation
+                        double compensatedPower = tripleShotBasePower + (shotsFired * POWER_INCREASE_PER_SHOT);
+                        launchMotor.setPower(compensatedPower);
+
+                        // Fire trigger
+                        Trigger.setPosition(TRIGGER_FIRE_POS);
+                        telemetry.addData("Triple Shot", "Firing ball %d/3", shotsFired + 1);
                     }
                     break;
 
-                case FIRING:
-                    // Wait for ball to launch
-                    if (launchTimer.seconds() >= FIRE_TIME) {
-                        launchState = LaunchState.RESETTING;
-                        launchTimer.reset();
+                case FIRING_BALL:
+                    // Wait for trigger to push ball
+                    if (tripleShotTimer.seconds() >= FIRE_TIME) {
+                        tripleShotState = TripleShotState.RESETTING_TRIGGER;
+                        tripleShotTimer.reset();
                         Trigger.setPosition(TRIGGER_START_POS);
-                        telemetry.addData("Launch", "Resetting...");
-                    }
-                    else {
-                        telemetry.addData("Launch", "FIRING! (%.2f power)", currentLaunchPower);
                     }
                     break;
 
-                case RESETTING:
-                    // Wait for trigger to reset, then return to idle
-                    if (launchTimer.seconds() >= RESET_TIME) {
-                        launchState = LaunchState.IDLE;
-                        telemetry.addData("Launch", "Ready");
+                case RESETTING_TRIGGER:
+                    // Wait for trigger to reset
+                    if (tripleShotTimer.seconds() >= RESET_TIME) {
+                        shotsFired++;
+
+                        if (shotsFired >= TRIPLE_SHOT_COUNT) {
+                            // All shots complete
+                            tripleShotState = TripleShotState.COMPLETE;
+                            tripleShotTimer.reset();
+                        } else {
+                            // More shots to fire
+                            tripleShotState = TripleShotState.WAITING_BETWEEN_SHOTS;
+                            tripleShotTimer.reset();
+                        }
                     }
                     break;
+
+                case WAITING_BETWEEN_SHOTS:
+                    // Wait between shots for ball to feed
+                    if (tripleShotTimer.seconds() >= TRIPLE_SHOT_DELAY) {
+                        tripleShotState = TripleShotState.FIRING_BALL;
+                        tripleShotTimer.reset();
+
+                        // Increase launch motor power to compensate for energy loss
+                        double compensatedPower = tripleShotBasePower + (shotsFired * POWER_INCREASE_PER_SHOT);
+                        launchMotor.setPower(compensatedPower);
+
+                        // Fire trigger
+                        Trigger.setPosition(TRIGGER_FIRE_POS);
+                        telemetry.addData("Triple Shot", "Firing ball %d/3", shotsFired + 1);
+                    }
+                    break;
+
+                case COMPLETE:
+                    // Stop transfer motor and return to idle
+                    transferMotor.setPower(0);
+                    tripleShotState = TripleShotState.IDLE;
+                    telemetry.addData("Triple Shot", "COMPLETE!");
+                    break;
+            }
+
+            // Add telemetry for triple shot
+            if (tripleShotState != TripleShotState.IDLE) {
+                telemetry.addData("=== TRIPLE SHOT ACTIVE ===", "");
+                telemetry.addData("Triple Shot State", tripleShotState);
+                telemetry.addData("Shots Fired", "%d/3", shotsFired);
+                if (shotsFired < TRIPLE_SHOT_COUNT) {
+                    double nextPower = tripleShotBasePower + (shotsFired * POWER_INCREASE_PER_SHOT);
+                    telemetry.addData("Current Shot Power", "%.2f", nextPower);
+                }
             }
 
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
