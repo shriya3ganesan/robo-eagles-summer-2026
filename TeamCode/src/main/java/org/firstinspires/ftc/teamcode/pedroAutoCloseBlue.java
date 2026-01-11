@@ -65,8 +65,9 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
                     follower.followPath(driveStartShootClose, true);
-                    launchMotor.setPower(0.8);  // Start flywheel early
+                    launchMotor.setPower(0.75);  // Start flywheel early
                     isShooting = true;
+                    trigger.setPosition(triggerStartPos);
                 }
                 if (!follower.isBusy()) {
                     setPathState(PathState.SHOOT_PRELOAD);
@@ -77,7 +78,7 @@ public class pedroAutoCloseBlue extends OpMode{
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
-                    launchMotor.setPower(0.8);
+                    launchMotor.setPower(0.75);
                     break;
                 }
 
@@ -97,9 +98,9 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_SHOOTPOS_INTAKEONE:
                 // Keep intake running while driving
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
-                    // Stop intake motors(legacy, really i removed this because the balls were always getting stuck in the intake)
-                    intakeMotor.setPower(1);
-                    transferMotor.setPower(0);
+                    // Stop intake motors
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(-1);
                     follower.followPath(driveIntakeOneShoot, true);
                     setPathState(PathState.DRIVE_INTAKEONE_SHOOTPOS);
                 }
@@ -108,6 +109,8 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
                     launchMotor.setPower(0.8);  // Spin up flywheel
+                    intakeMotor.setPower(-0);
+                    transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES);
                     shotsFired = 0;
                 }
@@ -116,6 +119,7 @@ public class pedroAutoCloseBlue extends OpMode{
             case SHOOT_SAMPLES:
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    intakeMotor.setPower(0);
                     launchMotor.setPower(0.8);
                     break;
                 }
@@ -140,7 +144,12 @@ public class pedroAutoCloseBlue extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-
+        if (shotsFired < 1 ){
+            launchMotor.setPower(1);
+        }
+        else {
+            launchMotor.setPower(0.75);
+        }
         // Each shot cycle takes ~0.8 seconds
         double cycleTime = elapsed % 0.8;
 
@@ -152,9 +161,8 @@ public class pedroAutoCloseBlue extends OpMode{
         } else if (cycleTime < 0.4) {
             // Stop transfer
             transferMotor.setPower(0);
-        } else if (cycleTime < 0.6) {
-            // Reset trigger
             trigger.setPosition(triggerStartPos);
+        } else if (cycleTime < 0.6) {
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         } else {
             // Wait before next shot
