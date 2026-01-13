@@ -162,7 +162,7 @@ public class Launcher {
 
     public void setMotorVelocityForDistance(double rangeinCm) {
         // TODO: calculate appropriate motor velocity based on range
-        _launchSpeed = (int)(10*rangeinCm/4+700);
+        _launchSpeed = (int)(10*rangeinCm/4+710);
         setMotorVelocity();
     }
 
@@ -180,6 +180,11 @@ public class Launcher {
     /// Returns the measured lower launch motor velocity
     public double getLowerVelocity() {
         return lowerLaunch.getVelocity();
+    }
+    public double getLaunchSpeedError() {
+        double AverageVelocity = (getLowerVelocity() + getUpperVelocity())/2.0;
+        double TargetError = getTargetLaunchSpeed() - AverageVelocity;
+        return Math.abs(TargetError);
     }
 
 

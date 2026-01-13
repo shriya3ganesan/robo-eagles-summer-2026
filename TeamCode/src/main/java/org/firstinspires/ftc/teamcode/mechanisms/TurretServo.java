@@ -9,6 +9,7 @@ public class TurretServo {
     //private final double TURRET_START_POSITION = 0.0; // nominally 0 degrees, may need to be tuned based on mounting angle of servo
     private final double TURRET_START_POSITION = 0.5; // pick halfway point to start?
     private double currentTurretAngle;
+    private double angleError;
 
     public void init (HardwareMap hwMap) {
         turretServo = hwMap.get(Servo.class,"turret_servo");
@@ -25,6 +26,7 @@ public class TurretServo {
 
     /// Adjust turret servo to new position
     public void changeTurretByDegrees(double deltaDegrees) {
+        angleError = deltaDegrees;
 
         // try this
         currentTurretAngle = currentTurretAngle + (deltaDegrees / 500);
@@ -49,5 +51,8 @@ public class TurretServo {
 
     public double getCurrentPosition() {
         return currentTurretAngle;
+    }
+    public double getAngleError(){
+        return angleError;
     }
 }

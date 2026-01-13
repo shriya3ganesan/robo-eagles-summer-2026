@@ -41,7 +41,7 @@ public class RedTeleOp  extends OpMode {
         AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24); // TAG ID 24 is the red goal
         aprilTagWebcam.displayDetectionTelemetry(id24);
         // NOTE: we will need a separate OPMODE (otherwise identical) that sets the target TAGID to BLUE (#20)
-        if (id24 != null) {
+        if (id24 != null && id24.ftcPose != null) {
             numMissingTagReads = 0;
             double angleToTag = id24.ftcPose.bearing;
             turret.changeTurretByDegrees(angleToTag);
