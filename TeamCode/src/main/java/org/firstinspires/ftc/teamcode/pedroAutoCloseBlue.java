@@ -35,7 +35,13 @@ public class pedroAutoCloseBlue extends OpMode{
         SHOOT_PRELOAD,
         DRIVE_SHOOTPOS_INTAKEONE,
         DRIVE_INTAKEONE_SHOOTPOS,
-        SHOOT_SAMPLES,
+        SHOOT_SAMPLES_1,
+        DRIVE_SHOOTPOS_INTAKETWO,
+        DRIVE_INTAKETWO_SHOOTPOS,
+        SHOOT_SAMPLES_2,
+        DRIVE_SHOOTPOS_INTAKETHREE,
+        DRIVE_INTAKETHREE_SHOOTPOS,
+        SHOOT_SAMPLES_3,
         DONE
     }
 
@@ -43,13 +49,21 @@ public class pedroAutoCloseBlue extends OpMode{
     private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
     private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
     private final Pose intakeOne = new Pose(18, 83.4295081967213, Math.toRadians(185));
+    private final Pose intakeTwo = new Pose(18, 59, Math.toRadians(185));
+    private final Pose intakeThree = new Pose(18, 35, Math.toRadians(185));
+
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
+    private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
+    private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
 
     public void buildPaths(){
+        // Initial paths
         driveStartShootClose = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, shootPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
+
+        // Intake 1 paths
         driveShootIntakeOne = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, intakeOne))
                 .setConstantHeadingInterpolation(intakeOne.getHeading())
@@ -57,6 +71,26 @@ public class pedroAutoCloseBlue extends OpMode{
         driveIntakeOneShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeOne, shootPose))
                 .setLinearHeadingInterpolation(intakeOne.getHeading(), shootPose.getHeading(), 0.6)
+                .build();
+
+        // Intake 2 paths
+        driveShootIntakeTwo = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intakeTwo))
+                .setConstantHeadingInterpolation(intakeTwo.getHeading())
+                .build();
+        driveIntakeTwoShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeTwo, shootPose))
+                .setLinearHeadingInterpolation(intakeTwo.getHeading(), shootPose.getHeading(), 0.6)
+                .build();
+
+        // Intake 3 paths
+        driveShootIntakeThree = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intakeThree))
+                .setConstantHeadingInterpolation(intakeThree.getHeading())
+                .build();
+        driveIntakeThreeShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeThree, shootPose))
+                .setLinearHeadingInterpolation(intakeThree.getHeading(), shootPose.getHeading(), 0.6)
                 .build();
     }
 
@@ -86,7 +120,7 @@ public class pedroAutoCloseBlue extends OpMode{
                 if (shotsFired < 3) {
                     shootOneShot();
                 } else {
-                    // Done shooting, move to intake
+                    // Done shooting, move to intake 1
                     follower.followPath(driveShootIntakeOne, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
@@ -109,14 +143,14 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
                     launchMotor.setPower(0.8);  // Spin up flywheel
-                    intakeMotor.setPower(-0);
+                    intakeMotor.setPower(0);
                     transferMotor.setPower(0);
-                    setPathState(PathState.SHOOT_SAMPLES);
+                    setPathState(PathState.SHOOT_SAMPLES_1);
                     shotsFired = 0;
                 }
                 break;
 
-            case SHOOT_SAMPLES:
+            case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
@@ -128,6 +162,94 @@ public class pedroAutoCloseBlue extends OpMode{
                 if (shotsFired < 3) {
                     shootOneShot();
                 } else {
+                    // Done shooting, move to intake 2
+                    follower.followPath(driveShootIntakeTwo, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setPower(0);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
+                }
+                break;
+
+            case DRIVE_SHOOTPOS_INTAKETWO:
+                // Keep intake running while driving
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    // Stop intake motors
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeTwoShoot, true);
+                    setPathState(PathState.DRIVE_INTAKETWO_SHOOTPOS);
+                }
+                break;
+
+            case DRIVE_INTAKETWO_SHOOTPOS:
+                if (!follower.isBusy()) {
+                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(0);
+                    setPathState(PathState.SHOOT_SAMPLES_2);
+                    shotsFired = 0;
+                }
+                break;
+
+            case SHOOT_SAMPLES_2:
+                // Wait for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    intakeMotor.setPower(0);
+                    launchMotor.setPower(0.8);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 3) {
+                    shootOneShot();
+                } else {
+                    // Done shooting, move to intake 3
+                    follower.followPath(driveShootIntakeThree, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setPower(0);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
+                }
+                break;
+
+            case DRIVE_SHOOTPOS_INTAKETHREE:
+                // Keep intake running while driving
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    // Stop intake motors
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeThreeShoot, true);
+                    setPathState(PathState.DRIVE_INTAKETHREE_SHOOTPOS);
+                }
+                break;
+
+            case DRIVE_INTAKETHREE_SHOOTPOS:
+                if (!follower.isBusy()) {
+                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(0);
+                    setPathState(PathState.SHOOT_SAMPLES_3);
+                    shotsFired = 0;
+                }
+                break;
+
+            case SHOOT_SAMPLES_3:
+                // Wait for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    intakeMotor.setPower(0);
+                    launchMotor.setPower(0.8);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 3) {
+                    shootOneShot();
+                } else {
+                    // All samples collected and shot
+                    launchMotor.setPower(0);
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(0);
                     setPathState(PathState.DONE);
                 }
                 break;
