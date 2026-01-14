@@ -23,12 +23,14 @@ public class AutoLeft extends OpMode {
     int numMissingTagReads = 0;
 
     enum State {
+        DELAY_START,
+        DELAY,
         SPIN_UP,
         LAUNCHING,
         MOVE_FORWARD,
         FINISHED
     }
-    State state = State.MOVE_FORWARD;
+    State state = State.DELAY_START;
     ElapsedTime driveTimer = new ElapsedTime();
 
     @Override
@@ -40,15 +42,28 @@ public class AutoLeft extends OpMode {
         turret.init(hardwareMap);
         led.init(hardwareMap);
 
-        state = State.SPIN_UP;
+        state = State.DELAY_START;
     }
 
     @Override
     public void loop() {
         telemetry.addData("Current state", state);
         doAprilTag();
+        telemetry.addData("Current state", state);
 
         switch (state) {
+            case DELAY_START:
+                driveTimer.reset();
+                intake.stopIntake();
+                launcher.resetFeeder();
+                state = State.DELAY;
+                        break;
+            case DELAY:
+                driveTimer.reset();
+                if (driveTimer.seconds() < 2){
+                    state = State.SPIN_UP;
+                }
+                break;
             case SPIN_UP:
                 double speedError = launcher.getLaunchSpeedError();
                 double angleError = turret.getAngleError();
@@ -68,13 +83,14 @@ public class AutoLeft extends OpMode {
                 break;
             case MOVE_FORWARD:
                 driveTimer.reset();
-                while (driveTimer.seconds() < 2) {
-                    drive.drive(0.3, 0.0, 0.0);
+                while (driveTimer.seconds() < 1) {
+                    drive.drive(0.1, 0.0, 0.0);
                 }
                 drive.drive(0,0,0);
                 state = State.FINISHED;
                 break;
             case FINISHED:
+                telemetry.addData("Current state", state);
                 break;
             default:
 
