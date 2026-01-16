@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.TurretServo;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @Autonomous
-public class AutoLeft extends OpMode {
+public class BlueAutoLong extends OpMode {
     MecanumDrive drive = new MecanumDrive();
     Intake intake = new Intake();
     Launcher launcher = new Launcher();
@@ -50,7 +50,7 @@ public class AutoLeft extends OpMode {
     public void loop() {
         telemetry.addData("Current state", state);
         doAprilTag();
-        AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24);
+        AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(20);
 
         switch (state) {
             case FIND_TAG:
@@ -62,7 +62,7 @@ public class AutoLeft extends OpMode {
                 double speedError = launcher.getLaunchSpeedError();
                 double angleError = turret.getAngleError();
                 if (speedError < 100 && angleError < 2){
-                  state = State.LAUNCHING;
+                    state = State.LAUNCHING;
                 }
                 break;
             case LAUNCHING:
@@ -94,7 +94,7 @@ public class AutoLeft extends OpMode {
     private void doAprilTag(){
         //Update the vision portal
         aprilTagWebcam.update();
-        AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24); // TAG ID 24 is the red goal
+        AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(20); // TAG ID 24 is the red goal
         aprilTagWebcam.displayDetectionTelemetry(id24);
         // NOTE: we will need a separate OPMODE (otherwise identical) that sets the target TAGID to BLUE (#20)
         if (id24 != null && id24.ftcPose != null) {

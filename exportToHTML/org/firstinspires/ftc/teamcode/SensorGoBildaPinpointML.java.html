@@ -1,0 +1,138 @@
+<html>
+<head>
+<title>SensorGoBildaPinpointML.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #cf8e6d;}
+.s3 { color: #bcbec4;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SensorGoBildaPinpointML.java</font>
+</center></td></tr></table>
+<pre><span class="s0">/* 
+*   Copyright (c) 2025 Alan Smith 
+* 
+*   Permission is hereby granted, free of charge, to any person obtaining a copy 
+*   of this software and associated documentation files (the &quot;Software&quot;), to deal 
+*   in the Software without restriction, including without limitation the rights 
+*   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+*   copies of the Software, and to permit persons to whom the Software is 
+*   furnished to do so, subject to the following conditions: 
+ 
+*   The above copyright notice and this permission notice shall be included in all 
+*   copies or substantial portions of the Software. 
+ 
+*   THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+*   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+*   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+*   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+*   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+*   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+*   SOFTWARE. 
+*/</span>
+<span class="s2">package </span><span class="s1">org</span><span class="s3">.</span><span class="s1">firstinspires</span><span class="s3">.</span><span class="s1">ftc</span><span class="s3">.</span><span class="s1">teamcode</span><span class="s3">;</span>
+
+<span class="s2">import </span><span class="s1">com</span><span class="s3">.</span><span class="s1">qualcomm</span><span class="s3">.</span><span class="s1">hardware</span><span class="s3">.</span><span class="s1">gobilda</span><span class="s3">.</span><span class="s1">GoBildaPinpointDriver</span><span class="s3">;</span>
+<span class="s2">import </span><span class="s1">com</span><span class="s3">.</span><span class="s1">qualcomm</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">eventloop</span><span class="s3">.</span><span class="s1">opmode</span><span class="s3">.</span><span class="s1">Disabled</span><span class="s3">;</span>
+<span class="s2">import </span><span class="s1">com</span><span class="s3">.</span><span class="s1">qualcomm</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">eventloop</span><span class="s3">.</span><span class="s1">opmode</span><span class="s3">.</span><span class="s1">OpMode</span><span class="s3">;</span>
+<span class="s2">import </span><span class="s1">com</span><span class="s3">.</span><span class="s1">qualcomm</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">eventloop</span><span class="s3">.</span><span class="s1">opmode</span><span class="s3">.</span><span class="s1">TeleOp</span><span class="s3">;</span>
+
+<span class="s2">import </span><span class="s1">org</span><span class="s3">.</span><span class="s1">firstinspires</span><span class="s3">.</span><span class="s1">ftc</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">external</span><span class="s3">.</span><span class="s1">navigation</span><span class="s3">.</span><span class="s1">AngleUnit</span><span class="s3">;</span>
+<span class="s2">import </span><span class="s1">org</span><span class="s3">.</span><span class="s1">firstinspires</span><span class="s3">.</span><span class="s1">ftc</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">external</span><span class="s3">.</span><span class="s1">navigation</span><span class="s3">.</span><span class="s1">DistanceUnit</span><span class="s3">;</span>
+<span class="s2">import </span><span class="s1">org</span><span class="s3">.</span><span class="s1">firstinspires</span><span class="s3">.</span><span class="s1">ftc</span><span class="s3">.</span><span class="s1">robotcore</span><span class="s3">.</span><span class="s1">external</span><span class="s3">.</span><span class="s1">navigation</span><span class="s3">.</span><span class="s1">Pose2D</span><span class="s3">;</span>
+
+<span class="s0">/* 
+ * This OpMode illustrates how to use the GoBildaPinpoint 
+ * 
+ * The OpMode assumes that the sensor is configured with a name of &quot;pinpoint&quot;. 
+ * 
+ * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name. 
+ * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list 
+ * 
+ * See the sensor's product page: https://www.gobilda.com/pinpoint-odometry-computer-imu-sensor-fusion-for-2-wheel-odometry/ 
+ */</span>
+<span class="s1">@TeleOp</span><span class="s3">(</span><span class="s1">name </span><span class="s3">= </span><span class="s4">&quot;Sensor: GoBilda Pinpoint&quot;</span><span class="s3">, </span><span class="s1">group </span><span class="s3">= </span><span class="s4">&quot;Sensor&quot;</span><span class="s3">)</span>
+<span class="s1">@Disabled</span>
+<span class="s2">public class </span><span class="s1">SensorGoBildaPinpointML </span><span class="s2">extends </span><span class="s1">OpMode </span><span class="s3">{</span>
+    <span class="s0">// Create an instance of the sensor</span>
+    <span class="s1">GoBildaPinpointDriver pinpoint</span><span class="s3">;</span>
+
+    <span class="s1">@Override</span>
+    <span class="s2">public void </span><span class="s1">init</span><span class="s3">() {</span>
+        <span class="s0">// Get a reference to the sensor</span>
+        <span class="s1">pinpoint </span><span class="s3">= </span><span class="s1">hardwareMap</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s1">GoBildaPinpointDriver</span><span class="s3">.</span><span class="s2">class</span><span class="s3">, </span><span class="s4">&quot;pinpoint&quot;</span><span class="s3">);</span>
+
+        <span class="s0">// Configure the sensor</span>
+        <span class="s1">configurePinpoint</span><span class="s3">();</span>
+
+        <span class="s0">// Set the location of the robot - this should be the place you are starting the robot from</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">setPosition</span><span class="s3">(</span><span class="s2">new </span><span class="s1">Pose2D</span><span class="s3">(</span><span class="s1">DistanceUnit</span><span class="s3">.</span><span class="s1">INCH</span><span class="s3">, </span><span class="s5">0</span><span class="s3">, </span><span class="s5">0</span><span class="s3">, </span><span class="s1">AngleUnit</span><span class="s3">.</span><span class="s1">DEGREES</span><span class="s3">, </span><span class="s5">0</span><span class="s3">));</span>
+    <span class="s3">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s2">public void </span><span class="s1">loop</span><span class="s3">() {</span>
+        <span class="s1">telemetry</span><span class="s3">.</span><span class="s1">addLine</span><span class="s3">(</span><span class="s4">&quot;Push your robot around to see it track&quot;</span><span class="s3">);</span>
+        <span class="s1">telemetry</span><span class="s3">.</span><span class="s1">addLine</span><span class="s3">(</span><span class="s4">&quot;Press A to reset the position&quot;</span><span class="s3">);</span>
+        <span class="s2">if</span><span class="s3">(</span><span class="s1">gamepad1</span><span class="s3">.</span><span class="s1">a</span><span class="s3">){</span>
+            <span class="s0">// You could use readings from April Tags here to give a new known position to the pinpoint</span>
+            <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">setPosition</span><span class="s3">(</span><span class="s2">new </span><span class="s1">Pose2D</span><span class="s3">(</span><span class="s1">DistanceUnit</span><span class="s3">.</span><span class="s1">INCH</span><span class="s3">, </span><span class="s5">0</span><span class="s3">, </span><span class="s5">0</span><span class="s3">, </span><span class="s1">AngleUnit</span><span class="s3">.</span><span class="s1">DEGREES</span><span class="s3">, </span><span class="s5">0</span><span class="s3">));</span>
+        <span class="s3">}</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">update</span><span class="s3">();</span>
+        <span class="s1">Pose2D pose2D </span><span class="s3">= </span><span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">getPosition</span><span class="s3">();</span>
+
+        <span class="s1">telemetry</span><span class="s3">.</span><span class="s1">addData</span><span class="s3">(</span><span class="s4">&quot;X coordinate (IN)&quot;</span><span class="s3">, </span><span class="s1">pose2D</span><span class="s3">.</span><span class="s1">getX</span><span class="s3">(</span><span class="s1">DistanceUnit</span><span class="s3">.</span><span class="s1">INCH</span><span class="s3">));</span>
+        <span class="s1">telemetry</span><span class="s3">.</span><span class="s1">addData</span><span class="s3">(</span><span class="s4">&quot;Y coordinate (IN)&quot;</span><span class="s3">, </span><span class="s1">pose2D</span><span class="s3">.</span><span class="s1">getY</span><span class="s3">(</span><span class="s1">DistanceUnit</span><span class="s3">.</span><span class="s1">INCH</span><span class="s3">));</span>
+        <span class="s1">telemetry</span><span class="s3">.</span><span class="s1">addData</span><span class="s3">(</span><span class="s4">&quot;Heading angle (DEGREES)&quot;</span><span class="s3">, </span><span class="s1">pose2D</span><span class="s3">.</span><span class="s1">getHeading</span><span class="s3">(</span><span class="s1">AngleUnit</span><span class="s3">.</span><span class="s1">DEGREES</span><span class="s3">));</span>
+    <span class="s3">}</span>
+
+    <span class="s2">public void </span><span class="s1">configurePinpoint</span><span class="s3">(){</span>
+       <span class="s0">/* 
+        *  Set the odometry pod positions relative to the point that you want the position to be measured from. 
+        * 
+        *  The X pod offset refers to how far sideways from the tracking point the X (forward) odometry pod is. 
+        *  Left of the center is a positive number, right of center is a negative number. 
+        * 
+        *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is. 
+        *  Forward of center is a positive number, backwards is a negative number. 
+        */</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">setOffsets</span><span class="s3">(-</span><span class="s5">16.0</span><span class="s3">, -</span><span class="s5">28.0</span><span class="s3">, </span><span class="s1">DistanceUnit</span><span class="s3">.</span><span class="s1">MM</span><span class="s3">); </span><span class="s0">//these are tuned for 3110-0002-0001 Product Insight #1</span>
+
+        <span class="s0">/* 
+         * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either 
+         * the goBILDA_SWINGARM_POD, or the goBILDA_4_BAR_POD. 
+         * If you're using another kind of odometry pod, uncomment setEncoderResolution and input the 
+         * number of ticks per unit of your odometry pod.  For example:  
+         *     pinpoint.setEncoderResolution(13.26291192, DistanceUnit.MM); 
+         */</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">setEncoderResolution</span><span class="s3">(</span><span class="s1">GoBildaPinpointDriver</span><span class="s3">.</span><span class="s1">GoBildaOdometryPods</span><span class="s3">.</span><span class="s1">goBILDA_4_BAR_POD</span><span class="s3">);</span>
+
+        <span class="s0">/* 
+         * Set the direction that each of the two odometry pods count. The X (forward) pod should 
+         * increase when you move the robot forward. And the Y (strafe) pod should increase when 
+         * you move the robot to the left. 
+         */</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">setEncoderDirections</span><span class="s3">(</span><span class="s1">GoBildaPinpointDriver</span><span class="s3">.</span><span class="s1">EncoderDirection</span><span class="s3">.</span><span class="s1">FORWARD</span><span class="s3">,</span>
+                                      <span class="s1">GoBildaPinpointDriver</span><span class="s3">.</span><span class="s1">EncoderDirection</span><span class="s3">.</span><span class="s1">FORWARD</span><span class="s3">);</span>
+
+        <span class="s0">/* 
+         * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary 
+         * The IMU will automatically calibrate when first powered on, but recalibrating before running 
+         * the robot is a good idea to ensure that the calibration is &quot;good&quot;. 
+         * resetPosAndIMU will reset the position to 0,0,0 and also recalibrate the IMU. 
+         * This is recommended before you run your autonomous, as a bad initial calibration can cause 
+         * an incorrect starting value for x, y, and heading. 
+         */</span>
+        <span class="s1">pinpoint</span><span class="s3">.</span><span class="s1">resetPosAndIMU</span><span class="s3">();</span>
+    <span class="s3">}</span>
+<span class="s3">}</span>
+</pre>
+</body>
+</html>

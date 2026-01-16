@@ -1,0 +1,143 @@
+<html>
+<head>
+<title>RedAutoLong.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #2aacb8;}
+.s4 { color: #6aab73;}
+.s5 { color: #7a7e85;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+RedAutoLong.java</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">com</span><span class="s2">.</span><span class="s1">qualcomm</span><span class="s2">.</span><span class="s1">robotcore</span><span class="s2">.</span><span class="s1">eventloop</span><span class="s2">.</span><span class="s1">opmode</span><span class="s2">.</span><span class="s1">Autonomous</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">com</span><span class="s2">.</span><span class="s1">qualcomm</span><span class="s2">.</span><span class="s1">robotcore</span><span class="s2">.</span><span class="s1">eventloop</span><span class="s2">.</span><span class="s1">opmode</span><span class="s2">.</span><span class="s1">OpMode</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">com</span><span class="s2">.</span><span class="s1">qualcomm</span><span class="s2">.</span><span class="s1">robotcore</span><span class="s2">.</span><span class="s1">util</span><span class="s2">.</span><span class="s1">ElapsedTime</span><span class="s2">;</span>
+
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">AprilTagsWebcam</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">Intake</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">LEDIndicator</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">Launcher</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">MecanumDrive</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">teamcode</span><span class="s2">.</span><span class="s1">mechanisms</span><span class="s2">.</span><span class="s1">TurretServo</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">org</span><span class="s2">.</span><span class="s1">firstinspires</span><span class="s2">.</span><span class="s1">ftc</span><span class="s2">.</span><span class="s1">vision</span><span class="s2">.</span><span class="s1">apriltag</span><span class="s2">.</span><span class="s1">AprilTagDetection</span><span class="s2">;</span>
+
+<span class="s1">@Autonomous</span>
+<span class="s0">public class </span><span class="s1">RedAutoLong </span><span class="s0">extends </span><span class="s1">OpMode </span><span class="s2">{</span>
+    <span class="s1">MecanumDrive drive </span><span class="s2">= </span><span class="s0">new </span><span class="s1">MecanumDrive</span><span class="s2">();</span>
+    <span class="s1">Intake intake </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Intake</span><span class="s2">();</span>
+    <span class="s1">Launcher launcher </span><span class="s2">= </span><span class="s0">new </span><span class="s1">Launcher</span><span class="s2">();</span>
+    <span class="s1">AprilTagsWebcam aprilTagWebcam </span><span class="s2">= </span><span class="s0">new </span><span class="s1">AprilTagsWebcam</span><span class="s2">();</span>
+    <span class="s1">TurretServo turret </span><span class="s2">= </span><span class="s0">new </span><span class="s1">TurretServo</span><span class="s2">();</span>
+    <span class="s1">LEDIndicator led </span><span class="s2">= </span><span class="s0">new </span><span class="s1">LEDIndicator</span><span class="s2">();</span>
+    <span class="s0">int </span><span class="s1">numMissingTagReads </span><span class="s2">= </span><span class="s3">0</span><span class="s2">;</span>
+
+    <span class="s0">enum </span><span class="s1">State </span><span class="s2">{</span>
+        <span class="s1">FIND_TAG</span><span class="s2">,</span>
+        <span class="s1">DELAY_START</span><span class="s2">,</span>
+        <span class="s1">DELAY</span><span class="s2">,</span>
+        <span class="s1">SPIN_UP</span><span class="s2">,</span>
+        <span class="s1">LAUNCHING</span><span class="s2">,</span>
+        <span class="s1">MOVE_FORWARD</span><span class="s2">,</span>
+        <span class="s1">FINISHED</span>
+    <span class="s2">}</span>
+    <span class="s1">State state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">FIND_TAG</span><span class="s2">;</span>
+    <span class="s1">ElapsedTime driveTimer </span><span class="s2">= </span><span class="s0">new </span><span class="s1">ElapsedTime</span><span class="s2">();</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">init</span><span class="s2">() {</span>
+        <span class="s1">drive</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">);</span>
+        <span class="s1">intake</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">);</span>
+        <span class="s1">launcher</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">);</span>
+        <span class="s1">aprilTagWebcam</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">, </span><span class="s1">telemetry</span><span class="s2">);</span>
+        <span class="s1">turret</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">);</span>
+        <span class="s1">led</span><span class="s2">.</span><span class="s1">init</span><span class="s2">(</span><span class="s1">hardwareMap</span><span class="s2">);</span>
+
+        <span class="s1">state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">FIND_TAG</span><span class="s2">;</span>
+    <span class="s2">}</span>
+
+    <span class="s1">@Override</span>
+    <span class="s0">public void </span><span class="s1">loop</span><span class="s2">() {</span>
+        <span class="s1">telemetry</span><span class="s2">.</span><span class="s1">addData</span><span class="s2">(</span><span class="s4">&quot;Current state&quot;</span><span class="s2">, </span><span class="s1">state</span><span class="s2">);</span>
+        <span class="s1">doAprilTag</span><span class="s2">();</span>
+        <span class="s1">AprilTagDetection id24 </span><span class="s2">= </span><span class="s1">aprilTagWebcam</span><span class="s2">.</span><span class="s1">getTagBySpecificId</span><span class="s2">(</span><span class="s3">24</span><span class="s2">);</span>
+
+        <span class="s0">switch </span><span class="s2">(</span><span class="s1">state</span><span class="s2">) {</span>
+            <span class="s0">case </span><span class="s1">FIND_TAG</span><span class="s2">:</span>
+                <span class="s0">if</span><span class="s2">(</span><span class="s1">id24 </span><span class="s2">!= </span><span class="s0">null</span><span class="s2">){</span>
+                    <span class="s1">state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">SPIN_UP</span><span class="s2">;</span>
+                <span class="s2">}</span>
+                <span class="s0">break</span><span class="s2">;</span>
+            <span class="s0">case </span><span class="s1">SPIN_UP</span><span class="s2">:</span>
+                <span class="s0">double </span><span class="s1">speedError </span><span class="s2">= </span><span class="s1">launcher</span><span class="s2">.</span><span class="s1">getLaunchSpeedError</span><span class="s2">();</span>
+                <span class="s0">double </span><span class="s1">angleError </span><span class="s2">= </span><span class="s1">turret</span><span class="s2">.</span><span class="s1">getAngleError</span><span class="s2">();</span>
+                <span class="s0">if </span><span class="s2">(</span><span class="s1">speedError </span><span class="s2">&lt; </span><span class="s3">100 </span><span class="s2">&amp;&amp; </span><span class="s1">angleError </span><span class="s2">&lt; </span><span class="s3">2</span><span class="s2">){</span>
+                  <span class="s1">state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">LAUNCHING</span><span class="s2">;</span>
+                <span class="s2">}</span>
+                <span class="s0">break</span><span class="s2">;</span>
+            <span class="s0">case </span><span class="s1">LAUNCHING</span><span class="s2">:</span>
+                <span class="s1">driveTimer</span><span class="s2">.</span><span class="s1">reset</span><span class="s2">();</span>
+                <span class="s0">while </span><span class="s2">(</span><span class="s1">driveTimer</span><span class="s2">.</span><span class="s1">seconds</span><span class="s2">() &lt; </span><span class="s3">3</span><span class="s2">) {</span>
+                    <span class="s1">intake</span><span class="s2">.</span><span class="s1">startIntake</span><span class="s2">();</span>
+                    <span class="s1">launcher</span><span class="s2">.</span><span class="s1">loadBall</span><span class="s2">();</span>
+                <span class="s2">}</span>
+                <span class="s1">intake</span><span class="s2">.</span><span class="s1">stopIntake</span><span class="s2">();</span>
+                <span class="s1">launcher</span><span class="s2">.</span><span class="s1">resetFeeder</span><span class="s2">();</span>
+                <span class="s1">state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">MOVE_FORWARD</span><span class="s2">;</span>
+                <span class="s0">break</span><span class="s2">;</span>
+            <span class="s0">case </span><span class="s1">MOVE_FORWARD</span><span class="s2">:</span>
+                <span class="s1">driveTimer</span><span class="s2">.</span><span class="s1">reset</span><span class="s2">();</span>
+                <span class="s0">while </span><span class="s2">(</span><span class="s1">driveTimer</span><span class="s2">.</span><span class="s1">seconds</span><span class="s2">() &lt; </span><span class="s3">1</span><span class="s2">) {</span>
+                    <span class="s1">drive</span><span class="s2">.</span><span class="s1">drive</span><span class="s2">(</span><span class="s3">0.3</span><span class="s2">, </span><span class="s3">0.0</span><span class="s2">, </span><span class="s3">0.0</span><span class="s2">);</span>
+                <span class="s2">}</span>
+                <span class="s1">drive</span><span class="s2">.</span><span class="s1">drive</span><span class="s2">(</span><span class="s3">0</span><span class="s2">,</span><span class="s3">0</span><span class="s2">,</span><span class="s3">0</span><span class="s2">);</span>
+                <span class="s1">state </span><span class="s2">= </span><span class="s1">State</span><span class="s2">.</span><span class="s1">FINISHED</span><span class="s2">;</span>
+                <span class="s0">break</span><span class="s2">;</span>
+            <span class="s0">case </span><span class="s1">FINISHED</span><span class="s2">:</span>
+                <span class="s1">telemetry</span><span class="s2">.</span><span class="s1">addData</span><span class="s2">(</span><span class="s4">&quot;Current state&quot;</span><span class="s2">, </span><span class="s1">state</span><span class="s2">);</span>
+                <span class="s0">break</span><span class="s2">;</span>
+            <span class="s0">default</span><span class="s2">:</span>
+
+        <span class="s2">}</span>
+
+    <span class="s2">}</span>
+    <span class="s0">private void </span><span class="s1">doAprilTag</span><span class="s2">(){</span>
+        <span class="s5">//Update the vision portal</span>
+        <span class="s1">aprilTagWebcam</span><span class="s2">.</span><span class="s1">update</span><span class="s2">();</span>
+        <span class="s1">AprilTagDetection id24 </span><span class="s2">= </span><span class="s1">aprilTagWebcam</span><span class="s2">.</span><span class="s1">getTagBySpecificId</span><span class="s2">(</span><span class="s3">24</span><span class="s2">); </span><span class="s5">// TAG ID 24 is the red goal</span>
+        <span class="s1">aprilTagWebcam</span><span class="s2">.</span><span class="s1">displayDetectionTelemetry</span><span class="s2">(</span><span class="s1">id24</span><span class="s2">);</span>
+        <span class="s5">// NOTE: we will need a separate OPMODE (otherwise identical) that sets the target TAGID to BLUE (#20)</span>
+        <span class="s0">if </span><span class="s2">(</span><span class="s1">id24 </span><span class="s2">!= </span><span class="s0">null </span><span class="s2">&amp;&amp; </span><span class="s1">id24</span><span class="s2">.</span><span class="s1">ftcPose </span><span class="s2">!= </span><span class="s0">null</span><span class="s2">) {</span>
+            <span class="s1">numMissingTagReads </span><span class="s2">= </span><span class="s3">0</span><span class="s2">;</span>
+            <span class="s0">double </span><span class="s1">angleToTag </span><span class="s2">= </span><span class="s1">id24</span><span class="s2">.</span><span class="s1">ftcPose</span><span class="s2">.</span><span class="s1">bearing</span><span class="s2">;</span>
+            <span class="s1">turret</span><span class="s2">.</span><span class="s1">changeTurretByDegrees</span><span class="s2">(</span><span class="s1">angleToTag</span><span class="s2">);</span>
+
+            <span class="s0">double </span><span class="s1">distanceToGoalCM </span><span class="s2">= </span><span class="s1">id24</span><span class="s2">.</span><span class="s1">ftcPose</span><span class="s2">.</span><span class="s1">range</span><span class="s2">;</span>
+            <span class="s1">launcher</span><span class="s2">.</span><span class="s1">setMotorVelocityForDistance</span><span class="s2">(</span><span class="s1">distanceToGoalCM</span><span class="s2">);</span>
+            <span class="s1">led</span><span class="s2">.</span><span class="s1">setLEDGreen</span><span class="s2">();</span>
+            <span class="s5">// NOTE: use this after distance vs speed has been measured and calibrated</span>
+            <span class="s5">//launcher.setMotorVelocityForDistance(distanceToGoalCM);</span>
+        <span class="s2">} </span><span class="s0">else if </span><span class="s2">(</span><span class="s1">numMissingTagReads </span><span class="s2">&lt; </span><span class="s3">100</span><span class="s2">){</span>
+            <span class="s1">numMissingTagReads</span><span class="s2">++;</span>
+            <span class="s1">led</span><span class="s2">.</span><span class="s1">setLEDBlue</span><span class="s2">();</span>
+        <span class="s2">} </span><span class="s0">else </span><span class="s2">{</span>
+            <span class="s5">// if we can't see the target/            // default back to neutral/default</span>
+            <span class="s5">//turret.resetTurret();</span>
+            <span class="s5">// and turn launch motors off</span>
+            <span class="s1">launcher</span><span class="s2">.</span><span class="s1">stopLauncher</span><span class="s2">();</span>
+            <span class="s1">turret</span><span class="s2">.</span><span class="s1">resetTurret</span><span class="s2">();</span>
+            <span class="s1">led</span><span class="s2">.</span><span class="s1">setLEDRed</span><span class="s2">();</span>
+        <span class="s2">}</span>
+    <span class="s2">}</span>
+<span class="s2">}</span></pre>
+</body>
+</html>

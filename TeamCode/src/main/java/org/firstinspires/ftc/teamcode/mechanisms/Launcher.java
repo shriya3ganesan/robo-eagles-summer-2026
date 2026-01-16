@@ -12,11 +12,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Launcher {
+    public static Launcher.LaunchState LaunchState;
     private final int FEED_TIME_MILLISECONDS = 500; //The feeder servo runs this long when a shot is requested.
     private final double FEED_STOP = 0.0;
     private final double FEED_START = 1.0;
 
-    private DcMotorEx lowerLaunch, upperLaunch, launchFeeder;
+    public DcMotorEx lowerLaunch;
+    public DcMotorEx upperLaunch;
+    private DcMotorEx launchFeeder;
     //private Servo launchFeeder;
 
     private int _launchSpeed = 0; // Commanded launch motor velocity
@@ -52,7 +55,7 @@ public class Launcher {
      * We can use higher level code to cycle through these states. But this allows us to write
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
-    private enum LaunchState {
+    public enum LaunchState {
         IDLE,
         SPIN_UP,
         LAUNCH,
@@ -217,6 +220,8 @@ public class Launcher {
 
        switch (launchState) {
             case IDLE:
+                upperLaunch.setVelocity(0);
+                lowerLaunch.setVelocity(0);
                 break;
             case SPIN_UP:
                 //feederTimer.reset();
