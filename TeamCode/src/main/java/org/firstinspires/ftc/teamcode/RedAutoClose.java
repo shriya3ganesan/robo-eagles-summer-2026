@@ -357,7 +357,7 @@ public class RedAutoClose extends OpMode {
         }
 
     }
-    private void doAprilTag(){
+    public void doAprilTag(){
         //Update the vision portal
         aprilTagWebcam.update();
         AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24); // TAG ID 24 is the red goal

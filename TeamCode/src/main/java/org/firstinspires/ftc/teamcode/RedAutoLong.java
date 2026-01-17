@@ -28,8 +28,19 @@ public class RedAutoLong extends OpMode {
         DELAY,
         SPIN_UP,
         LAUNCHING,
+        TURN_RIGHT,
         MOVE_FORWARD,
-        FINISHED
+        TURN_RIGHT_2,
+        MOVE_FORWARD_3,
+        HOLD_FORWARD,
+        MOVE_BACKWARD,
+        TURN_RIGHT_3,
+        MOVE_BACKWARD_2,
+        FIND_TAG_2,
+        SPIN_UP_2,
+        LAUNCHING_2,
+        MOVE_FORWARD_4,
+        FINISHED,
     }
     State state = State.FIND_TAG;
     ElapsedTime driveTimer = new ElapsedTime();

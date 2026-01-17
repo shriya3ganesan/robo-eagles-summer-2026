@@ -38,7 +38,7 @@ public class BlueTeleOp  extends OpMode {
     public void loop() {
         //Update the vision portal
         aprilTagWebcam.update();
-        AprilTagDetection id20 = aprilTagWebcam.getTagBySpecificId(20); // TAG ID 24 is the red goal
+        AprilTagDetection id20 = aprilTagWebcam.getTagBySpecificId(20); // TAG ID 20 is the blue goal
         aprilTagWebcam.displayDetectionTelemetry(id20);
         // NOTE: we will need a separate OPMODE (otherwise identical) that sets the target TAGID to BLUE (#20)
         if (id20 != null && id20.ftcPose != null) {
