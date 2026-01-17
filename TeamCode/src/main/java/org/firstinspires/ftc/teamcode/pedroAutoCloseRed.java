@@ -30,7 +30,6 @@ public class pedroAutoCloseBlue extends OpMode{
     private int shotsFired = 0;
     private boolean isShooting = false;
 
-    private double launchPow = 0.6;
     public enum PathState{
         DRIVE_STARTPOS_SHOOTPOS,
         SHOOT_PRELOAD,
@@ -53,6 +52,7 @@ public class pedroAutoCloseBlue extends OpMode{
     private final Pose intakeTwo = new Pose(128.76, 59.048, Math.toRadians(0));
     private final Pose intakeThree = new Pose(129.312, 34.848, Math.toRadians(0));
 
+    private double launchPow = 0.6;
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
@@ -214,7 +214,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case DRIVE_SHOOTPOS_INTAKETHREE:
                 // Keep intake running while driving
-                if (!follower.isBusy()) {
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
 
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeThreeShoot, true);
@@ -263,7 +263,12 @@ public class pedroAutoCloseBlue extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        launchMotor.setPower(0.6);
+        if (shotsFired < 1 ){
+            launchMotor.setPower(0.9);
+        }
+        else {
+            launchMotor.setPower(launchPow);
+        }
         // Each shot cycle takes ~2'3 seconds
         double cycleTime = elapsed % 2.3;
         if (cycleTime <= 1) {
