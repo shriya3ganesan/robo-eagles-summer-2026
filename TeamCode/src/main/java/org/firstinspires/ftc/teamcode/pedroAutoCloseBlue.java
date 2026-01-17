@@ -101,7 +101,7 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
                     follower.followPath(driveStartShootClose, true);
-                    launchMotor.setPower(0.75);  // Start flywheel early
+                    launchMotor.setPower(0.6);  // Start flywheel early
                     isShooting = true;
                     trigger.setPosition(triggerStartPos);
                 }
@@ -113,8 +113,8 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
-                    launchMotor.setPower(0.75);
+                if (pathTimer.getElapsedTimeSeconds() < 2.5) {
+                    launchMotor.setPower(0.6);
                     break;
                 }
 
@@ -142,7 +142,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    launchMotor.setPower(0.6);  // Spin up flywheel
 
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_1);
@@ -154,7 +154,7 @@ public class pedroAutoCloseBlue extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(0.8);
+                    launchMotor.setPower(0.6);
                     break;
                 }
 
@@ -182,7 +182,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case DRIVE_INTAKETWO_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    launchMotor.setPower(0.6);  // Spin up flywheel
                     intakeMotor.setPower(0);
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_2);
@@ -194,7 +194,7 @@ public class pedroAutoCloseBlue extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(0.8);
+                    launchMotor.setPower(0.6);
                     break;
                 }
 
@@ -223,7 +223,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case DRIVE_INTAKETHREE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(0.8);  // Spin up flywheel
+                    launchMotor.setPower(0.6);  // Spin up flywheel
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_3);
                     shotsFired = 0;
@@ -234,7 +234,7 @@ public class pedroAutoCloseBlue extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(0.8);
+                    launchMotor.setPower(0.6);
                     break;
                 }
 
@@ -262,36 +262,34 @@ public class pedroAutoCloseBlue extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        if (shotsFired < 1 ){
+        if (shotsFired < 1) {
             launchMotor.setPower(0.9);
+        } else {
+            launchMotor.setPower(0.6);
         }
-        else {
-            launchMotor.setPower(0.72);
-        }
-        // Each shot cycle takes ~1.8 seconds
-        double cycleTime = elapsed % 1.8;
-        if (cycleTime <= 0.4) {
-            telemetry.addLine("Waiting");
-        }
-        else if (0.4 < cycleTime && cycleTime < 1.0) {
-            // Move trigger to shoot position and run transfer
 
+        // Calculate which shot cycle we're in (0, 1, 2, etc.)
+        int currentCycle = (int)(elapsed / 2.3);
+
+        // Only increment shotsFired when we complete a NEW cycle
+        if (currentCycle > shotsFired) {
+            shotsFired = currentCycle;
+        }
+
+        // Position within the current 2.3 second cycle
+        double cycleTime = elapsed % 2.3;
+
+        if (cycleTime <= 1) {
+            telemetry.addLine("Waiting");
+        } else if (cycleTime < 1.5) {
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        }
-        else if (cycleTime < 1.6) {
+        } else if (cycleTime < 2) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
-        }
-        else if (cycleTime < 1.8) {
+        } else if (cycleTime < 2.2) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
-        }
-        else {
-            // Wait before next shot
-            if (elapsed > (shotsFired + 1) * 1.8) {
-                shotsFired++;
-            }
         }
     }
 
