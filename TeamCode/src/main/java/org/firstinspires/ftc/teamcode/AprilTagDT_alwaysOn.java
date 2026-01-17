@@ -214,13 +214,6 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
                 currentLaunchPower = MIN_LAUNCH_POWER;
             }
 
-            // Launch motor should be able to be switched on and off by pressing left bumper
-            if (gamepad2.left_bumper && analogShooter){
-                analogShooter = false;
-            }
-            if (gamepad2.left_bumper && !analogShooter) {
-                analogShooter = true;
-            }
 
             // Set launch motor power (triple shot overrides this when active)
             if (tripleShotState != TripleShotState.IDLE) {
@@ -383,10 +376,10 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
                 // B button: Slow intake
                 intakeMotor.setPower(0.5);
             }
-            else if (gamepad2.left_trigger > 0.02) {
+            else if (gamepad2.left_bumper) {
                 transferMotor.setPower(-1);
             }
-            else if (gamepad2.right_trigger > 0.02) {
+            else if (gamepad2.right_bumper) {
                 transferMotor.setPower(1);
             }
             else {
@@ -400,33 +393,12 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
             if (tripleShotState == TripleShotState.IDLE) {
                 switch (launchState) {
                     case IDLE:
-                        // Left trigger = quick shot - just fire with current power
-                        if (gamepad2.left_trigger > 0.1) {
-                            launchState = LaunchState.FIRING;
-                            launchTimer.reset();
-                            Trigger.setPosition(TRIGGER_FIRE_POS);
-                            telemetry.addData("Launch", "Quick Shot - FIRING!");
-                        }
-                        // Right trigger = power shot - just fire with current power
-                        else if (gamepad2.right_trigger > 0.1) {
+                        // Right trigger = shot
+                        if (gamepad2.right_trigger > 0.1) {
                             launchState = LaunchState.FIRING;
                             launchTimer.reset();
                             Trigger.setPosition(TRIGGER_FIRE_POS);
                             telemetry.addData("Launch", "Power Shot - FIRING!");
-                        }
-                        // Right bumper = distance-calculated shot - just fire with current power
-                        else if (gamepad2.right_bumper) {
-                            if (result != null && result.isValid()) {
-                                launchState = LaunchState.FIRING;
-                                launchTimer.reset();
-                                Trigger.setPosition(TRIGGER_FIRE_POS);
-
-                                telemetry.addData("Launch", "Auto Shot - Distance: %.1f in", distance);
-                                telemetry.addData("Launch Power", "%.2f", currentLaunchPower);
-                            } else {
-                                // No AprilTag visible
-                                telemetry.addData("Launch ERROR", "No AprilTag visible!");
-                            }
                         }
                         else {
                             // When idle, power is already being set by continuous update
