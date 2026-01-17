@@ -49,8 +49,8 @@ public class pedroAutoCloseBlue extends OpMode{
     private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
     private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
     private final Pose intakeOne = new Pose(18, 83.4295081967213, Math.toRadians(185));
-    private final Pose intakeTwo = new Pose(18, 59, Math.toRadians(185));
-    private final Pose intakeThree = new Pose(18, 35, Math.toRadians(185));
+    private final Pose intakeTwo = new Pose(16, 59, Math.toRadians(185));
+    private final Pose intakeThree = new Pose(16, 35, Math.toRadians(185));
 
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
@@ -73,9 +73,10 @@ public class pedroAutoCloseBlue extends OpMode{
                 .setLinearHeadingInterpolation(intakeOne.getHeading(), shootPose.getHeading(), 0.6)
                 .build();
 
-        // Intake 2 paths
+        // Intake 2 paths with control point
+        Pose controlPointShootToIntake2 = new Pose(55.511475409836066, 54.80983606557377, Math.toRadians(185));
         driveShootIntakeTwo = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, intakeTwo))
+                .addPath(new BezierCurve(shootPose, controlPointShootToIntake2, intakeTwo))
                 .setConstantHeadingInterpolation(intakeTwo.getHeading())
                 .build();
         driveIntakeTwoShoot = follower.pathBuilder()
@@ -84,8 +85,9 @@ public class pedroAutoCloseBlue extends OpMode{
                 .build();
 
         // Intake 3 paths
+        Pose controlPointShootToIntake3 = new Pose(60.94098360655738, 31.43934426229508, Math.toRadians(185));
         driveShootIntakeThree = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, intakeThree))
+                .addPath(new BezierCurve(shootPose, controlPointShootToIntake3,intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
                 .build();
         driveIntakeThreeShoot = follower.pathBuilder()
@@ -132,8 +134,6 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_SHOOTPOS_INTAKEONE:
                 // Keep intake running while driving
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
-                    // Stop intake motors
-                    intakeMotor.setPower(0);
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeOneShoot, true);
                     setPathState(PathState.DRIVE_INTAKEONE_SHOOTPOS);
@@ -143,7 +143,7 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
                     launchMotor.setPower(0.8);  // Spin up flywheel
-                    intakeMotor.setPower(0);
+
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_1);
                     shotsFired = 0;
@@ -174,8 +174,6 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_SHOOTPOS_INTAKETWO:
                 // Keep intake running while driving
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
-                    // Stop intake motors
-                    intakeMotor.setPower(0);
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeTwoShoot, true);
                     setPathState(PathState.DRIVE_INTAKETWO_SHOOTPOS);
@@ -216,8 +214,7 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_SHOOTPOS_INTAKETHREE:
                 // Keep intake running while driving
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
-                    // Stop intake motors
-                    intakeMotor.setPower(0);
+
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeThreeShoot, true);
                     setPathState(PathState.DRIVE_INTAKETHREE_SHOOTPOS);
@@ -227,7 +224,6 @@ public class pedroAutoCloseBlue extends OpMode{
             case DRIVE_INTAKETHREE_SHOOTPOS:
                 if (!follower.isBusy()) {
                     launchMotor.setPower(0.8);  // Spin up flywheel
-                    intakeMotor.setPower(0);
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_3);
                     shotsFired = 0;
@@ -267,28 +263,33 @@ public class pedroAutoCloseBlue extends OpMode{
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
         if (shotsFired < 1 ){
-            launchMotor.setPower(1);
+            launchMotor.setPower(0.9);
         }
         else {
-            launchMotor.setPower(0.75);
+            launchMotor.setPower(0.72);
         }
-        // Each shot cycle takes ~0.8 seconds
-        double cycleTime = elapsed % 0.8;
-
-        if (cycleTime < 0.2) {
+        // Each shot cycle takes ~1.8 seconds
+        double cycleTime = elapsed % 1.8;
+        if (cycleTime <= 0.4) {
+            telemetry.addLine("Waiting");
+        }
+        else if (0.4 < cycleTime && cycleTime < 1.0) {
             // Move trigger to shoot position and run transfer
-            trigger.setPosition(triggerShootPos);
+
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        } else if (cycleTime < 0.4) {
-            // Stop transfer
+        }
+        else if (cycleTime < 1.6) {
+            trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
+        }
+        else if (cycleTime < 1.8) {
             trigger.setPosition(triggerStartPos);
-        } else if (cycleTime < 0.6) {
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
-        } else {
+        }
+        else {
             // Wait before next shot
-            if (elapsed > (shotsFired + 1) * 0.8) {
+            if (elapsed > (shotsFired + 1) * 1.8) {
                 shotsFired++;
             }
         }
