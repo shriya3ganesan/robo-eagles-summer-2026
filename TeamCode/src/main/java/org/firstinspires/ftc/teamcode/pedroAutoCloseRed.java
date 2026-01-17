@@ -121,6 +121,7 @@ public class pedroAutoCloseBlue extends OpMode{
                 // Fire 3 shots
                 if (shotsFired < 3) {
                     shootOneShot();
+                    ++shotsFired;
                 } else {
                     // Done shooting, move to intake 1
                     follower.followPath(driveShootIntakeOne, true);
@@ -286,12 +287,6 @@ public class pedroAutoCloseBlue extends OpMode{
         else if (cycleTime < 1.8) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
-        }
-        else {
-            // Wait before next shot
-            if (elapsed > (shotsFired + 1) * 1.8) {
-                shotsFired++;
-            }
         }
     }
 
