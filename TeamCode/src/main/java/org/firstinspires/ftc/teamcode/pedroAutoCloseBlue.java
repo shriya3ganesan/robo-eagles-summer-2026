@@ -105,7 +105,7 @@ public class pedroAutoCloseBlue extends OpMode{
                     isShooting = true;
                     trigger.setPosition(triggerStartPos);
                 }
-                if (!follower.isBusy()) {
+                if (!follower.isBusy()) {   
                     setPathState(PathState.SHOOT_PRELOAD);
                     shotsFired = 0;
                 }
@@ -262,34 +262,36 @@ public class pedroAutoCloseBlue extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        if (shotsFired < 1) {
+        if (shotsFired < 1 ){
             launchMotor.setPower(0.9);
-        } else {
+        }
+        else {
             launchMotor.setPower(0.6);
         }
-
-        // Calculate which shot cycle we're in (0, 1, 2, etc.)
-        int currentCycle = (int)(elapsed / 2.3);
-
-        // Only increment shotsFired when we complete a NEW cycle
-        if (currentCycle > shotsFired) {
-            shotsFired = currentCycle;
-        }
-
-        // Position within the current 2.3 second cycle
+        // Each shot cycle takes ~2'3 seconds
         double cycleTime = elapsed % 2.3;
-
         if (cycleTime <= 1) {
             telemetry.addLine("Waiting");
-        } else if (cycleTime < 1.5) {
+        }
+        else if (1 < cycleTime && cycleTime < 1.5) {
+            // Move trigger to shoot position and run transfer
+
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        } else if (cycleTime < 2) {
+        }
+        else if (cycleTime < 2) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
-        } else if (cycleTime < 2.2) {
+        }
+        else if (cycleTime < 2.15) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
+        }
+        else {
+            // Wait before next shot
+            if (elapsed > (shotsFired + 1) * 2.3) {
+                shotsFired++;
+            }
         }
     }
 
