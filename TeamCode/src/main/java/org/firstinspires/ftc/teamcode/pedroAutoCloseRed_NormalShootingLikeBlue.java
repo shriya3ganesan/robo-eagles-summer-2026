@@ -51,8 +51,9 @@ public class pedroAutoCloseBlue extends OpMode{
     private final Pose intakeOne = new Pose(129.28, 83.90400000000001, Math.toRadians(0));
     private final Pose intakeTwo = new Pose(128.76, 59.048, Math.toRadians(0));
     private final Pose intakeThree = new Pose(129.312, 34.848, Math.toRadians(0));
-    
-    private double launchPow = 0.6;
+
+    private double launchPow = 0.69;
+    private double startLaunchPow = 0.9;
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
@@ -264,7 +265,7 @@ public class pedroAutoCloseBlue extends OpMode{
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
         if (shotsFired < 1 ){
-            launchMotor.setPower(0.9);
+            launchMotor.setPower(startLaunchPow);
         }
         else {
             launchMotor.setPower(launchPow);
