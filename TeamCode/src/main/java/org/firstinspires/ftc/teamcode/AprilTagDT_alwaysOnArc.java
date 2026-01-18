@@ -541,15 +541,22 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
      * @return Motor power (0.0 to 1.0)
      */
     private double calculateLaunchPower(double distanceInches) {
-        // Clamp distance to valid range
         double clampedDistance = Range.clip(distanceInches, MIN_DISTANCE, MAX_DISTANCE);
-
-        // Linear interpolation between min and max launch powers
-        double normalizedDistance = (clampedDistance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
+    
+        double normalizedDistance =
+                (clampedDistance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
+    
         double t = Math.pow(normalizedDistance, 0.6);
-        double launchPower = MIN_LAUNCH_POWER + t * (MAX_LAUNCH_POWER - MIN_LAUNCH_POWER);
-
-        return launchPower;
+        double basePower =
+                MIN_LAUNCH_POWER + t * (MAX_LAUNCH_POWER - MIN_LAUNCH_POWER);
+    
+        // Voltage compensation
+        double voltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
+        double nominalVoltage = 12.5;
+    
+        double compensatedPower = basePower * (nominalVoltage / voltage);
+    
+        return Range.clip(compensatedPower, 0.0, 1.0);
     }
 
     public void configurePinpoint(){
