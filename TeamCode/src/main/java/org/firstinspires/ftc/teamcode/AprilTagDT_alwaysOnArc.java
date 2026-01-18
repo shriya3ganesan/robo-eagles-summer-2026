@@ -552,7 +552,7 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
     
         // Voltage compensation
         double voltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
-        double nominalVoltage = 12.5;
+        double nominalVoltage = 12.9;
     
         double compensatedPower = basePower * (nominalVoltage / voltage);
     
