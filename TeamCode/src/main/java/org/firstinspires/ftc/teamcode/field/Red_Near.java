@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.field;
 
 import com.pedropathing.geometry.Pose;
 
-public class Red_NearFar {
+public class Red_Near {
     // Auto
     // Start Pose of our robot.
     public static final Pose START_POSE = new Pose(105.5, 134.5, Math.toRadians(90));
@@ -38,5 +38,5 @@ public class Red_NearFar {
     // Endgame
     public static final Pose ENDGAME_POSE = new Pose(38.5, 33, Math.toRadians(90));
 
-    private Red_NearFar() {} // Prevent instantiation
+    private Red_Near() {} // Prevent instantiation
 }

@@ -1,114 +1,134 @@
 {
   "startPoint": {
-    "x": 38.5,
-    "y": 134.5,
+    "x": 80,
+    "y": 9,
     "heading": "linear",
     "startDeg": 90,
-    "endDeg": 180
+    "endDeg": 180,
+    "locked": false
   },
   "lines": [
     {
+      "id": "line-l4yqeju4nd",
       "name": "Path 1",
       "endPoint": {
-        "x": 59.3,
-        "y": 80.5,
+        "x": 81,
+        "y": 10,
         "heading": "linear",
         "startDeg": 90,
         "endDeg": 90
       },
       "controlPoints": [],
-      "color": "#7DB5BD",
-      "id": "line-v97ji7ha6e",
+      "color": "#D5B7BD",
+      "locked": false,
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
+      "id": "mjyqc1b3-pjqazj",
       "name": "Path 2",
       "endPoint": {
-        "x": 59.3,
-        "y": 80.5,
+        "x": 85,
+        "y": 15.8,
         "heading": "linear",
         "reverse": false,
         "startDeg": 90,
-        "endDeg": 133
+        "endDeg": 70
       },
       "controlPoints": [],
-      "color": "#B9C9AC",
-      "id": "line-0359yhq60l5s",
+      "color": "#79C896",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
+      "id": "mjyqcqno-0qepqr",
       "name": "Path 3",
       "endPoint": {
-        "x": 50,
-        "y": 84,
+        "x": 98.5,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 133,
-        "endDeg": 0
+        "startDeg": 70,
+        "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#66B7B7",
-      "id": "line-5mog1ypuur4",
+      "color": "#8AD6C5",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyo98w2-dii87g",
-      "endPoint": {
-        "x": 42.5,
-        "y": 84,
-        "heading": "linear",
-        "reverse": false,
-        "startDeg": 0,
-        "endDeg": 0
-      },
-      "controlPoints": [],
-      "color": "#D8559B",
-      "name": "Path 12",
-      "waitBeforeMs": 0,
-      "waitAfterMs": 0,
-      "waitBeforeName": "",
-      "waitAfterName": ""
-    },
-    {
+      "id": "mjyqfczj-72pjay",
       "name": "Path 4",
       "endPoint": {
-        "x": 24.5,
-        "y": 84,
+        "x": 101.5,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 0,
-        "endDeg": 0
+        "startDeg": 180,
+        "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#9ACD5A",
-      "id": "line-psbeved6o5r",
+      "color": "#8B56A9",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
+      "id": "mjyqh1ul-mmovwx",
       "name": "Path 5",
       "endPoint": {
-        "x": 59.3,
-        "y": 80.5,
+        "x": 119.5,
+        "y": 36,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 0,
-        "endDeg": 133
+        "startDeg": 180,
+        "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#BB5B9A",
-      "id": "line-tghflmxk75l",
+      "color": "#96BD85",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
+      "id": "mjyqi492-wmptu1",
+      "name": "Path 6",
+      "endPoint": {
+        "x": 85,
+        "y": 15.8,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 180,
+        "endDeg": 70
+      },
+      "controlPoints": [],
+      "color": "#6BA957",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
+      "id": "mjyqip7x-yl1x23",
+      "name": "Path 7",
+      "endPoint": {
+        "x": 98.5,
+        "y": 60,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 70,
+        "endDeg": 180
+      },
+      "controlPoints": [],
+      "color": "#66B6C8",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -119,29 +139,33 @@
   "sequence": [
     {
       "kind": "path",
-      "lineId": "line-v97ji7ha6e"
+      "lineId": "line-l4yqeju4nd"
     },
     {
       "kind": "path",
-      "lineId": "line-0359yhq60l5s"
+      "lineId": "mjyqc1b3-pjqazj"
     },
     {
       "kind": "path",
-      "lineId": "line-5mog1ypuur4"
+      "lineId": "mjyqcqno-0qepqr"
     },
     {
       "kind": "path",
-      "lineId": "mjyo98w2-dii87g"
+      "lineId": "mjyqfczj-72pjay"
     },
     {
       "kind": "path",
-      "lineId": "line-psbeved6o5r"
+      "lineId": "mjyqh1ul-mmovwx"
     },
     {
       "kind": "path",
-      "lineId": "line-tghflmxk75l"
+      "lineId": "mjyqi492-wmptu1"
+    },
+    {
+      "kind": "path",
+      "lineId": "mjyqip7x-yl1x23"
     }
   ],
   "version": "1.2.1",
-  "timestamp": "2026-01-15T01:30:02.217Z"
+  "timestamp": "2026-01-17T06:04:58.560Z"
 }

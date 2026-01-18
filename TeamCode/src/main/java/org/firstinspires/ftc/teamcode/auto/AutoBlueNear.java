@@ -9,9 +9,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.field.Blue;
-import org.firstinspires.ftc.teamcode.field.Blue_FarNear;
-import org.firstinspires.ftc.teamcode.field.Blue_NearFar;
+import org.firstinspires.ftc.teamcode.field.Blue_Near;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
@@ -33,19 +31,19 @@ import org.firstinspires.ftc.vision.VisionPortal;
         private Timer pathTimer, actionTimer, opmodeTimer;
         private int pathState;
 
-        private final Pose startPose = Blue_NearFar.START_POSE;
-        private final Pose aprilTagPose = Blue_NearFar.APRILTAG_POSE;
-        private final Pose scorePoseAuto = Blue_NearFar.SCORE_POSE_AUTO;
-        private final Pose scorePoseNear = Blue_NearFar.SCORE_POSE_NEAR;
-        private final Pose ready1Pose = Blue_NearFar.READY3_POSE;
-        private final Pose align1Pose = Blue_NearFar.ALIGN3_POSE;
-        private final Pose pickup1Pose = Blue_NearFar.PICKUP3_POSE;
-        private final Pose ready2Pose = Blue_NearFar.READY2_POSE;
-        private final Pose align2Pose = Blue_NearFar.ALIGN2_POSE;
-        private final Pose pickup2Pose = Blue_NearFar.PICKUP2_POSE;
-        private final Pose ready3Pose = Blue_NearFar.READY1_POSE;
-        private final Pose align3Pose = Blue_NearFar.ALIGN1_POSE;
-        private final Pose pickup3Pose = Blue_NearFar.PICKUP1_POSE;
+        private final Pose startPose = Blue_Near.START_POSE;
+        private final Pose aprilTagPose = Blue_Near.APRILTAG_POSE;
+        private final Pose scorePoseAuto = Blue_Near.SCORE_POSE_AUTO;
+        private final Pose scorePoseNear = Blue_Near.SCORE_POSE_NEAR;
+        private final Pose ready1Pose = Blue_Near.READY3_POSE;
+        private final Pose align1Pose = Blue_Near.ALIGN3_POSE;
+        private final Pose pickup1Pose = Blue_Near.PICKUP3_POSE;
+        private final Pose ready2Pose = Blue_Near.READY2_POSE;
+        private final Pose align2Pose = Blue_Near.ALIGN2_POSE;
+        private final Pose pickup2Pose = Blue_Near.PICKUP2_POSE;
+        private final Pose ready3Pose = Blue_Near.READY1_POSE;
+        private final Pose align3Pose = Blue_Near.ALIGN1_POSE;
+        private final Pose pickup3Pose = Blue_Near.PICKUP1_POSE;
 
 
         private Path aprilTagRead;

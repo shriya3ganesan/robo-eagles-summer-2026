@@ -1,7 +1,7 @@
 {
   "startPoint": {
-    "x": 121,
-    "y": 125,
+    "x": 105.5,
+    "y": 134.5,
     "heading": "linear",
     "startDeg": 90,
     "endDeg": 180,
@@ -15,7 +15,7 @@
         "x": 84.7,
         "y": 80.5,
         "heading": "linear",
-        "startDeg": 37,
+        "startDeg": 90,
         "endDeg": 90
       },
       "controlPoints": [],
@@ -321,5 +321,5 @@
     }
   ],
   "version": "1.2.1",
-  "timestamp": "2026-01-10T01:16:02.446Z"
+  "timestamp": "2026-01-17T06:48:46.858Z"
 }

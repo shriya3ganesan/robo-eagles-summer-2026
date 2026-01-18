@@ -9,8 +9,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.field.Blue;
-import org.firstinspires.ftc.teamcode.field.Blue_FarNear;
+import org.firstinspires.ftc.teamcode.field.Blue_Far;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
@@ -32,19 +31,19 @@ public class AutoBlueFar extends OpMode {
         private Timer pathTimer, actionTimer, opmodeTimer;
         private int pathState;
 
-        private final Pose startPose = Blue_FarNear.START_POSE;
-        private final Pose aprilTagPose = Blue_FarNear.APRILTAG_POSE;
-        private final Pose scorePoseAuto = Blue_FarNear.SCORE_POSE_AUTO;
-        private final Pose scorePoseNear = Blue_FarNear.SCORE_POSE_NEAR;
-        private final Pose ready1Pose = Blue_FarNear.READY1_POSE;
-        private final Pose align1Pose = Blue_FarNear.ALIGN1_POSE;
-        private final Pose pickup1Pose = Blue_FarNear.PICKUP1_POSE;
-        private final Pose ready2Pose = Blue_FarNear.READY2_POSE;
-        private final Pose align2Pose = Blue_FarNear.ALIGN2_POSE;
-        private final Pose pickup2Pose = Blue_FarNear.PICKUP2_POSE;
-        private final Pose ready3Pose = Blue_FarNear.READY3_POSE;
-        private final Pose align3Pose = Blue_FarNear.ALIGN3_POSE;
-        private final Pose pickup3Pose = Blue_FarNear.PICKUP3_POSE;
+        private final Pose startPose = Blue_Far.START_POSE;
+        private final Pose aprilTagPose = Blue_Far.APRILTAG_POSE;
+        private final Pose scorePoseAuto = Blue_Far.SCORE_POSE_AUTO;
+        private final Pose scorePoseNear = Blue_Far.SCORE_POSE_NEAR;
+        private final Pose ready1Pose = Blue_Far.READY1_POSE;
+        private final Pose align1Pose = Blue_Far.ALIGN1_POSE;
+        private final Pose pickup1Pose = Blue_Far.PICKUP1_POSE;
+        private final Pose ready2Pose = Blue_Far.READY2_POSE;
+        private final Pose align2Pose = Blue_Far.ALIGN2_POSE;
+        private final Pose pickup2Pose = Blue_Far.PICKUP2_POSE;
+        private final Pose ready3Pose = Blue_Far.READY3_POSE;
+        private final Pose align3Pose = Blue_Far.ALIGN3_POSE;
+        private final Pose pickup3Pose = Blue_Far.PICKUP3_POSE;
 
 
         private Path aprilTagRead;

@@ -12,7 +12,7 @@ public class Blue {
     // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     public static final Pose SCORE_POSE_AUTO = new Pose(59, 15.8, Math.toRadians(115));
     public static final Pose SCORE_POSE_NEAR = new Pose(59.3, 80.5, Math.toRadians(133));
-    public static final Pose SCORE_POSE_FAR   = new Pose(83, 21.8, Math.toRadians(122));//new Pose(92, 13.8, Math.toRadians(122)
+    public static final Pose SCORE_POSE_FAR   = new Pose(80, 21, Math.toRadians(122.5));//new Pose(92, 13.8, Math.toRadians(122)
 
     // Highest (First Set) of Artifacts from the Spike Mark.
     public static final Pose READY1_POSE = new Pose(45.5, 36,Math.toRadians(0));

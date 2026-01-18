@@ -8,7 +8,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import org.firstinspires.ftc.teamcode.field.Red_NearFar;
+import org.firstinspires.ftc.teamcode.field.Red_Near;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
@@ -29,19 +29,19 @@ public class AutoRedNear extends OpMode{
         private Timer pathTimer, actionTimer, opmodeTimer;
         private int pathState;
 
-        private final Pose startPose = Red_NearFar.START_POSE;
-        private final Pose aprilTagPose = Red_NearFar.APRILTAG_POSE;
-        private final Pose scorePoseAuto = Red_NearFar.SCORE_POSE_AUTO;
-        private final Pose scorePoseNear = Red_NearFar.SCORE_POSE_NEAR;
-        private final Pose ready1Pose = Red_NearFar.READY1_POSE;
-        private final Pose align1Pose = Red_NearFar.ALIGN1_POSE;
-        private final Pose pickup1Pose = Red_NearFar.PICKUP1_POSE;
-        private final Pose ready2Pose = Red_NearFar.READY2_POSE;
-        private final Pose align2Pose = Red_NearFar.ALIGN2_POSE;
-        private final Pose pickup2Pose = Red_NearFar.PICKUP2_POSE;
-        private final Pose ready3Pose = Red_NearFar.READY3_POSE;
-        private final Pose align3Pose = Red_NearFar.ALIGN3_POSE;
-        private final Pose pickup3Pose = Red_NearFar.PICKUP3_POSE;
+        private final Pose startPose = Red_Near.START_POSE;
+        private final Pose aprilTagPose = Red_Near.APRILTAG_POSE;
+        private final Pose scorePoseAuto = Red_Near.SCORE_POSE_AUTO;
+        private final Pose scorePoseNear = Red_Near.SCORE_POSE_NEAR;
+        private final Pose ready1Pose = Red_Near.READY1_POSE;
+        private final Pose align1Pose = Red_Near.ALIGN1_POSE;
+        private final Pose pickup1Pose = Red_Near.PICKUP1_POSE;
+        private final Pose ready2Pose = Red_Near.READY2_POSE;
+        private final Pose align2Pose = Red_Near.ALIGN2_POSE;
+        private final Pose pickup2Pose = Red_Near.PICKUP2_POSE;
+        private final Pose ready3Pose = Red_Near.READY3_POSE;
+        private final Pose align3Pose = Red_Near.ALIGN3_POSE;
+        private final Pose pickup3Pose = Red_Near.PICKUP3_POSE;
 
         private Path aprilTagRead;
         private PathChain scorePreload, readyPickup1, alignPickup1, grabPickup1, scorePickup1, readyPickup2,
