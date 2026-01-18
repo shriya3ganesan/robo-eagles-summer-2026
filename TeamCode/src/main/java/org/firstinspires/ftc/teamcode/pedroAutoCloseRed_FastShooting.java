@@ -46,7 +46,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
     PathState pathState;
     private final Pose startPose = new Pose(123.96799999999999, 122.62399999999998, Math.toRadians(35));
-    private final Pose shootPose = new Pose(84.672, 84.38400000000001, Math.toRadians(35));
+    private final Pose shootPose = new Pose(84.672, 84.38400000000001, Math.toRadians(42));
     private final Pose intakeOne = new Pose(129.28, 83.90400000000001, Math.toRadians(0));
     private final Pose intakeTwo = new Pose(128.76, 59.048, Math.toRadians(0));
     private final Pose intakeThree = new Pose(129.312, 34.848, Math.toRadians(0));
