@@ -113,8 +113,8 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     private final double MAX_LAUNCH_POWER = 0.91967;   // motor power at MAX_DISTANCE
 
     // Default launch powers for manual shots
-    private final double QUICK_SHOT_POWER = 0.6;   // Left trigger - quick shot
-    private final double POWER_SHOT_POWER = 0.7;   // Right trigger - power shot
+    private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
+    private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
     // Triple shot constants
     private final int TRIPLE_SHOT_COUNT = 3;
