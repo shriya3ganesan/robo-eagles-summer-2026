@@ -45,9 +45,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@TeleOp(name="AprilTagDTalwayson", group="Linear OpMode")
+@TeleOp(name="AprilTagDTalwaysonARC", group="Linear OpMode")
 
-public class AprilTagDT_alwaysOn extends LinearOpMode {
+public class AprilTagDT_alwaysOnArc extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -109,8 +109,8 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     // Distance-based motor power constants
     private final double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
     private final double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
-    private final double MIN_LAUNCH_POWER = 0.67;   // motor power at MIN_DISTANCE
-    private final double MAX_LAUNCH_POWER = 0.91967;   // motor power at MAX_DISTANCE
+    private final double MIN_LAUNCH_POWER = 0.69;   // motor power at MIN_DISTANCE
+    private final double MAX_LAUNCH_POWER = 0.87;   // motor power at MAX_DISTANCE
 
     // Default launch powers for manual shots
     private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
