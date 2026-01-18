@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
+@Disabled
 @Autonomous(name="PedroAutoCloseBlue", group="Autonomous")
 public class pedroAutoCloseBlue extends OpMode{
     private DcMotor launchMotor = null;
