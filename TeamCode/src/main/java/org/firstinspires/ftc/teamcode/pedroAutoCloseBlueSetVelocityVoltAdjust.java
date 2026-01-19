@@ -22,7 +22,8 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    private double launchPower = 0.69;
+    private int Target_RPM = 4000; // TUNING NEEDED
+    private double launchTargetTicks = (Target_RPM * 383.6) / 60;
 
     // Servo positions (servos use 0.0 to 1.0)
     private double triggerStartPos = 0.158;
@@ -108,7 +109,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
                     follower.followPath(driveStartShootClose, true);
-                    launchMotor.setPower(launchPower);  // Start flywheel early
+                    launchMotor.setVelocity(launchTargetTicks);  // Start flywheel early
                     isShooting = true;
                     trigger.setPosition(triggerStartPos);
                 }
@@ -121,7 +122,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 2.5) {
-                    launchMotor.setPower(launchPower);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -149,7 +150,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
 
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_1);
@@ -161,7 +162,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 2) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPower);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -189,7 +190,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case DRIVE_INTAKETWO_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
                     intakeMotor.setPower(0);
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_2);
@@ -201,7 +202,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 2) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPower);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -232,7 +233,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case DRIVE_INTAKETHREE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_3);
                     shotsFired = 0;
@@ -243,7 +244,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPower);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -270,12 +271,9 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     }
 
     private void shootOneShot() {
-        double voltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
-        double nominalVoltage = 12.9;
-
-        launchPower *= (nominalVoltage / voltage);
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        launchMotor.setPower(launchPower);
+
+        launchMotor.setVelocity(launchTargetTicks);
         // Each shot cycle takes ~2.3 seconds
         double cycleTime = elapsed % 2.3;
         if (cycleTime <= 1.3) {
@@ -330,6 +328,8 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
         trigger.setDirection(Servo.Direction.FORWARD);
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         trigger.setPosition(triggerStartPos);
 
