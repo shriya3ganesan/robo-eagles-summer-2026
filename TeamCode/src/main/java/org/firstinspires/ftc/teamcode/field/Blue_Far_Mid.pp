@@ -16,9 +16,9 @@
         "endDeg": 90
       },
       "controlPoints": [],
-      "color": "#87BBA7",
+      "color": "#00ff00",
       "id": "line-tgfkraz53yo",
-      "name": "",
+      "name": "aprilTagRead",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -34,9 +34,9 @@
         "endDeg": 115
       },
       "controlPoints": [],
-      "color": "#DD8879",
+      "color": "#0000e1",
       "id": "line-n7tqh7xmbel",
-      "name": "",
+      "name": "scorePreload",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -52,9 +52,9 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#C59CD6",
+      "color": "#c896c8",
       "id": "line-4rnql3rm0cu",
-      "name": "",
+      "name": "readyFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -71,8 +71,8 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#DDDD88",
-      "name": "Path 12",
+      "color": "#c896c8",
+      "name": "alignFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -88,9 +88,9 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#7D558D",
+      "color": "#c896c8",
       "id": "line-lfdhd1pkmtc",
-      "name": "",
+      "name": "grabFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -106,17 +106,15 @@
         "endDeg": 115
       },
       "controlPoints": [],
-      "color": "#699BA7",
+      "color": "#c896c8",
       "id": "line-lheg4mygbg",
-      "name": "",
+      "name": "scoreFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mkhwf974-hb74i8",
-      "name": "Path 8",
       "endPoint": {
         "x": 45.5,
         "y": 60,
@@ -126,7 +124,45 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#8CD58C",
+      "color": "#64bea0",
+      "id": "line-98nbowlk9kq",
+      "name": "readyMid",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
+      "id": "mjxtdfzf-4221bj",
+      "endPoint": {
+        "x": 42.5,
+        "y": 60,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 0,
+        "endDeg": 0
+      },
+      "controlPoints": [],
+      "color": "#64bea0",
+      "name": "alignMid",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
+      "endPoint": {
+        "x": 24.5,
+        "y": 60,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 0,
+        "endDeg": 0
+      },
+      "controlPoints": [],
+      "color": "#ff0000",
+      "id": "line-9x9sk587jfu",
+      "name": "grabMid",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -161,9 +197,37 @@
     },
     {
       "kind": "path",
-      "lineId": "mkhwf974-hb74i8"
+      "lineId": "line-98nbowlk9kq"
+    },
+    {
+      "kind": "path",
+      "lineId": "mjxtdfzf-4221bj"
+    },
+    {
+      "kind": "path",
+      "lineId": "line-9x9sk587jfu"
     }
   ],
+  "settings": {
+    "xVelocity": 75,
+    "yVelocity": 65,
+    "aVelocity": 3.141592653589793,
+    "kFriction": 0.1,
+    "rWidth": 18,
+    "rHeight": 17.5,
+    "safetyMargin": 1,
+    "maxVelocity": 40,
+    "maxAcceleration": 30,
+    "maxDeceleration": 30,
+    "fieldMap": "decode.webp",
+    "robotImage": "/robot.png",
+    "theme": "auto",
+    "showGhostPaths": false,
+    "showOnionLayers": false,
+    "onionLayerSpacing": 3,
+    "onionColor": "#dc2626",
+    "onionNextPointOnly": false
+  },
   "version": "1.2.1",
-  "timestamp": "2026-01-17T06:01:27.093Z"
+  "timestamp": "2026-01-20T06:01:28.781Z"
 }

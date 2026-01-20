@@ -1,52 +1,66 @@
 {
   "startPoint": {
-    "x": 105.5,
-    "y": 134.5,
+    "x": 111,
+    "y": 135,
     "heading": "linear",
     "startDeg": 90,
-    "endDeg": 180,
-    "locked": false
+    "endDeg": 180
   },
   "lines": [
     {
-      "id": "line-9d5odxro1pq",
-      "name": "Path 1",
       "endPoint": {
-        "x": 84.7,
-        "y": 80.5,
+        "x": 82,
+        "y": 78.5,
         "heading": "linear",
         "startDeg": 90,
-        "endDeg": 90
+        "endDeg": 100
       },
       "controlPoints": [],
-      "color": "#895D9C",
-      "locked": false,
+      "color": "#00ff00",
+      "id": "line-tgfkraz53yo",
+      "name": "aprilTagReach",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xlto1-ggegp2",
-      "name": "Path 2",
+      "id": "mkm7n8jd-69avco",
+      "endPoint": {
+        "x": 82,
+        "y": 80.5,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 100,
+        "endDeg": 100
+      },
+      "controlPoints": [],
+      "color": "#00ff00",
+      "name": "aprilTagRead",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
       "endPoint": {
         "x": 84.7,
         "y": 80.5,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 90,
+        "startDeg": 100,
         "endDeg": 47
       },
       "controlPoints": [],
-      "color": "#D8C7AC",
+      "color": "#0000e1",
+      "id": "line-n7tqh7xmbel",
+      "name": "scorePreload",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xmu5u-si2q5d",
-      "name": "Path 3",
       "endPoint": {
         "x": 98.5,
         "y": 84,
@@ -56,15 +70,16 @@
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#5CA758",
+      "color": "#c896c8",
+      "id": "line-4rnql3rm0cu",
+      "name": "readyNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xnuxn-215jts",
-      "name": "Path 4",
+      "id": "mjxtcz87-sw7p0j",
       "endPoint": {
         "x": 101.5,
         "y": 84,
@@ -74,15 +89,14 @@
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#55DC97",
+      "color": "#c896c8",
+      "name": "alignNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xo768-e0704j",
-      "name": "Path 5",
       "endPoint": {
         "x": 119.5,
         "y": 84,
@@ -92,15 +106,15 @@
         "endDeg": 180
       },
       "controlPoints": [],
-      "color": "#7A778B",
+      "color": "#c896c8",
+      "id": "line-lfdhd1pkmtc",
+      "name": "grabNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xolum-kplkpy",
-      "name": "Path 6",
       "endPoint": {
         "x": 84.7,
         "y": 80.5,
@@ -110,25 +124,27 @@
         "endDeg": 47
       },
       "controlPoints": [],
-      "color": "#86885C",
+      "color": "#c896c8",
+      "id": "line-lheg4mygbg",
+      "name": "scoreFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mk1xq2az-ut1tf0",
-      "name": "Path 7",
       "endPoint": {
-        "x": 98.5,
-        "y": 60,
+        "x": 126,
+        "y": 102,
         "heading": "linear",
         "reverse": false,
         "startDeg": 47,
-        "endDeg": 180
+        "endDeg": 90
       },
       "controlPoints": [],
-      "color": "#A5D886",
+      "color": "#ff0000",
+      "id": "line-9x9sk587jfu",
+      "name": "endNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -139,33 +155,57 @@
   "sequence": [
     {
       "kind": "path",
-      "lineId": "line-9d5odxro1pq"
+      "lineId": "line-tgfkraz53yo"
     },
     {
       "kind": "path",
-      "lineId": "mk1xlto1-ggegp2"
+      "lineId": "mkm7n8jd-69avco"
     },
     {
       "kind": "path",
-      "lineId": "mk1xmu5u-si2q5d"
+      "lineId": "line-n7tqh7xmbel"
     },
     {
       "kind": "path",
-      "lineId": "mk1xnuxn-215jts"
+      "lineId": "line-4rnql3rm0cu"
     },
     {
       "kind": "path",
-      "lineId": "mk1xo768-e0704j"
+      "lineId": "mjxtcz87-sw7p0j"
     },
     {
       "kind": "path",
-      "lineId": "mk1xolum-kplkpy"
+      "lineId": "line-lfdhd1pkmtc"
     },
     {
       "kind": "path",
-      "lineId": "mk1xq2az-ut1tf0"
+      "lineId": "line-lheg4mygbg"
+    },
+    {
+      "kind": "path",
+      "lineId": "line-9x9sk587jfu"
     }
   ],
+  "settings": {
+    "xVelocity": 75,
+    "yVelocity": 65,
+    "aVelocity": 3.141592653589793,
+    "kFriction": 0.1,
+    "rWidth": 18,
+    "rHeight": 17.5,
+    "safetyMargin": 1,
+    "maxVelocity": 40,
+    "maxAcceleration": 30,
+    "maxDeceleration": 30,
+    "fieldMap": "decode.webp",
+    "robotImage": "/robot.png",
+    "theme": "auto",
+    "showGhostPaths": false,
+    "showOnionLayers": false,
+    "onionLayerSpacing": 3,
+    "onionColor": "#dc2626",
+    "onionNextPointOnly": false
+  },
   "version": "1.2.1",
-  "timestamp": "2026-01-17T06:49:17.557Z"
+  "timestamp": "2026-01-20T07:24:15.001Z"
 }

@@ -1,51 +1,68 @@
 {
   "startPoint": {
-    "x": 38.5,
-    "y": 134.5,
+    "x": 33,
+    "y": 135,
     "heading": "linear",
     "startDeg": 90,
     "endDeg": 180
   },
   "lines": [
     {
-      "name": "Path 1",
       "endPoint": {
-        "x": 59.3,
-        "y": 80.5,
+        "x": 62,
+        "y": 78.5,
         "heading": "linear",
         "startDeg": 90,
-        "endDeg": 90
+        "endDeg": 80
       },
       "controlPoints": [],
-      "color": "#7DB5BD",
-      "id": "line-v97ji7ha6e",
+      "color": "#00ff00",
+      "id": "line-tgfkraz53yo",
+      "name": "aprilTagReach",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "name": "Path 2",
+      "id": "mkm7n8jd-69avco",
+      "endPoint": {
+        "x": 62,
+        "y": 80.5,
+        "heading": "linear",
+        "reverse": false,
+        "startDeg": 80,
+        "endDeg": 80
+      },
+      "controlPoints": [],
+      "color": "#00ff00",
+      "name": "aprilTagRead",
+      "waitBeforeMs": 0,
+      "waitAfterMs": 0,
+      "waitBeforeName": "",
+      "waitAfterName": ""
+    },
+    {
       "endPoint": {
         "x": 59.3,
         "y": 80.5,
         "heading": "linear",
         "reverse": false,
-        "startDeg": 90,
+        "startDeg": 80,
         "endDeg": 133
       },
       "controlPoints": [],
-      "color": "#B9C9AC",
-      "id": "line-0359yhq60l5s",
+      "color": "#0000e1",
+      "id": "line-n7tqh7xmbel",
+      "name": "scorePreload",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "name": "Path 3",
       "endPoint": {
-        "x": 50,
+        "x": 45.5,
         "y": 84,
         "heading": "linear",
         "reverse": false,
@@ -53,15 +70,16 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#66B7B7",
-      "id": "line-5mog1ypuur4",
+      "color": "#c896c8",
+      "id": "line-4rnql3rm0cu",
+      "name": "readyNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mjyo98w2-dii87g",
+      "id": "mjxtcz87-sw7p0j",
       "endPoint": {
         "x": 42.5,
         "y": 84,
@@ -71,15 +89,14 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#D8559B",
-      "name": "Path 12",
+      "color": "#c896c8",
+      "name": "alignNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "name": "Path 4",
       "endPoint": {
         "x": 24.5,
         "y": 84,
@@ -89,15 +106,15 @@
         "endDeg": 0
       },
       "controlPoints": [],
-      "color": "#9ACD5A",
-      "id": "line-psbeved6o5r",
+      "color": "#c896c8",
+      "id": "line-lfdhd1pkmtc",
+      "name": "grabNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "name": "Path 5",
       "endPoint": {
         "x": 59.3,
         "y": 80.5,
@@ -107,26 +124,27 @@
         "endDeg": 133
       },
       "controlPoints": [],
-      "color": "#BB5B9A",
-      "id": "line-tghflmxk75l",
+      "color": "#c896c8",
+      "id": "line-lheg4mygbg",
+      "name": "scoreFar",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
       "waitAfterName": ""
     },
     {
-      "id": "mkhwgx4v-knosom",
-      "name": "Path 7",
       "endPoint": {
-        "x": 45.5,
-        "y": 60,
+        "x": 18,
+        "y": 102,
         "heading": "linear",
         "reverse": false,
         "startDeg": 133,
-        "endDeg": 0
+        "endDeg": 90
       },
       "controlPoints": [],
-      "color": "#B7C7DD",
+      "color": "#ff0000",
+      "id": "line-9x9sk587jfu",
+      "name": "endNear",
       "waitBeforeMs": 0,
       "waitAfterMs": 0,
       "waitBeforeName": "",
@@ -137,33 +155,57 @@
   "sequence": [
     {
       "kind": "path",
-      "lineId": "line-v97ji7ha6e"
+      "lineId": "line-tgfkraz53yo"
     },
     {
       "kind": "path",
-      "lineId": "line-0359yhq60l5s"
+      "lineId": "mkm7n8jd-69avco"
     },
     {
       "kind": "path",
-      "lineId": "line-5mog1ypuur4"
+      "lineId": "line-n7tqh7xmbel"
     },
     {
       "kind": "path",
-      "lineId": "mjyo98w2-dii87g"
+      "lineId": "line-4rnql3rm0cu"
     },
     {
       "kind": "path",
-      "lineId": "line-psbeved6o5r"
+      "lineId": "mjxtcz87-sw7p0j"
     },
     {
       "kind": "path",
-      "lineId": "line-tghflmxk75l"
+      "lineId": "line-lfdhd1pkmtc"
     },
     {
       "kind": "path",
-      "lineId": "mkhwgx4v-knosom"
+      "lineId": "line-lheg4mygbg"
+    },
+    {
+      "kind": "path",
+      "lineId": "line-9x9sk587jfu"
     }
   ],
+  "settings": {
+    "xVelocity": 75,
+    "yVelocity": 65,
+    "aVelocity": 3.141592653589793,
+    "kFriction": 0.1,
+    "rWidth": 18,
+    "rHeight": 17.5,
+    "safetyMargin": 1,
+    "maxVelocity": 40,
+    "maxAcceleration": 30,
+    "maxDeceleration": 30,
+    "fieldMap": "decode.webp",
+    "robotImage": "/robot.png",
+    "theme": "auto",
+    "showGhostPaths": false,
+    "showOnionLayers": false,
+    "onionLayerSpacing": 3,
+    "onionColor": "#dc2626",
+    "onionNextPointOnly": false
+  },
   "version": "1.2.1",
-  "timestamp": "2026-01-17T06:02:27.883Z"
+  "timestamp": "2026-01-20T07:21:51.525Z"
 }

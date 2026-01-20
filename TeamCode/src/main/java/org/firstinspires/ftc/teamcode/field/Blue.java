@@ -13,13 +13,14 @@ public class Blue {
 
     // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     public static final Pose SCORE_POSE_AUTO = new Pose(59, 15.8, Math.toRadians(115));
+
     public static final Pose SCORE_POSE_NEAR = new Pose(59.3, 80.5, Math.toRadians(133));
-    public static final Pose SCORE_POSE_FAR   = new Pose(80, 21, Math.toRadians(122.5));//new Pose(92, 13.8, Math.toRadians(122)
+    public static final Pose SCORE_POSE_FAR   = new Pose(80, 21, Math.toRadians(122.5));
 
     // Highest (First Set) of Artifacts from the Spike Mark.
     public static final Pose READY_FAR_POSE = new Pose(45.5, 36,Math.toRadians(0));
-    public static final Pose ALIGN_FAR_POSE = new Pose(42.5, 36, Math.toRadians(0));//new Pose(50, 84, Math.toRadians(0)); // og = 41.5, 84
-    public static final Pose PICKUP_FAR_POSE = new Pose(24.5, 36, Math.toRadians(0)); //new Pose(17, 84, Math.toRadians(0)); //og = 24, 84
+    public static final Pose ALIGN_FAR_POSE = new Pose(42.5, 36, Math.toRadians(0));
+    public static final Pose PICKUP_FAR_POSE = new Pose(24.5, 36, Math.toRadians(0));
 
     // Middle (Second Set) of Artifacts from the Spike Mark.
     public static final Pose READY_MID_POSE = new Pose(45.5, 60,Math.toRadians(0));
@@ -27,7 +28,7 @@ public class Blue {
     public static final Pose PICKUP_MID_POSE = new Pose(24.5, 60, Math.toRadians(0));
 
     // Lowest (Last Set) of Artifacts from the Spike Mark.
-    public static final Pose READY_NEAR_POSE = new Pose(50, 84,Math.toRadians(0));
+    public static final Pose READY_NEAR_POSE = new Pose(45.5, 84,Math.toRadians(0));
     public static final Pose ALIGN_NEAR_POSE  = new Pose(42.5, 84, Math.toRadians(0));
     public static final Pose PICKUP_NEAR_POSE = new Pose(24.5, 84, Math.toRadians(0));
 
@@ -41,7 +42,7 @@ public class Blue {
     public static final Pose GATE_END_POSE = new Pose(17, 70, Math.toRadians(180));
 
     // Human State Pose
-    public static final Pose HUMAN_STATE_POSE = new Pose(132, 13.8, Math.toRadians(90));
+    public static final Pose HUMAN_STATE_POSE = new Pose(128, 13.8, Math.toRadians(90));
 
     // Endgame
     public static final Pose ENDGAME_POSE = new Pose(105.5, 33, Math.toRadians(90));
