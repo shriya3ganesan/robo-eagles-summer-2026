@@ -579,7 +579,7 @@ class DecodeSlowBotMechSim extends MechSim {
     @Override
     public void update(Graphics2D g, Pose2d pose) {
         // Don't call simulate() or render() for things like Configuration Tester.
-        if ((upperLaunchMotor != null) && (forwardFeederServo.getPower() != 0)) {
+        if (upperLaunchMotor != null) {
             simulate(pose, accumulatedDeltaT);
             render(g, pose);
         }
