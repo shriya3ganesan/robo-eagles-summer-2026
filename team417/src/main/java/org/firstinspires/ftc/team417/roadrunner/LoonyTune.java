@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.wilyworks.common.WilyWorks;
 
@@ -865,6 +866,7 @@ public class LoonyTune extends LinearOpMode {
     Poll poll;
     Dialog dialog;
     MecanumDrive drive;
+    IMU imu; // Built-in IMU
     TuneParameters currentParameters;
     TuneParameters originalParameters;
     boolean usePinpoint; // True if using Pinpoint odometry, false if using OTOS
@@ -1840,6 +1842,7 @@ public class LoonyTune extends LinearOpMode {
         String lastSeenStatus = ""; // Most recently reported non-zero status from the sensor
         double lastSeenTime = 0; // Time at which lastSeenStatus was set
         double goldenStartTime = 0; // Start time of the golden pose test, in seconds
+        double startImuYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
         Pose2d baselinePose = null; // Position where the baseline was set
         double maxLinearSpeed = 0; // Max linear speed seen, inches/s
@@ -1979,9 +1982,10 @@ public class LoonyTune extends LinearOpMode {
 
                         double dx = pose.position.x - baselinePose.position.x;
                         double dy = pose.position.y - baselinePose.position.y;
-                        double otosTheta = normalizeAngle(pose.heading.toDouble() - baselinePose.heading.toDouble());
+                        double odoTheta = normalizeAngle(pose.heading.toDouble() - baselinePose.heading.toDouble());
+                        double imuTheta = normalizeAngle(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) - startImuYaw);
 
-                        io.out("&ensp;Sensor error: (%.2f\", %.2f\"), %.2f\u00b0\n", dx, dy, Math.toDegrees(otosTheta));
+                        io.out("&ensp;Sensor error: (%.2f\", %.2f\"), %.2f\u00b0\n", dx, dy, Math.toDegrees(odoTheta));
 
                         if ((totalDistance != 0) && (totalRotation != 0)) {
                             double distancePercent = 100 * Math.abs(dx) / totalDistance;
@@ -1990,10 +1994,14 @@ public class LoonyTune extends LinearOpMode {
                             // Round the minutes so that the rotation error updates every 6 seconds
                             // rather than constantly:
                             double roundedMinutes = Math.round(exactMinutes * 10.0) / 10.0;
-                            double degreesPerMinute = (roundedMinutes == 0) ? 0 :
-                                    Math.abs(Math.toDegrees(otosTheta)) / roundedMinutes;
+                            double odoDegreesPerMinute = (roundedMinutes == 0) ? 0 :
+                                    Math.abs(Math.toDegrees(odoTheta) / roundedMinutes);
+                            double imuDegreesPerMinute = (roundedMinutes == 0) ? 0 :
+                                    Math.abs(Math.toDegrees(imuTheta) / roundedMinutes);
+
                             io.out("&ensp;Positional error: <b>%.2f</b>%%\n", distancePercent);
-                            io.out("&ensp;Rotational error: <b>%.2f</b>\u00b0/minute\n", degreesPerMinute);
+                            io.out("&ensp;Rotational error: <b>%.2f</b>\u00b0/minute\n", odoDegreesPerMinute);
+                            io.out("&ensp;(Compare to built-in IMU: <b>%.2f</b>\u00b0/minute)\n", imuDegreesPerMinute);
                             io.out("\nGood error results are less than 1% positional and 1\u00b0/minute rotational.\n");
                         }
                     }
@@ -2005,6 +2013,7 @@ public class LoonyTune extends LinearOpMode {
 
                 if (io.x()) { // Set golden pose at home
                     drive.setPose(homePose);
+                    startImuYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
                     previousPose = homePose;
                     baselinePose = drive.pose;
                     totalDistance = 0;
@@ -4139,6 +4148,7 @@ public class LoonyTune extends LinearOpMode {
         poll = new Poll();
         dialog = new Dialog();
         drive = new MecanumDrive(hardwareMap, telemetry, gamepad1, zeroPose);
+        imu = hardwareMap.get(IMU.class, "imu");
         usePinpoint = drive.pinpointDriver != null;
         currentParameters = new TuneParameters(drive, TuneParameters.getSavedParameters());
         originalParameters = currentParameters.createClone();

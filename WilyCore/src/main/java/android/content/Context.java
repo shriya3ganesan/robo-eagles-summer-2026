@@ -1,6 +1,7 @@
 package android.content;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 
 import java.io.File;
@@ -15,4 +16,5 @@ public class Context extends Activity {
     public static final int MODE_PRIVATE = 0;
     public File getDir(String var1, int var2) { return null; }
     public AssetManager getAssets() { return null; }
+    public PackageManager getPackageManager() { return new PackageManager(); }
 }

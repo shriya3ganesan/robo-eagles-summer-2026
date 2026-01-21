@@ -1,4 +1,4 @@
-package com.wilyworks.simulator.framework;
+package com.wilyworks.simulator.framework.mechsim;
 
 import static com.wilyworks.simulator.WilyCore.time;
 
@@ -6,16 +6,15 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.wilyworks.simulator.WilyCore;
+import com.wilyworks.simulator.framework.WilyLED;
 import com.wilyworks.simulator.helpers.Point;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -121,90 +120,6 @@ public class MechSim {
 
 }
 
-// Hooked class for measuring the position of the drum:
-class DrumAnalogInput extends WilyAnalogInput {
-    DecodeSlowBotMechSim mechSim;
-    DrumAnalogInput(DecodeSlowBotMechSim mechSim) {
-        this.mechSim = mechSim;
-    }
-
-    // Return a voltage that is proportional to the drum location, with some variation:
-    @Override
-    public double getVoltage() {
-        double variation = -0.1 + Math.random() * 0.2; // random() generates numbers between 0 and 1
-        return 3.5 * mechSim.actualDrumPosition + variation;
-    }
-}
-
-// Hooked class for determining the color of the ball once it's in the drum:
-class DrumColorSensor extends WilyNormalizedColorSensor {
-    DecodeSlowBotMechSim mechSim;
-    int idMask; // Sensor 0 or 1
-    DrumColorSensor(DecodeSlowBotMechSim mechSim, int index) {
-        this.mechSim = mechSim;
-        this.idMask = 1 << index;
-    }
-
-    // Returns true if this sensor can read a ball; false if a hole in the ball is positioned
-    // over the sensor.
-    boolean sensorCanReadBall() {
-        // Every time we get a new ball, reset our variations:
-        if (mechSim.colorSensorMask == -1) {
-            mechSim.colorSensorMask = 1 + (int)(Math.random() * 3.0); // Mask = 1, 2 or 3
-        }
-        return ((mechSim.colorSensorMask & idMask) != 0);
-    }
-
-    @Override
-    public NormalizedRGBA getNormalizedColors() {
-        NormalizedRGBA normalizedColor = new NormalizedRGBA();
-
-        // Simulate the ball holes for some reads:
-        int rgbColor = 0;
-        // Figure out what slot is being input into, if any:
-        int slot = mechSim.findDrumSlot(mechSim.INTAKE_POSITIONS);
-        if (slot != -1) {
-            DecodeSlowBotMechSim.Ball ball = mechSim.slotBalls.get(slot);
-            if (ball != null) {
-                // There's ball over the sensors. See if they can be read:
-                if (sensorCanReadBall()) {
-                    if (ball.color == DecodeSlowBotMechSim.BallColor.GREEN) {
-                        rgbColor = android.graphics.Color.HSVToColor(new float[]{175, 1, 1});
-                    } else {
-                        rgbColor = android.graphics.Color.HSVToColor(new float[]{210, 1, 1});
-                    }
-                }
-            }
-        }
-        normalizedColor.red = new Color(rgbColor).getRed() / 255.0f;
-        normalizedColor.green = new Color(rgbColor).getGreen() / 255.0f;
-        normalizedColor.blue = new Color(rgbColor).getBlue() / 255.0f;
-        return normalizedColor;
-    }
-
-    @Override
-    public double getDistance(DistanceUnit unit) {
-        int slot = mechSim.findDrumSlot(mechSim.INTAKE_POSITIONS);
-        boolean ballPositionedForRead = (slot != -1) && mechSim.slotBalls.get(slot) != null;
-        return ballPositionedForRead && sensorCanReadBall() ? unit.fromMm(18) : unit.fromMm(70);
-    }
-}
-
-// Let us ramp up the launcher motor velocity.
-class LaunchMotor extends WilyDcMotorEx {
-    double targetVelocity;
-    double actualVelocity;
-
-    @Override
-    public void setVelocity(double angularRate) {
-        targetVelocity = angularRate;
-    }
-    @Override
-    public double getVelocity() {
-        return actualVelocity;
-    }
-}
-
 // Simulation for the SlowBot in the 2025/2026 Decode game.
 class DecodeSlowBotMechSim extends MechSim {
     enum BallColor {PURPLE, GREEN, GOLD}
@@ -272,6 +187,8 @@ class DecodeSlowBotMechSim extends MechSim {
     AnalogInput analogDrum;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
+    DigitalChannel digitalChannel1;
+    DigitalChannel digitalChannel2;
     DcMotorEx intakeMotor;
     Servo drumServo;
     Servo transferServo;
@@ -350,6 +267,12 @@ class DecodeSlowBotMechSim extends MechSim {
         }
         if (name.equals("sensorColor2")) {
             device = sensorColor2 = new DrumColorSensor(this, 1);
+        }
+        if (name.equals("breakBeam1")) {
+            device = digitalChannel1 = new DrumDigitalChannel(this, 1);
+        }
+        if (name.equals("breakBeam2")) {
+            device = digitalChannel2 = new DrumDigitalChannel(this, 2);
         }
         return device;
     }
@@ -612,7 +535,7 @@ class DecodeSlowBotMechSim extends MechSim {
                             // terminate the loop...
                             fieldBalls.remove(ball);
 
-                            // Move the ball into the intake position, unless random error says
+                            // Move the ball into an intake position, unless random error says
                             // to toss it:
                             if ((!WilyCore.enableSensorError) || (Math.random() > INTAKE_ERROR_PROBABILITY)) {
                                 intakeBall = ball;
@@ -625,8 +548,17 @@ class DecodeSlowBotMechSim extends MechSim {
                 // We're intaking from the intake into a drum slot:
                 int slot = findDrumSlot(INTAKE_POSITIONS);
                 if (slot != -1) {
-                    if (slotBalls.get(slot) == null) {
-                        slotBalls.set(slot, intakeBall);
+                    // Accumulate the empty slots:
+                    LinkedList<Integer> emptySlots = new LinkedList<>();
+                    for (int i = 0; i < 3; i++) {
+                        if (slotBalls.get(i) == null) {
+                            emptySlots.add(i);
+                        }
+                    }
+                    // Assign the ball to an empty slot:
+                    if (!emptySlots.isEmpty()) {
+                        int emptySlot = emptySlots.get((int) (Math.random() * emptySlots.size()));
+                        slotBalls.set(emptySlot, intakeBall);
                         intakeBall = null;
                         hasIntaken = true;
                     }

@@ -8,7 +8,9 @@ import androidx.annotation.Nullable;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.sparkfun.SparkFunLEDStick;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -16,29 +18,15 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
-import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.SerialNumber;
-import com.wilyworks.common.WilyWorks;
 import com.wilyworks.simulator.WilyCore;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraCharacteristics;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 import org.swerverobotics.ftc.UltrasonicDistanceSensor;
 
 import java.util.ArrayList;
@@ -51,363 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Consumer;
-
-import kotlin.coroutines.Continuation;
-
-/**
- * Wily Works simulated IMU implementation.
- */
-class WilyIMU extends WilyHardwareDevice implements IMU {
-    double startYaw;
-    @Override
-    public boolean initialize(Parameters parameters) {
-        resetYaw();
-        return true;
-    }
-
-    @Override
-    public void resetYaw() {
-        startYaw = WilyWorks.getPose().heading.log();
-    }
-
-    @Override
-    public YawPitchRollAngles getRobotYawPitchRollAngles() {
-        return new YawPitchRollAngles(
-                AngleUnit.RADIANS,
-                WilyWorks.getPose().heading.log() - startYaw,
-                0,
-                0,
-                0);
-    }
-
-    @Override
-    public Orientation getRobotOrientation(AxesReference reference, AxesOrder order, AngleUnit angleUnit) {
-        return new Orientation();
-    }
-
-    @Override
-    public Quaternion getRobotOrientationAsQuaternion() {
-        return new Quaternion();
-    }
-
-    @Override
-    public AngularVelocity getRobotAngularVelocity(AngleUnit angleUnit) {
-        return new AngularVelocity(
-                angleUnit,
-                (float) WilyWorks.getPoseVelocity().angVel, // ### transformedAngularVelocityVector.get(0),
-                0, // ### transformedAngularVelocityVector.get(1),
-                0, // ### transformedAngularVelocityVector.get(2),
-                0); // ### rawAngularVelocity.acquisitionTime);
-    }
-}
-
-/**
- * Wily Works voltage sensor implementation.
- */
-class WilyVoltageSensor extends WilyHardwareDevice implements VoltageSensor {
-    @Override
-    public double getVoltage() {
-        return 13.0;
-    }
-
-    @Override
-    public String getDeviceName() {
-        return "Voltage Sensor";
-    }
-}
-
-/**
- * Wily Works distance sensor implementation.
- */
-class WilyDistanceSensor extends WilyHardwareDevice implements DistanceSensor {
-    @Override
-    public double getDistance(DistanceUnit unit) { return unit.fromMm(65535); } // Distance when not responding
-}
-
-/**
- * Wily Works normalized color sensor implementation.
- */
-class WilyNormalizedColorSensor extends WilyHardwareDevice implements NormalizedColorSensor, DistanceSensor {
-    @Override
-    public NormalizedRGBA getNormalizedColors() { return new NormalizedRGBA(); }
-
-    @Override
-    public float getGain() { return 0; }
-
-    @Override
-    public void setGain(float newGain) { }
-
-    @Override
-    public double getDistance(DistanceUnit unit) {
-        return 0;
-    }
-}
-
-/**
- * Wily Works color sensor implementation.
- */
-class WilyColorSensor extends WilyHardwareDevice implements ColorSensor {
-    @Override
-    public int red() { return 0; }
-
-    @Override
-    public int green() { return 0; }
-
-    @Override
-    public int blue() { return 0; }
-
-    @Override
-    public int alpha() { return 0; }
-
-    @Override
-    public int argb() { return 0; }
-
-    @Override
-    public void enableLed(boolean enable) { }
-
-    @Override
-    public void setI2cAddress(I2cAddr newAddress) { }
-
-    @Override
-    public I2cAddr getI2cAddress() { return null; }
-}
-
-/**
- * Wily Works named webcam implementation.
- */
-class WilyWebcam extends WilyHardwareDevice implements WebcamName {
-    WilyWorks.Config.Camera wilyCamera;
-
-    WilyWebcam(String deviceName) {
-        for (WilyWorks.Config.Camera camera: WilyCore.config.cameras) {
-            if (camera.name.equals(deviceName)) {
-                wilyCamera = camera;
-            }
-        }
-        if (wilyCamera == null) {
-            System.out.printf("WilyWorks: Couldn't find configuration data for camera '%s'", deviceName);
-        }
-    }
-
-    @Override
-    public boolean isWebcam() {
-        return true;
-    }
-
-    @Override
-    public boolean isCameraDirection() {
-        return false;
-    }
-
-    @Override
-    public boolean isSwitchable() {
-        return false;
-    }
-
-    @Override
-    public boolean isUnknown() {
-        return false;
-    }
-
-    @Override
-    public void asyncRequestCameraPermission(Context context, Deadline deadline, Continuation<? extends Consumer<Boolean>> continuation) {
-
-    }
-
-    @Override
-    public boolean requestCameraPermission(Deadline deadline) {
-        return false;
-    }
-
-    @Override
-    public CameraCharacteristics getCameraCharacteristics() {
-        return null;
-    }
-
-    @Override
-    public SerialNumber getSerialNumber() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public String getUsbDeviceNameIfAttached() {
-        return null;
-    }
-
-    @Override
-    public boolean isAttached() {
-        return false;
-    }
-}
-
-/**
- * Wily Works ServoController implementation.
- */
-class WilyServoController extends WilyHardwareDevice implements ServoController {
-    @Override
-    public void pwmEnable() { }
-
-    @Override
-    public void pwmDisable() { }
-
-    @Override
-    public PwmStatus getPwmStatus() { return PwmStatus.DISABLED; }
-
-    @Override
-    public void setServoPosition(int servo, double position) { }
-
-    @Override
-    public double getServoPosition(int servo) { return 0; }
-
-    @Override
-    public void close() { }
-}
-
-/**
- * Wily Works Servo implementation.
- */
-class WilyServo extends WilyHardwareDevice implements Servo {
-    double position;
-
-    @Override
-    public ServoController getController() {
-        return new WilyServoController();
-    }
-
-    @Override
-    public int getPortNumber() {
-        return 0;
-    }
-
-    @Override
-    public void setDirection(Direction direction) {
-
-    }
-
-    @Override
-    public Direction getDirection() {
-        return null;
-    }
-
-    @Override
-    public void setPosition(double position) { this.position = Math.max(0, Math.min(1, position)); }
-
-    @Override
-    public double getPosition() {return position; }
-
-    @Override
-    public void scaleRange(double min, double max) {
-
-    }
-}
-
-/**
- * Wily Works CRServo implementation.
- */
-class WilyCRServo extends WilyHardwareDevice implements CRServo {
-    double power;
-    Direction direction;
-
-    @Override
-    public ServoController getController() {
-        return new WilyServoController();
-    }
-
-    @Override
-    public int getPortNumber() {
-        return 0;
-    }
-
-    @Override
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    @Override
-    public Direction getDirection() {
-        return direction;
-    }
-
-    @Override
-    public void setPower(double power) {
-        this.power = power;
-    }
-
-    @Override
-    public double getPower() {
-        return power;
-    }
-}
-
-/**
- * Wily Works DigitalChannel implementation.
- */
-class WilyDigitalChannel extends WilyHardwareDevice implements DigitalChannel {
-    boolean state;
-
-    @Override
-    public Mode getMode() { return null; }
-
-    @Override
-    public void setMode(Mode mode) {}
-
-    @Override
-    public boolean getState() { return state; }
-
-    @Override
-    public void setState(boolean state) { this.state = state; }
-}
-
-/**
- * Wily Works LED implementation.
- */
-class WilyLED extends LED {
-    // Assume that every digital channels is a REV LED indicator. Doesn't hurt if that's not
-    // the case:
-    boolean enable = true; // They're always on by default
-    double x;
-    double y;
-    boolean isRed;
-    WilyLED(String deviceName) {
-        WilyWorks.Config.LEDIndicator wilyLed = null;
-        for (WilyWorks.Config.LEDIndicator led: WilyCore.config.ledIndicators) {
-            if (led.name.equals(deviceName)) {
-                wilyLed = led;
-            }
-        }
-        if (wilyLed != null) {
-            x = wilyLed.x;
-            y = wilyLed.y;
-            isRed = wilyLed.isRed;
-        } else {
-            isRed = !(deviceName.toLowerCase().contains("green"));
-        }
-    }
-
-    @Override
-    public void enable(boolean enableLed) { this.enable = enableLed; }
-
-    @Override
-    public void enableLight(boolean enable) { enable(enable); }
-
-    @Override
-    public boolean isLightOn() {
-        return enable;
-    }
-}
-
-/**
- * Wily Works AnalogInput implementation.
- */
-class WilyAnalogInput extends AnalogInput {
-    @Override
-    public double getVoltage() { return 0; }
-
-    @Override
-    public double getMaxVoltage() { return 0; }
-}
 
 /**
  * Wily Works hardware map.
@@ -430,11 +61,14 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
     public DeviceMapping<AnalogInput>              analogInput              = new DeviceMapping<>(AnalogInput.class);
     public DeviceMapping<IMU>                      imu                      = new DeviceMapping<>(IMU.class);
     public DeviceMapping<Limelight3A>              limelight                = new DeviceMapping<>(Limelight3A.class);
+    public DeviceMapping<SparkFunLEDStick>         sparkFunLEDStick         = new DeviceMapping<>(SparkFunLEDStick.class);
     protected Map<String, List<HardwareDevice>>    allDevicesMap            = new HashMap<>();
     protected List<HardwareDevice>                 allDevicesList           = new ArrayList<>();
 
-    public WilyHardwareMap() {
-        // Road Runner expects this object to be already created becaues it references
+    public final List<DeviceMapping<? extends HardwareDevice>> allDeviceMappings = new ArrayList<>();
+
+    public WilyHardwareMap(Context appContext, OpModeManagerNotifier notifier) {
+        // Road Runner expects this object to be already created because it references
         // hardwareMap.voltageSensor.iterator().next() directly:
         put("voltage_sensor", VoltageSensor.class);
     }
@@ -541,6 +175,9 @@ public class WilyHardwareMap implements Iterable<HardwareDevice> {
         } else if (Limelight3A.class.isAssignableFrom(klass)) {
             device = new Limelight3A(null, "", null);
             limelight.put(deviceName, (Limelight3A) device);
+        } else if (SparkFunLEDStick.class.isAssignableFrom(klass)) {
+            device = new SparkFunLEDStick(null, false);
+            sparkFunLEDStick.put(deviceName, (SparkFunLEDStick) device);
         } else {
             throw new IllegalArgumentException("Unexpected device type for HardwareMap");
         }

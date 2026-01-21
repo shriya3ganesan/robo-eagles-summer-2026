@@ -20,6 +20,10 @@ public class Color {
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
 
+    public static int rgb(int red, int green, int blue) {
+        return (red << 16) | (green << 8) | blue;
+    }
+
     public static void colorToHSV(int color, float[] hsv) {
         float rNorm = ((color >> 16) & 0xff) / 255.0f;
         float gNorm = ((color >> 8) & 0xff) / 255.0f;
@@ -180,27 +184,23 @@ public class Color {
     }
 
     public static int red(int color) {
-        throw new RuntimeException("Stub!");
+        return (color >> 16) & 0xff;
     }
 
     public static int green(int color) {
-        throw new RuntimeException("Stub!");
+        return (color >> 8) & 0xff;
     }
 
     public static int blue(int color) {
-        throw new RuntimeException("Stub!");
-    }
-
-    public static int rgb(int red, int green, int blue) {
-        throw new RuntimeException("Stub!");
+        return color & 0xff;
     }
 
     public static int rgb(float red, float green, float blue) {
-        throw new RuntimeException("Stub!");
+        return rgb((int) red, (int) green, (int) blue);
     }
 
     public static int argb(float alpha, float red, float green, float blue) {
-        throw new RuntimeException("Stub!");
+        return argb((int) alpha, (int) red, (int) green, (int) blue);
     }
 
     public static float luminance(int color) {
