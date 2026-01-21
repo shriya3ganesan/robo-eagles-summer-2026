@@ -12,7 +12,7 @@ public class Red {
     public static final Pose APRILTAG_POSE_NEAR_READ = new Pose(82,80.5, Math.toRadians(100));
 
     // Scoring Pose of our robot. It is facing the goal at a 45 degree angle.
-    public static final Pose SCORE_POSE_AUTO = new Pose(85, 15.8, Math.toRadians(65));
+    public static final Pose SCORE_POSE_AUTO = new Pose(84, 15.8, Math.toRadians(65));
 
     public static final Pose SCORE_POSE_NEAR = new Pose(84.7, 80.5, Math.toRadians(47));
     public static final Pose SCORE_POSE_FAR = new Pose(64, 21, Math.toRadians(57.5));
@@ -39,10 +39,10 @@ public class Red {
 
     // Gate Start & End
     public static final Pose GATE_START_POSE = new Pose(121, 70, Math.toRadians(0));
-    public static final Pose GATE_END_POSE = new Pose(127, 70, Math.toRadians(0));
+    public static final Pose GATE_END_POSE = new Pose(126, 70, Math.toRadians(0));
 
     // Human State Pose
-    public static final Pose HUMAN_STATE_POSE = new Pose(16, 13.8, Math.toRadians(0));
+    public static final Pose HUMAN_STATE_POSE = new Pose(19, 13.8, Math.toRadians(0));
 
     // Endgame
     public static final Pose ENDGAME_POSE = new Pose(38.5, 33, Math.toRadians(90));

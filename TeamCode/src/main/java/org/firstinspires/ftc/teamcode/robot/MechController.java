@@ -26,7 +26,7 @@ public class MechController {
     private static final long INTAKE_CUTOFF_MS = 4000; // 4 seconds wait time while searching for artifact
     private static final long POST_ROTATE_WAIT_MS = 90; // After every intake state rotation
     private static final long POST_HUMAN_WAIT_MS = 800; // After every human state rotation
-    private static final long POST_INDEXER_WAIT_MS = 600; // Post Indexer rotation shooting
+    private static final long POST_INDEXER_WAIT_MS = 900; // Post Indexer rotation shooting
     private static final long LIFT_WAIT_MS = 800; // Lifter in Up position for shooting
     private static final long DROP_WAIT_MS = 500; // Post Lifter in Down position
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
