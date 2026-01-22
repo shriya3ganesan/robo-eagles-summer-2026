@@ -27,17 +27,22 @@ public class Constants {
             .leftFrontMotorDirection(DcMotor.Direction.FORWARD)
             .leftRearMotorDirection(DcMotor.Direction.FORWARD)
             .rightFrontMotorDirection(DcMotor.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotor.Direction.REVERSE);
+            .rightRearMotorDirection(DcMotor.Direction.REVERSE)
+            .xVelocity(61.107) // initial values on Campbell's test field
+            .yVelocity(49.049)
+            .forwardZeroPowerAcceleration(-28.980)
+            .lateralZeroPowerAcceleration(-59.834);
 
     // https://pedropathing.com/docs/pathing/tuning/localization/pinpoint
     public static PinpointConstants pinpointLocalizerConstants = new PinpointConstants()
-            .forwardPodY(-5)
-            .strafePodX(0.5)
+            .forwardPodY(-8.5)
+            .strafePodX(3.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
+
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
