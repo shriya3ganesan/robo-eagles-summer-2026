@@ -54,7 +54,7 @@ public class RedAutoClose extends OpMode {
         MOVE_RIGHT_3,
         FINISHED,
     }
-    State state = State.FIND_TAG;
+    State state;
     ElapsedTime driveTimer = new ElapsedTime();
 
     private void ShootUsingVelocity(){
