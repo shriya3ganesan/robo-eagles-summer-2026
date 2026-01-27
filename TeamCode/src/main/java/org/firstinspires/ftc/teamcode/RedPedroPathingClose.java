@@ -68,12 +68,17 @@ public class RedPedroPathingClose extends OpMode {
 
     enum State {
         GO_TO_LAUNCH_1,
-        FIND_TAG,
-        SPIN_UP,
-        LAUNCHING,
+        WAIT_TO_FINISH_PATH_1,
+        FIND_TAG_1,
+        SPIN_UP_1,
+        LAUNCHING_1,
         PREPARE_TO_INTAKE_POSE_1,
         INTAKE_1,
         GO_TO_LAUNCH_2,
+        WAIT_TO_FINISH_PATH_2,
+        FIND_TAG_2,
+        SPIN_UP_2,
+        LAUNCHING_2,
         GO_BACK_TO_START_POSE,
         FINISHED
     }
@@ -112,9 +117,9 @@ public class RedPedroPathingClose extends OpMode {
         telemetry.update();
 
         // if (in spin up, launch, find tag, etc
-        if(state == State.FIND_TAG ||
-                state == State.SPIN_UP ||
-                state == State.LAUNCHING)
+        if(state == State.FIND_TAG_1 ||
+                state == State.SPIN_UP_1 ||
+                state == State.LAUNCHING_1)
         {
             doAprilTag();
         }
@@ -122,25 +127,28 @@ public class RedPedroPathingClose extends OpMode {
 
         switch (state) {
             case GO_TO_LAUNCH_1:
-
-                //follower.setMaxPowerScaling(.25);
                 follower.followPath(startToLaunching);
-                state = State.FIND_TAG;
+                state = State.WAIT_TO_FINISH_PATH_1;
                 break;
-            case FIND_TAG:
-                if(id24 != null){
-                    state = State.SPIN_UP;
+            case WAIT_TO_FINISH_PATH_1:
+                if(!follower.isBusy()){
+                    state = State.FIND_TAG_1;
                 }
                 break;
-            case SPIN_UP:
+            case FIND_TAG_1:
+                if(id24 != null){
+                    state = State.SPIN_UP_1;
+                }
+                break;
+            case SPIN_UP_1:
                 double speedError = launcher.getLaunchSpeedError();
                 double angleError = turret.getAngleError();
                 if (speedError < 50){
-                    state = State.LAUNCHING;
+                    state = State.LAUNCHING_1;
                     driveTimer.reset();
                 }
                 break;
-            case LAUNCHING:
+            case LAUNCHING_1:
                 if (driveTimer.seconds() < 3) {
                     intake.startIntake();
                     launcher.loadBall();
@@ -157,22 +165,55 @@ public class RedPedroPathingClose extends OpMode {
                 break;
             case PREPARE_TO_INTAKE_POSE_1:
                 if(!follower.isBusy()){
-                    follower.followPath(launchingToPickupReady1);
+                    follower.followPath(launchingToPickupReady1, true);
                     state = State.INTAKE_1;
                 }
                 break;
             case INTAKE_1:
                 if(!follower.isBusy()){
                     follower.followPath(pickupReady1ToPickup1);
+                    intake.startIntake();
                     state = State.GO_TO_LAUNCH_2;
                 }
                 break;
             case GO_TO_LAUNCH_2:
                 if(!follower.isBusy()){
                     follower.followPath(pickup1ToLaunching);
+                    intake.stopIntake();
                     state = State.GO_BACK_TO_START_POSE;
                 }
                 break;
+            case WAIT_TO_FINISH_PATH_2:
+                if(!follower.isBusy()){
+                    state = State.FIND_TAG_2;
+                }
+                break;
+            case FIND_TAG_2:
+                if(id24 != null){
+                    state = State.SPIN_UP_2;
+                }
+                break;
+            case SPIN_UP_2:
+                speedError = launcher.getLaunchSpeedError();
+                angleError = turret.getAngleError();
+                if (speedError < 100){
+                    state = State.LAUNCHING_2;
+                    driveTimer.reset();
+                }
+                break;
+            case LAUNCHING_2:
+                if (driveTimer.seconds() < 3) {
+                    intake.startIntake();
+                    launcher.loadBall();
+                }
+                else {
+                    intake.stopIntake();
+                    launcher.resetFeeder();
+                    Launcher.LaunchState = Launcher.LaunchState.IDLE;
+                    launcher.stopLauncher();
+                    state = State.GO_BACK_TO_START_POSE;
+                    driveTimer.reset();
+                }
             case GO_BACK_TO_START_POSE:
                 if(!follower.isBusy()){
                     follower.followPath(launchingToStart);
