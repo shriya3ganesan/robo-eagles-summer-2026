@@ -99,7 +99,7 @@ public class RedPedroPathingClose extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-        follower.setMaxPower(.65);
+        follower.setMaxPower(1);
 
         state = State.GO_TO_LAUNCH_1;
     }
@@ -111,6 +111,7 @@ public class RedPedroPathingClose extends OpMode {
 
         // Feedback to Driver Hub for debugging
         telemetry.addData("Current state", state);
+        telemetry.addLine("Target Velocity: " + launcher.getTargetLaunchSpeed());
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
@@ -119,7 +120,10 @@ public class RedPedroPathingClose extends OpMode {
         // if (in spin up, launch, find tag, etc
         if(state == State.FIND_TAG_1 ||
                 state == State.SPIN_UP_1 ||
-                state == State.LAUNCHING_1)
+                state == State.LAUNCHING_1 ||
+                state == State.FIND_TAG_2 ||
+                state == State.SPIN_UP_2 ||
+                state == State.LAUNCHING_2)
         {
             doAprilTag();
         }
@@ -214,6 +218,7 @@ public class RedPedroPathingClose extends OpMode {
                     state = State.GO_BACK_TO_START_POSE;
                     driveTimer.reset();
                 }
+                break;
             case GO_BACK_TO_START_POSE:
                 if(!follower.isBusy()){
                     follower.followPath(launchingToStart);
@@ -236,7 +241,7 @@ public class RedPedroPathingClose extends OpMode {
         //Update the vision portal
         aprilTagWebcam.update();
         AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24); // TAG ID 24 is the red goal
-        aprilTagWebcam.displayDetectionTelemetry(id24);
+        //aprilTagWebcam.displayDetectionTelemetry(id24);
         // NOTE: we will need a separate OPMODE (otherwise identical) that sets the target TAGID to BLUE (#20)
         if (id24 != null && id24.ftcPose != null) {
             numMissingTagReads = 0;
