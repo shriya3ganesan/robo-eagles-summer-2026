@@ -17,6 +17,7 @@ import dev.frozenmilk.dairy.core.config.annotation.Configurable; // CHANGE BASED
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+@Configurable
 @Autonomous(name="PedroAutoCloseBlueVoltageAdjust", group="Autonomous")
 public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     private DcMotorEx launchMotor = null;
@@ -25,10 +26,10 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    @Configurable(name = "Shooter Target RPM")
+
+    public static double ONE_SHOT_TIME = 2.3;
     public static int TARGET_RPM = 4000;
 
-    @Configurable(name = "Ticks Per Rev")
     public static double TICKS_PER_REV = 383.6;
 
     private double getLaunchTargetTicks() {
@@ -131,7 +132,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2.5) {
+                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
                 }
@@ -144,7 +145,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeOne, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
+                    //launchMotor.setVelocity(0); why?
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKEONE);
                 }
                 break;
@@ -170,7 +171,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -184,7 +185,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeTwo, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
+                    //launchMotor.setVelocity(0); why again?
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
                 }
                 break;
@@ -210,7 +211,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_2:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -224,14 +225,12 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeThree, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
-                    telemetry.addLine("The line right after this is changing the cadse to shootpose to intake 3");
+                    //launchMotor.setVelocity(0); why aginnininini??
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
                 }
                 break;
 
             case DRIVE_SHOOTPOS_INTAKETHREE:
-                telemetry.addLine("I MADE IT LOOK AT ME WHY DID THE CODE STOP HERE");
                 // Keep intake running while driving
                 if (!follower.isBusy()) {
 
@@ -252,7 +251,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_3:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -284,32 +283,27 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
         double elapsed = pathTimer.getElapsedTimeSeconds();
 
         launchMotor.setVelocity(getLaunchTargetTicks());
-        // Each shot cycle takes ~2.3 seconds
-        double cycleTime = elapsed % 2.3;
-        if (cycleTime <= 1.3) {
+        // Each shot cycle takes ~ONE_SHOT_TIME seconds
+        double cycleTime = elapsed % ONE_SHOT_TIME;
+        if (cycleTime <= 0.5 * ONE_SHOT_TIME) {
             telemetry.addLine("Waiting");
         }
-        else if (1.7 < cycleTime && cycleTime < 1.8 && shotsFired < 1) {
-            transferMotor.setPower(1);
-            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        }
-        else if (1.3 < cycleTime && cycleTime < 1.8) {
+        else if (cycleTime < 0.78 * ONE_SHOT_TIME) {
             // Move trigger to shoot position and run transfer
-
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 2) {
+        else if (cycleTime < 0.86 * ONE_SHOT_TIME) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 2.15) {
+        else if (cycleTime < 0.93 * ONE_SHOT_TIME) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
         else {
             // Wait before next shot
-            if (elapsed > (shotsFired + 1) * 2.3) {
+            if (elapsed > (shotsFired + 1) * ONE_SHOT_TIME) {
                 shotsFired++;
             }
         }
