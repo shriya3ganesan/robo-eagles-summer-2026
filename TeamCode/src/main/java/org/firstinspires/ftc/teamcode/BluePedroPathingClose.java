@@ -30,14 +30,14 @@ public class BluePedroPathingClose extends OpMode {
     private Follower follower;
 
 
-    private final Pose startPose = new Pose(124.6829268292683, 122.73170731707317, Math.toRadians(36)); // Start Pose of our robot.
-    private final Pose launchingPose = new Pose(92, 92, Math.toRadians(45)); // Where our robot launches from
-    private final Pose pickupReady1Pose = new Pose(98, 84, Math.toRadians(0)); // Ready to pick up closest row of balls
-    private final Pose pickup1Pose = new Pose(125, 84, Math.toRadians(0)); // Pick up closest row of balls
-    private final Pose pickupReady2Pose = new Pose(98, 60, Math.toRadians(0)); //Ready to pick up middle row of balls
-    private final Pose pickup2Pose = new Pose(125, 60, Math.toRadians(0)); //Pick up middle row of balls
-    private final Pose pickupReady3 = new Pose(98, 38.5, Math.toRadians(0)); //Ready to pick up far balls
-    private final Pose endPose = new Pose(125, 38.5, Math.toRadians(0)); //Finish with 3 balls
+    private final Pose startPose = new Pose(19.83542039355993, 123.64937388193204, Math.toRadians(143)); // Start Pose of our robot.
+    private final Pose launchingPose = new Pose(52, 92, Math.toRadians(135)); // Where our robot launches from
+    private final Pose pickupReady1Pose = new Pose(48, 84, Math.toRadians(180)); // Ready to pick up closest row of balls
+    private final Pose pickup1Pose = new Pose(19, 84, Math.toRadians(180)); // Pick up closest row of balls
+    private final Pose pickupReady2Pose = new Pose(48, 60, Math.toRadians(180)); //Ready to pick up middle row of balls
+    private final Pose pickup2Pose = new Pose(19, 60, Math.toRadians(180)); //Pick up middle row of balls
+    private final Pose pickupReady3 = new Pose(48, 38.5, Math.toRadians(180)); //Ready to pick up far balls
+    private final Pose endPose = new Pose(19, 38.5, Math.toRadians(180)); //Finish with 3 balls
 
     private Path startToLaunching;
     private PathChain launchingToPickupReady1, pickupReady1ToPickup1, pickup1ToLaunching, launchingToPickupReady2, pickupReady2ToPickup2, pickup2ToLaunching2, launchingToPickupReady3, pickupReady3ToFinish;
