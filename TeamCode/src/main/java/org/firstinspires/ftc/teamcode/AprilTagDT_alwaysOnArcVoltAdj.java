@@ -39,15 +39,16 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@TeleOp(name="AprilTagDTalwaysonARC", group="Linear OpMode")
+@TeleOp(name="AprilTagDTalwaysonARCVolt", group="Linear OpMode")
 
-public class AprilTagDT_alwaysOnArc extends LinearOpMode {
+public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -68,6 +69,7 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
     private DcMotor transferMotor = null;
     GoBildaPinpointDriver pinpoint;
     private Limelight3A limelight;
+    private VoltageSensor myControlHubVoltageSensor;
 
     // Launch sequence states
     private enum LaunchState {
@@ -97,8 +99,8 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
     private TripleShotState tripleShotState = TripleShotState.IDLE;
 
     // Servo positions - adjust these based on your robot
-    private final double TRIGGER_START_POS = 0;
-    private final double TRIGGER_FIRE_POS = 300;
+    private final double TRIGGER_START_POS = 0.11;
+    private final double TRIGGER_FIRE_POS = 0.27;
     private final double PUSH_START_POS = 0;
     private final double PUSH_FIRE_POS = 300;
 
@@ -109,10 +111,10 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
     // Distance-based motor power constants
     private final double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
     private final double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
-    private final double MIN_LAUNCH_POWER = 0.69;   // motor power at MIN_DISTANCE
-    private final double MAX_LAUNCH_POWER = 0.87;   // motor power at MAX_DISTANCE
+    private final double MIN_LAUNCH_POWER = 0.74;   // motor power at MIN_DISTANCE
+    private final double MAX_LAUNCH_POWER = 1;   // motor power at MAX_DISTANCE
 
-    // Default launch powers for manual shots
+    // Default launch powers for manual shots (depreciated)
     private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
     private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
@@ -121,6 +123,7 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
     private final double POWER_INCREASE_PER_SHOT = 0.1;
     private final double TRIPLE_SHOT_DELAY = 0.5; // Delay between shots in seconds
     private final double TRIPLE_SHOT_START_DELAY = 0.2; // Initial delay for transfer motor
+    double presentVoltage;
 
     private double currentLaunchPower = MIN_LAUNCH_POWER; // Track current launch motor power
 
@@ -172,6 +175,7 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
         transferMotor = hardwareMap.get(DcMotor.class, "transfer");
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        myControlHubVoltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -201,12 +205,16 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            presentVoltage = myControlHubVoltageSensor.getVoltage();
+            telemetry.addData("Voltage: ", presentVoltage);
             // ===== CONTINUOUS LAUNCH MOTOR POWER UPDATE =====
             // Always update launch motor power based on current distance
             LLResult result = limelight.getLatestResult();
             if (result != null && result.isValid()) {
                 // Calculate current distance
-                distance = (29.5 - 12.25)/(Math.tan(result.getTy() * (3.14159 / 180)));
+                //distance = (29.5 - 12.25)/(Math.tan((result.getTy() - 15) * (3.14159 / 180)));
+                distance = distanceCalc(result.getTa());
+                telemetry.addData("Target Area", result.getTa());
                 // Update launch motor power continuously based on distance
                 currentLaunchPower = calculateLaunchPower(distance);
             } else {
@@ -535,28 +543,31 @@ public class AprilTagDT_alwaysOnArc extends LinearOpMode {
         }
     }
 
+
+    private double distanceCalc(double ta){
+        double scale = 72.06169;
+        double power = -0.509117;
+        double distance = scale * Math.pow(ta, power);
+        return distance;
+    }
+
     /**
      * Calculates the required launch motor power based on distance to target
      * @param distanceInches Distance to AprilTag in inches
      * @return Motor power (0.0 to 1.0)
      */
     private double calculateLaunchPower(double distanceInches) {
+        double nominalVoltgae = 12.5;
+        double voltageConstant = nominalVoltgae/presentVoltage;
+        // Clamp distance to valid range
         double clampedDistance = Range.clip(distanceInches, MIN_DISTANCE, MAX_DISTANCE);
-    
-        double normalizedDistance =
-                (clampedDistance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
-    
+
+        // Linear interpolation between min and max launch powers
+        double normalizedDistance = (clampedDistance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
         double t = Math.pow(normalizedDistance, 0.6);
-        double basePower =
-                MIN_LAUNCH_POWER + t * (MAX_LAUNCH_POWER - MIN_LAUNCH_POWER);
-    
-        // Voltage compensation
-        double voltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
-        double nominalVoltage = 12.9;
-    
-        double compensatedPower = basePower * (nominalVoltage / voltage);
-    
-        return Range.clip(compensatedPower, 0.0, 1.0);
+        double launchPower = (MIN_LAUNCH_POWER + t * (MAX_LAUNCH_POWER - MIN_LAUNCH_POWER)) * voltageConstant;
+
+        return launchPower;
     }
 
     public void configurePinpoint(){
