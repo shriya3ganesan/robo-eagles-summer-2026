@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -47,7 +48,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 @TeleOp(name="AprilTagDTalwaysonARCVolt", group="Linear OpMode")
-
+@Configurable
 public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -99,30 +100,30 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
     private TripleShotState tripleShotState = TripleShotState.IDLE;
 
     // Servo positions - adjust these based on your robot
-    private final double TRIGGER_START_POS = 0.11;
-    private final double TRIGGER_FIRE_POS = 0.27;
-    private final double PUSH_START_POS = 0;
-    private final double PUSH_FIRE_POS = 300;
+    public static double TRIGGER_START_POS = 0.11;
+    public static double TRIGGER_FIRE_POS = 0.27;
+    public static double PUSH_START_POS = 0;
+    public static double PUSH_FIRE_POS = 300;
 
     // Timing constants (in seconds)
-    private final double FIRE_TIME = 0.3;          // Time trigger is in fire position
-    private final double RESET_TIME = 0.3;         // Time for trigger to reset
+    public static double FIRE_TIME = 0.3;          // Time trigger is in fire position
+    public static double RESET_TIME = 0.3;         // Time for trigger to reset
 
     // Distance-based motor power constants
-    private final double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
-    private final double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
-    private final double MIN_LAUNCH_POWER = 0.74;   // motor power at MIN_DISTANCE
-    private final double MAX_LAUNCH_POWER = 1;   // motor power at MAX_DISTANCE
+    public static double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
+    public static double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
+    public static double MIN_LAUNCH_POWER = 0.74;   // motor power at MIN_DISTANCE
+    public static double MAX_LAUNCH_POWER = 1;   // motor power at MAX_DISTANCE
 
     // Default launch powers for manual shots (depreciated)
     private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
     private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
     // Triple shot constants
-    private final int TRIPLE_SHOT_COUNT = 3;
-    private final double POWER_INCREASE_PER_SHOT = 0.1;
-    private final double TRIPLE_SHOT_DELAY = 0.5; // Delay between shots in seconds
-    private final double TRIPLE_SHOT_START_DELAY = 0.2; // Initial delay for transfer motor
+    public static int TRIPLE_SHOT_COUNT = 3;
+    public static double POWER_INCREASE_PER_SHOT = 0.1;
+    public static double TRIPLE_SHOT_DELAY = 0.3; // Delay between shots in seconds
+    public static double TRIPLE_SHOT_START_DELAY = 0.1; // Initial delay for transfer motor
     double presentVoltage;
 
     private double currentLaunchPower = MIN_LAUNCH_POWER; // Track current launch motor power
@@ -136,8 +137,8 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
     private final double JITTER_FORWARD_TIME = 0.10;
 
     // AprilTag lock-on constants
-    private final double TAG_LOCK_KP = 0.05;        // Proportional gain for rotation
-    private final double TAG_LOCK_TOLERANCE = 0.7;  // Degrees - how close is "locked on"
+    public static double TAG_LOCK_KP = 0.05;        // Proportional gain for rotation
+    public static double TAG_LOCK_TOLERANCE = 0.7;  // Degrees - how close is "locked on"
     private final double TAG_LOCK_MIN_POWER = 0.00; // Minimum rotation power
     private final double TAG_LOCK_MAX_POWER = 0.4;  // Maximum rotation power
 
@@ -158,6 +159,7 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
     private boolean isLockedOn = false; // true if aligned within tolerance
     boolean analogShooter = true;
     double distance;
+    boolean hasSeenTarget = false;
 
     @Override
     public void runOpMode() {
@@ -214,10 +216,11 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
                 // Calculate current distance
                 //distance = (29.5 - 12.25)/(Math.tan((result.getTy() - 15) * (3.14159 / 180)));
                 distance = distanceCalc(result.getTa());
+                hasSeenTarget = true;
                 telemetry.addData("Target Area", result.getTa());
                 // Update launch motor power continuously based on distance
                 currentLaunchPower = calculateLaunchPower(distance);
-            } else {
+            } else if(!hasSeenTarget){
                 // No AprilTag visible - maintain minimum power to keep flywheel spinning
                 currentLaunchPower = MIN_LAUNCH_POWER;
             }
@@ -305,10 +308,10 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
             }
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            double frontLeftPower  = (axial + lateral + yaw) * 1.25;
-            double frontRightPower = (axial - lateral - yaw) * 0.75;
-            double backLeftPower   = (axial - lateral + yaw) * 1.25;
-            double backRightPower  = (axial + lateral - yaw) * 0.75;
+            double frontLeftPower  = (axial + lateral + yaw);
+            double frontRightPower = (axial - lateral - yaw) ;
+            double backLeftPower   = (axial - lateral + yaw);
+            double backRightPower  = (axial + lateral - yaw);
 
             // Normalize the values so no wheel power exceeds 100%
             max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
