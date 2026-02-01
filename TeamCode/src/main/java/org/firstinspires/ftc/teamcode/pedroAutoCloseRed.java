@@ -22,11 +22,11 @@ public class pedroAutoCloseRed extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    private double launchPower = 0.69;
+    private double launchPower = 0.675;
 
     // Servo positions (servos use 0.0 to 1.0)
-    private double triggerStartPos = 0.158;
-    private double triggerShootPos = 0.208;  // Adjust this value based on your mechanism
+    private double triggerStartPos = 0.11;
+    private double triggerShootPos = 0.27;  // Adjust this value based on your mechanism
 
     private int shotsFired = 0;
     private boolean isShooting = false;
