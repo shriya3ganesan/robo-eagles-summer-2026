@@ -14,19 +14,23 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+@Configurable
 @Autonomous(name="PedroAutoCloseBlue", group="Autonomous")
-public class pedroAutoCloseBlue extends OpMode{
+public class PedroAutoCloseBlue extends OpMode{
     private DcMotor launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    private double launchPower = 0.69;
+
+    public static double launchPower = 0.675;
+    public static double oneShotTime = 0.981;
+    public static double flywheelSpinUpTime = 1.5;
 
     // Servo positions (servos use 0.0 to 1.0)
-    private double triggerStartPos = 0.158;
-    private double triggerShootPos = 0.208;  // Adjust this value based on your mechanism
+    private double triggerStartPos = 0.11;
+    private double triggerShootPos = 0.27;  // Adjust this value based on your mechanism
 
     private int shotsFired = 0;
     private boolean isShooting = false;
@@ -120,7 +124,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2.5) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     launchMotor.setPower(launchPower);
                     break;
                 }
@@ -159,7 +163,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -199,7 +203,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case SHOOT_SAMPLES_2:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -220,7 +224,6 @@ public class pedroAutoCloseBlue extends OpMode{
                 break;
 
             case DRIVE_SHOOTPOS_INTAKETHREE:
-                telemetry.addLine("I MADE IT LOOK AT ME WHY DID THE CODE STOP HERE");
                 // Keep intake running while driving
                 if (!follower.isBusy()) {
 
@@ -241,7 +244,7 @@ public class pedroAutoCloseBlue extends OpMode{
 
             case SHOOT_SAMPLES_3:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -272,26 +275,21 @@ public class pedroAutoCloseBlue extends OpMode{
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
         launchMotor.setPower(launchPower);
-        // Each shot cycle takes ~2.3 seconds
-        double cycleTime = elapsed % 2.3;
-        if (cycleTime <= 1.3) {
+        // Each shot cycle takes ~oneShotTime seconds
+        double cycleTime = elapsed % oneShotTime;
+        if (cycleTime <= 0.5 * oneShotTime) {
             telemetry.addLine("Waiting");
         }
-        else if (1.7 < cycleTime && cycleTime < 1.8 && shotsFired < 1) {
-            transferMotor.setPower(1);
-            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        }
-        else if (1.3 < cycleTime && cycleTime < 1.8) {
+        else if (cycleTime < 0.78 * oneShotTime) {
             // Move trigger to shoot position and run transfer
-
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 2) {
+        else if (cycleTime < 0.87 * oneShotTime) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 2.15) {
+        else if (cycleTime < 0.93 * oneShotTime) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
