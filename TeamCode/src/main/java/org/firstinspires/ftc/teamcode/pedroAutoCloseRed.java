@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode;
+
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -14,15 +16,19 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+@Configurable
 @Autonomous(name="PedroAutoCloseRed", group="Autonomous")
-public class pedroAutoCloseRed extends OpMode{
+public class PedroAutoCloseRed extends OpMode{
     private DcMotor launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    private double launchPower = 0.675;
+
+    public static double launchPower = 0.675;
+    public static double oneShotTime = 0.981; //ADJUST / FINE TUNE !!!!!
+    public static double flywheelSpinUpTime = 1.5; //ADJUST / FINE TUNE !!!!
 
     // Servo positions (servos use 0.0 to 1.0)
     private double triggerStartPos = 0.11;
@@ -47,11 +53,16 @@ public class pedroAutoCloseRed extends OpMode{
     }
 
     PathState pathState;
-    private final Pose startPose = new Pose(123.96799999999999, 122.62399999999998, Math.toRadians(35));
-    private final Pose shootPose = new Pose(84.672, 84.38400000000001, Math.toRadians(35));
-    private final Pose intakeOne = new Pose(129.28, 83.90400000000001, Math.toRadians(0));
-    private final Pose intakeTwo = new Pose(128.76, 59.048, Math.toRadians(0));
-    private final Pose intakeThree = new Pose(129.312, 34.848, Math.toRadians(0));
+    private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
+    startPose.mirror(true);
+    private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
+    shootPose.mirror(true);
+    private final Pose intakeOne = new Pose(21, 84.4295081967213, Math.toRadians(185));
+    intakeOne.mirror(true);
+    private final Pose intakeTwo = new Pose(16, 59, Math.toRadians(185));
+    intakeTwo.mirror(true);
+    private final Pose intakeThree = new Pose(16, 35, Math.toRadians(185));
+    intakeThree.mirror(true);
 
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
@@ -77,7 +88,8 @@ public class pedroAutoCloseRed extends OpMode{
                 .build();
 
         // Intake 2 paths with control point
-        Pose controlPointShootToIntake2 = new Pose(78.912, 57.6, Math.toRadians(0));
+        Pose controlPointShootToIntake2 = new Pose(55.511475409836066, 54.80983606557377, Math.toRadians(185));
+        controlPointShootToIntake2.mirror(true);
         driveShootIntakeTwo = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake2, intakeTwo))
                 .setConstantHeadingInterpolation(intakeTwo.getHeading())
@@ -88,9 +100,9 @@ public class pedroAutoCloseRed extends OpMode{
                 .addPath(new BezierLine(intakeTwo, shootPose))
                 .setLinearHeadingInterpolation(intakeTwo.getHeading(), shootPose.getHeading(), 0.6)
                 .build();
-
         // Intake 3 paths
-        Pose controlPointShootToIntake3 = new Pose(69.108, 32.30799999999999, Math.toRadians(0));
+        Pose controlPointShootToIntake3 = new Pose(60.94098360655738, 31.43934426229508, Math.toRadians(185));
+        controlPointShootToIntake3.mirror(true);
         driveShootIntakeThree = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake3,intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
@@ -120,7 +132,7 @@ public class pedroAutoCloseRed extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2.5) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     launchMotor.setPower(launchPower);
                     break;
                 }
@@ -159,7 +171,7 @@ public class pedroAutoCloseRed extends OpMode{
 
             case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -199,7 +211,7 @@ public class pedroAutoCloseRed extends OpMode{
 
             case SHOOT_SAMPLES_2:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -220,7 +232,6 @@ public class pedroAutoCloseRed extends OpMode{
                 break;
 
             case DRIVE_SHOOTPOS_INTAKETHREE:
-                telemetry.addLine("I MADE IT LOOK AT ME WHY DID THE CODE STOP HERE");
                 // Keep intake running while driving
                 if (!follower.isBusy()) {
 
@@ -241,7 +252,7 @@ public class pedroAutoCloseRed extends OpMode{
 
             case SHOOT_SAMPLES_3:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() < flywheelSpinUpTime) {
                     intakeMotor.setPower(0);
                     launchMotor.setPower(launchPower);
                     break;
@@ -272,26 +283,21 @@ public class pedroAutoCloseRed extends OpMode{
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
         launchMotor.setPower(launchPower);
-        // Each shot cycle takes ~2.3 seconds
-        double cycleTime = elapsed % 2.3;
-        if (cycleTime <= 1.3) {
+        // Each shot cycle takes ~oneShotTime seconds
+        double cycleTime = elapsed % oneShotTime;
+        if (cycleTime <= 0.5 * oneShotTime) {
             telemetry.addLine("Waiting");
         }
-        else if (1.7 < cycleTime && cycleTime < 1.8 && shotsFired < 1) {
-            transferMotor.setPower(1);
-            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
-        }
-        else if (1.3 < cycleTime && cycleTime < 1.8) {
+        else if (cycleTime < 0.78 * oneShotTime) {
             // Move trigger to shoot position and run transfer
-
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 2) {
+        else if (cycleTime < 0.87 * oneShotTime) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 2.15) {
+        else if (cycleTime < 0.93 * oneShotTime) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
