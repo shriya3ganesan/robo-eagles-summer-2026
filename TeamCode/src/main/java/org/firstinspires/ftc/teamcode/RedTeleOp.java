@@ -48,19 +48,28 @@ public class RedTeleOp  extends OpMode {
 
             double distanceToGoalCM = id24.ftcPose.range;
             launcher.setMotorVelocityForDistance(distanceToGoalCM);
-            led.setLEDGreen();
             // NOTE: use this after distance vs speed has been measured and calibrated
             //launcher.setMotorVelocityForDistance(distanceToGoalCM);
         } else if (numMissingTagReads < 100){
             numMissingTagReads++;
-            led.setLEDBlue();
         } else {
             // if we can't see the target/            // default back to neutral/default
             //turret.resetTurret();
             // and turn launch motors off
             launcher.stopLauncher();
             turret.resetTurret();
+        }
+
+        if(numMissingTagReads >= 100){
             led.setLEDRed();
+        } else if (id24 != null && id24.ftcPose != null){
+            double speedError = launcher.getLaunchSpeedError();
+            double angleError = turret.getAngleError();
+            if (speedError < 50 && angleError < 2){
+                led.setLEDGreen();
+            } else {
+                led.setLEDBlue();
+            }
         }
 
         // these are manual test methods to assist with tuning the target launch motor velocity at measured distances
@@ -102,7 +111,7 @@ public class RedTeleOp  extends OpMode {
         }
 
         //For Intake (test if same buttons works)
-        if (gamepad1.right_trigger !=0 ) {
+        if (gamepad1.right_trigger !=0 || gamepad2.a) {
             intake.startIntake();
         } else if (gamepad1.left_trigger !=0) {
             intake.reverseIntake();
