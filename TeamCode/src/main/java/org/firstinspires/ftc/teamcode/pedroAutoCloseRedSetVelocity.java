@@ -27,8 +27,9 @@ public class pedroAutoCloseRed extends OpMode{
 
     public static int TARGET_RPM = 2187;
     public static double TICKS_PER_REV = 383.6;
+    public static double IDLE_RPM = 1000;
     public static double oneShot_Shoot_time = 2.3;
-    public static double wait_time = 0.85;
+    //public static double wait_time = 0.85; We use smart waiting instead
 
     private double getLaunchTargetTicks() {
         return (TARGET_RPM * TICKS_PER_REV) / 60.0;
@@ -108,6 +109,8 @@ public class pedroAutoCloseRed extends OpMode{
     }
 
     public void statePathUpdate(){
+        double currentVel = launchMotor.getVelocity();
+        double targetVel = getLaunchTargetTicks();
         switch(pathState){
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
@@ -124,9 +127,17 @@ public class pedroAutoCloseRed extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
-                    launchMotor.setVelocity(getLaunchTargetTicks());
-                    break;
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
@@ -137,7 +148,7 @@ public class pedroAutoCloseRed extends OpMode{
                     follower.followPath(driveShootIntakeOne, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
+                    launchMotor.setVelocity(IDLE_RPM);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKEONE);
                 }
                 break;
@@ -162,11 +173,28 @@ public class pedroAutoCloseRed extends OpMode{
                 break;
 
             case SHOOT_SAMPLES_1:
-                // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
+                // Failsafe: If we've been in this state for > 4 seconds, just move on
+                if (pathTimer.getElapsedTimeSeconds() > 4 * oneShot_Shoot_time) {
+                    // Force transition logic here
+                    follower.followPath(driveShootIntakeTwo, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setVelocity(IDLE_RPM);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
+                }
+
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
                     intakeMotor.setPower(0);
-                    launchMotor.setVelocity(getLaunchTargetTicks());
-                    break;
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
@@ -177,7 +205,7 @@ public class pedroAutoCloseRed extends OpMode{
                     follower.followPath(driveShootIntakeTwo, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
+                    launchMotor.setVelocity(IDLE_RPM);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
                 }
                 break;
@@ -202,11 +230,28 @@ public class pedroAutoCloseRed extends OpMode{
                 break;
 
             case SHOOT_SAMPLES_2:
-                // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
+                // Failsafe: If we've been in this state for > 4 seconds, just move on
+                if (pathTimer.getElapsedTimeSeconds() > 4 * oneShot_Shoot_time) {
+                    // Force transition logic here
+                    follower.followPath(driveShootIntakeThree, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setVelocity(IDLE_RPM);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
+                }
+
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
                     intakeMotor.setPower(0);
-                    launchMotor.setVelocity(getLaunchTargetTicks());
-                    break;
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
@@ -217,8 +262,7 @@ public class pedroAutoCloseRed extends OpMode{
                     follower.followPath(driveShootIntakeThree, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    launchMotor.setVelocity(0);
-                    telemetry.addLine("The line right after this is changing the cadse to shootpose to intake 3");
+                    launchMotor.setVelocity(IDLE_RPM);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
                 }
                 break;
@@ -243,11 +287,27 @@ public class pedroAutoCloseRed extends OpMode{
                 break;
 
             case SHOOT_SAMPLES_3:
-                // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
+                // Failsafe: If we've been in this state for > 4 seconds, just move on
+                if (pathTimer.getElapsedTimeSeconds() > 4 * oneShot_Shoot_time) {
+                    // Force transition logic here
+                    launchMotor.setVelocity(0);
                     intakeMotor.setPower(0);
-                    launchMotor.setVelocity(getLaunchTargetTicks());
-                    break;
+                    transferMotor.setPower(0);
+                    setPathState(PathState.DONE);
+                }
+
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
+                    intakeMotor.setPower(0);
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
@@ -330,13 +390,16 @@ public class pedroAutoCloseRed extends OpMode{
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        launchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        /*
         launchMotor.setVelocityPIDFCoefficients(
-                0.0,   // kP (start at 0)
+                0.0,   // kP (start at 0) -> 0 is a terrible idea, regular PIDF is okay, tune if absolutely necesaary
                 0.0,   // kI
                 0.0,   // kD
                 13.5   // kF (starting point for goBILDA 6000 RPM)
         );
-
+        */
         trigger.setPosition(triggerStartPos);
 
         buildPaths();
@@ -352,6 +415,14 @@ public class pedroAutoCloseRed extends OpMode{
     public void loop(){
         follower.update();
         statePathUpdate();
+
+        double velocity = launchMotor.getVelocity();
+        double rpm = (velocity * 60) / TICKS_PER_REV;
+        
+        telemetry.addData("Shooter RPM", rpm);
+        telemetry.addData("Target RPM", TARGET_RPM);
+        telemetry.addData("Error", TARGET_RPM - rpm); // helpful for tuning
+
         telemetry.addData("path state", pathState.toString());
         telemetry.addData("shots fired", shotsFired);
         telemetry.addData("x", follower.getPose().getX());
