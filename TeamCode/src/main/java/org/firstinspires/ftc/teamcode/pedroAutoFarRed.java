@@ -55,8 +55,8 @@ public class pedroAutoFarRed extends OpMode{
     PathState pathState;
     private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90));
     private final Pose shootPose = new Pose(87, 8, Math.toRadians(70));
-    private final Pose intakeThree = new Pose(136.43956043956044, 34.28571428571429, Math.toRadians(-20));
-    private final Pose intakeN = new Pose(137.36263736263737, 9.043956043956046, Math.toRadians(-10));
+    private final Pose intakeThree = new Pose(133.43956043956044, 34.28571428571429, Math.toRadians(0));
+    private final Pose intakeN = new Pose(133.36263736263737, 9.043956043956046, Math.toRadians(0));
 
     private PathChain driveStartShootFar;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
@@ -84,7 +84,7 @@ public class pedroAutoFarRed extends OpMode{
         // Intake 2 paths with control point
         Pose controlPointShootToIntake3 = new Pose(82.08791208791206, 40.95604395604395, Math.toRadians(0));
         driveShootIntakeThree = follower.pathBuilder()
-                .addPath(new BezierCurve(startPose, controlPointShootToIntake3, intakeThree))
+                .addPath(new BezierCurve(shootPose, controlPointShootToIntake3, intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
                 .build();
     }
