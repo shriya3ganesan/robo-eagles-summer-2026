@@ -170,6 +170,7 @@ public class BlueCloseNineBall extends OpMode {
                 state = State.WAIT_TO_FINISH_PATH_1;
                 break;
             case WAIT_TO_FINISH_PATH_1:
+                launcher.presetMotorVelocity(1000);
                 if(!follower.isBusy()){
                     state = State.FIND_TAG_1;
                 }
@@ -188,7 +189,7 @@ public class BlueCloseNineBall extends OpMode {
                 }
                 break;
             case LAUNCHING_1:
-                if (driveTimer.seconds() < 3) {
+                if (driveTimer.seconds() < 1.5) {
                     intake.startIntake();
                     launcher.loadBall();
                 }
@@ -218,6 +219,7 @@ public class BlueCloseNineBall extends OpMode {
             case GO_TO_LAUNCH_2:
                 if(!follower.isBusy()){
                     follower.followPath(pickup1ToLaunching);
+                    intake.stopIntake();
                     state = State.WAIT_TO_FINISH_PATH_2;
                 }
                 break;
@@ -228,7 +230,6 @@ public class BlueCloseNineBall extends OpMode {
                 break;
             case FIND_TAG_2:
                 if(id24 != null){
-                    intake.stopIntake();
                     state = State.SPIN_UP_2;
                 }
                 break;

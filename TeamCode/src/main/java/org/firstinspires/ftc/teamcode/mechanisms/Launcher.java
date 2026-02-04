@@ -164,6 +164,10 @@ public class Launcher {
         lowerLaunch.setVelocity(_launchSpeed);
         upperLaunch.setVelocity(_launchSpeed);
     }
+    public void presetMotorVelocity(double presetSpeed) {
+        lowerLaunch.setVelocity(presetSpeed);
+        upperLaunch.setVelocity(presetSpeed);
+    }
 
     public void setMotorVelocityForDistance(double rangeinCm) {
         // TODO: calculate appropriate motor velocity based on range

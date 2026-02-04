@@ -170,6 +170,7 @@ public class RedCloseNineBall extends OpMode {
                 state = State.WAIT_TO_FINISH_PATH_1;
                 break;
             case WAIT_TO_FINISH_PATH_1:
+                launcher.presetMotorVelocity(1000);
                 if(!follower.isBusy()){
                     state = State.FIND_TAG_1;
                 }
@@ -188,7 +189,7 @@ public class RedCloseNineBall extends OpMode {
                 }
                 break;
             case LAUNCHING_1:
-                if (driveTimer.seconds() < 3) {
+                if (driveTimer.seconds() < 1.5) {
                     intake.startIntake();
                     launcher.loadBall();
                 }
@@ -218,17 +219,18 @@ public class RedCloseNineBall extends OpMode {
             case GO_TO_LAUNCH_2:
                 if(!follower.isBusy()){
                     follower.followPath(pickup1ToLaunching);
+                    intake.stopIntake();
                     state = State.WAIT_TO_FINISH_PATH_2;
                 }
                 break;
             case WAIT_TO_FINISH_PATH_2:
+                launcher.presetMotorVelocity(1000);
                 if(!follower.isBusy()){
                     state = State.FIND_TAG_2;
                 }
                 break;
             case FIND_TAG_2:
                 if(id24 != null){
-                    intake.stopIntake();
                     state = State.SPIN_UP_2;
                 }
                 break;
@@ -241,7 +243,7 @@ public class RedCloseNineBall extends OpMode {
                 }
                 break;
             case LAUNCHING_2:
-                if (driveTimer.seconds() < 3) {
+                if (driveTimer.seconds() < 1.5) {
                     intake.startIntake();
                     launcher.loadBall();
                 }
@@ -269,18 +271,19 @@ public class RedCloseNineBall extends OpMode {
                 break;
             case GO_TO_LAUNCH_3:
                 if(!follower.isBusy()){
+                    intake.stopIntake();
                     follower.followPath(pickup2ToLaunching2);
                     state = State.WAIT_TO_FINISH_PATH_3;
                 }
                 break;
             case WAIT_TO_FINISH_PATH_3:
                 if(!follower.isBusy()){
+                    launcher.presetMotorVelocity(1000);
                     state = State.FIND_TAG_3;
                 }
                 break;
             case FIND_TAG_3:
                 if(id24 != null){
-                    intake.stopIntake();
                     state = State.SPIN_UP_3;
                 }
                 break;
@@ -293,7 +296,7 @@ public class RedCloseNineBall extends OpMode {
                 }
                 break;
             case LAUNCHING_3:
-                if (driveTimer.seconds() < 3) {
+                if (driveTimer.seconds() < 1.5) {
                     intake.startIntake();
                     launcher.loadBall();
                 }
