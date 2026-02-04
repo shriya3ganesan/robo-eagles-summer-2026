@@ -110,9 +110,9 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
     public static double RESET_TIME = 0.3;         // Time for trigger to reset
 
     // Distance-based motor power constants
-    public static double MIN_DISTANCE = 55.0;      // inches - minimum shooting distance
-    public static double MAX_DISTANCE = 135.0;     // inches - maximum shooting distance
-    public static double MIN_LAUNCH_POWER = 0.74;   // motor power at MIN_DISTANCE
+    public static double MIN_DISTANCE = 50.0;      // inches - minimum shooting distance
+    public static double MAX_DISTANCE = 140.0;     // inches - maximum shooting distance
+    public static double MIN_LAUNCH_POWER = 0.73;   // motor power at MIN_DISTANCE
     public static double MAX_LAUNCH_POWER = 1;   // motor power at MAX_DISTANCE
 
     // Default launch powers for manual shots (depreciated)
@@ -121,9 +121,9 @@ public class AprilTagDT_alwaysOnArcVoltAdj extends LinearOpMode {
 
     // Triple shot constants
     public static int TRIPLE_SHOT_COUNT = 3;
-    public static double POWER_INCREASE_PER_SHOT = 0.1;
-    public static double TRIPLE_SHOT_DELAY = 0.3; // Delay between shots in seconds
-    public static double TRIPLE_SHOT_START_DELAY = 0.1; // Initial delay for transfer motor
+    public static double POWER_INCREASE_PER_SHOT = 0.2;
+    public static double TRIPLE_SHOT_DELAY = 0.2; // Delay between shots in seconds
+    public static double TRIPLE_SHOT_START_DELAY = 0.05; // Initial delay for transfer motor
     double presentVoltage;
 
     private double currentLaunchPower = MIN_LAUNCH_POWER; // Track current launch motor power
