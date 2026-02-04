@@ -13,13 +13,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import dev.frozenmilk.dairy.core.config.annotation.Configurable; // CHANGE BASED ON Version / one used before
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Configurable
-@Autonomous(name="PedroAutoCloseBlueVoltageAdjust", group="Autonomous")
-public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
+@Autonomous(name="PedroAutoCloseRed", group="Autonomous")
+public class pedroAutoCloseRed extends OpMode{
     private DcMotorEx launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
@@ -27,18 +25,18 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
 
-    public static double ONE_SHOT_TIME = 2.3;
-    public static int TARGET_RPM = 4000;
-
+    public static int TARGET_RPM = 2187;
     public static double TICKS_PER_REV = 383.6;
+    public static double oneShot_Shoot_time = 2.3;
+    public static double wait_time = 0.85;
 
     private double getLaunchTargetTicks() {
         return (TARGET_RPM * TICKS_PER_REV) / 60.0;
     }
 
     // Servo positions (servos use 0.0 to 1.0)
-    private double triggerStartPos = 0.158;
-    private double triggerShootPos = 0.208;  // Adjust this value based on your mechanism
+    private double triggerStartPos = 0.11;
+    private double triggerShootPos = 0.4;  // Adjust this value based on your mechanism
 
     private int shotsFired = 0;
     private boolean isShooting = false;
@@ -59,11 +57,11 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
     }
 
     PathState pathState;
-    private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
-    private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
-    private final Pose intakeOne = new Pose(21, 84.4295081967213, Math.toRadians(185));
-    private final Pose intakeTwo = new Pose(16, 59, Math.toRadians(185));
-    private final Pose intakeThree = new Pose(16, 35, Math.toRadians(185));
+    private final Pose startPose = new Pose(20.77, 122.99, Math.toRadians(145)).mirror();
+    private final Pose shootPose = new Pose(58.78, 84.27, Math.toRadians(138)).mirror();
+    private final Pose intakeOne = new Pose(21, 84.43, Math.toRadians(185)).mirror();
+    private final Pose intakeTwo = new Pose(16, 59, Math.toRadians(185)).mirror();
+    private final Pose intakeThree = new Pose(16, 35, Math.toRadians(185)).mirror();
 
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
@@ -80,8 +78,6 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
         driveShootIntakeOne = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, intakeOne))
                 .setConstantHeadingInterpolation(intakeOne.getHeading())
-                .setBrakingStart(0.6)
-                .setBrakingStrength(0.4)
                 .build();
         driveIntakeOneShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeOne, shootPose))
@@ -89,12 +85,10 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                 .build();
 
         // Intake 2 paths with control point
-        Pose controlPointShootToIntake2 = new Pose(55.511475409836066, 54.80983606557377, Math.toRadians(185));
+        Pose controlPointShootToIntake2 = new Pose(55.51, 54.81, Math.toRadians(185)).mirror();
         driveShootIntakeTwo = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake2, intakeTwo))
                 .setConstantHeadingInterpolation(intakeTwo.getHeading())
-                .setBrakingStart(0.6)
-                .setBrakingStrength(0.4)
                 .build();
         driveIntakeTwoShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeTwo, shootPose))
@@ -102,12 +96,10 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                 .build();
 
         // Intake 3 paths
-        Pose controlPointShootToIntake3 = new Pose(60.94098360655738, 31.43934426229508, Math.toRadians(185));
+        Pose controlPointShootToIntake3 = new Pose(90, 31.2, Math.toRadians(185)).mirror();
         driveShootIntakeThree = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake3,intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
-                .setBrakingStart(0.6)
-                .setBrakingStrength(0.4)
                 .build();
         driveIntakeThreeShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeThree, shootPose))
@@ -132,7 +124,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
+                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
                 }
@@ -145,7 +137,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeOne, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    //launchMotor.setVelocity(0); why?
+                    launchMotor.setVelocity(0);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKEONE);
                 }
                 break;
@@ -171,7 +163,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
+                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -185,7 +177,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeTwo, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    //launchMotor.setVelocity(0); why again?
+                    launchMotor.setVelocity(0);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
                 }
                 break;
@@ -211,7 +203,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_2:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
+                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -225,7 +217,8 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
                     follower.followPath(driveShootIntakeThree, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    //launchMotor.setVelocity(0); why aginnininini??
+                    launchMotor.setVelocity(0);
+                    telemetry.addLine("The line right after this is changing the cadse to shootpose to intake 3");
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
                 }
                 break;
@@ -251,7 +244,7 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
             case SHOOT_SAMPLES_3:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.25 * ONE_SHOT_TIME) {
+                if (pathTimer.getElapsedTimeSeconds() < wait_time) {
                     intakeMotor.setPower(0);
                     launchMotor.setVelocity(getLaunchTargetTicks());
                     break;
@@ -281,29 +274,33 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-
         launchMotor.setVelocity(getLaunchTargetTicks());
-        // Each shot cycle takes ~ONE_SHOT_TIME seconds
-        double cycleTime = elapsed % ONE_SHOT_TIME;
-        if (cycleTime <= 0.5 * ONE_SHOT_TIME) {
+        // Each shot cycle takes ~oneShot_Shoot_time seconds
+        double cycleTime = elapsed % oneShot_Shoot_time;
+        if (cycleTime <= 0.1*oneShot_Shoot_time) {
             telemetry.addLine("Waiting");
         }
-        else if (cycleTime < 0.78 * ONE_SHOT_TIME) {
+        //else if (1.7 < cycleTime && cycleTime < 1.8 && shotsFired < 1) {
+        //    transferMotor.setPower(1);
+        //    telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
+        //}
+        else if (cycleTime < 0.6 * oneShot_Shoot_time) {
             // Move trigger to shoot position and run transfer
+
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 0.86 * ONE_SHOT_TIME) {
+        else if (cycleTime < 0.84 * oneShot_Shoot_time) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 0.93 * ONE_SHOT_TIME) {
+        else if (cycleTime < 0.96 * oneShot_Shoot_time) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
         else {
             // Wait before next shot
-            if (elapsed > (shotsFired + 1) * ONE_SHOT_TIME) {
+            if (elapsed > (shotsFired + 1) * oneShot_Shoot_time) {
                 shotsFired++;
             }
         }
@@ -333,13 +330,11 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         launchMotor.setVelocityPIDFCoefficients(
-            0.0,   // kP (start at 0)
-            0.0,   // kI
-            0.0,   // kD
-            13.5   // kF (starting point for goBILDA 6000 RPM)
+                0.0,   // kP (start at 0)
+                0.0,   // kI
+                0.0,   // kD
+                13.5   // kF (starting point for goBILDA 6000 RPM)
         );
 
         trigger.setPosition(triggerStartPos);
@@ -363,8 +358,6 @@ public class PedroAutoCloseBlueVoltageAdjust extends OpMode{
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.addData("path time", pathTimer.getElapsedTimeSeconds());
-        telemetry.addData("Shooter Target RPM", TARGET_RPM);
-        telemetry.addData("Shooter Target Ticks", getLaunchTargetTicks());
         telemetry.update();
     }
 }
