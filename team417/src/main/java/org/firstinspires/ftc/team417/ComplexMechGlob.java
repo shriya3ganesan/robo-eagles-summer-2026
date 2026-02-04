@@ -78,20 +78,22 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     }
     void setLaunchVelocity (LaunchDistance launchDistance) {}
 
-    public PixelColor getSlotColor(int slotIndex) {
+    public PixelColor getSlotColor (int slotIndex) {
         return PixelColor.NONE;
     }
     void controlDrumManually () {}
-    void ohCrap(boolean engage) {}
+    void ohCrap (boolean engage) {}
 
+    //If endgame or auto, rotate through all 3 drum slots and detect color in each
+    void scan () {}
 
+    void manualLaunchOverride () {}
 
 
 }
 
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
-    // TODO tune constants via FTC Dashboard:
     public static double FEEDER_POWER = 1;
     public static double TRANSFER_TIME_UP = 0.6;
     public static double TRANSFER_TIME_DOWN = 0.25;
@@ -114,11 +116,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double INTAKE_BACK_TIME = 0.25;
     public static double NEAR_AUTO_VELOCTIY = 835;
     public static double FAR_AUTO_VELOCITY = 1040;
-
+    //Todo: Update these constants with the values Caden has
+    public static double LEFT_PADDLE_INACTIVE = 10;
+    public static double RIGHT_PADDLE_INACTIVE = 10;
+    public static double LEFT_PADDLE_ACTIVE = 10;
+    public static double RIGHT_PADDLE_ACTIVE = 10;
 
     ElapsedTime transferTimer;
     ElapsedTime intakeTimer;
     ElapsedTime intakeBackTimer;
+    ElapsedTime scanTimer;
     double userIntakeSpeed;
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
@@ -127,6 +134,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         DRUM_MOVE_WAIT, //waiting for the ball to fully enter the slot before moving the drum
         DRUM_MOVE, //waiting for the drum to reach desired position
         INTAKE, //waiting for the intake to finish
+        SCAN, //check the contents of the drum
         TRANSFER, //waiting for the transfer to finish
         SPIN_UP, //waiting for the flywheel(s) to spin up
         IDLE, //waiting for input when the drum is full
@@ -144,6 +152,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     double lowerLaunchVelocity;
     double feederPower;
     boolean engageOhCrap;
+    boolean scanningOn; //only in auto and endgame, scan after intaking to score pattern points
+    boolean scanRequired; //When the intake runs, assume we have a new ball and allow scanning again
     LaunchDistance launchDistance = LaunchDistance.OFF;
 
 
@@ -161,6 +171,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     Servo servoDrumGate;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
+    Servo servoLeftPaddle;
+    Servo servoRightPaddle;
 
     CoolColorDetector coolColorDetector;
 
@@ -197,6 +209,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
         servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
         servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
+        servoRightPaddle = hardwareMap.get(Servo.class, "servoRightPaddle");
+        servoLeftPaddle = hardwareMap.get(Servo.class, "servoLeftPaddle");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
         slotOccupiedBy = new ArrayList<>(Arrays.asList(preloads));
 
@@ -222,6 +236,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         servoBLaunchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
 
 
@@ -265,20 +280,46 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
 
     @Override
-        //a class that controls the launcher and transfer
+    // controls the launcher and transfer
     boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
 
         if (launchDistance == LaunchDistance.OFF) {
             launchDistance = LaunchDistance.NEAR;
         }
+
+        if (requestedColor != RequestedColor.EITHER) {
+            addToDrumQueue(INTAKE_POSITIONS[0], WaitState.SCAN);
+            addToDrumQueue(INTAKE_POSITIONS[1], WaitState.SCAN);
+            addToDrumQueue(INTAKE_POSITIONS[2], WaitState.SCAN);
+        }
+
         int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
-        if (minSlot != -1){
+        if (minSlot != -1) {
             addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
-            slotOccupiedBy.set (minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
+            slotOccupiedBy.set(minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
             return true;
         }
+
         return false;
+
+
+
+        // If we want to score pattern points and have not already scanned after last intake, we want to scan the contents of the drum
+//        if (requestedColor != RequestedColor.EITHER && scanRequired) {
+//            addToDrumQueue(INTAKE_POSITIONS[0], WaitState.SCAN);
+//            addToDrumQueue(INTAKE_POSITIONS[1], WaitState.SCAN);
+//            addToDrumQueue(INTAKE_POSITIONS[2], WaitState.SCAN);
+//
+//        } else {
+//            int minSlot = findNearestSlot(LAUNCH_POSITIONS, requestedColor);
+//            if (minSlot != -1) {
+//                addToDrumQueue(LAUNCH_POSITIONS[minSlot], WaitState.SPIN_UP);
+//                slotOccupiedBy.set(minSlot, PixelColor.NONE); //marking this slot as empty so we don't accidentally try to use it again
+//                return true;
+//            }
+//        }
+//        return false;
     }
     //this function adds a new drum request to the drum queue. nextState is the state do use after the drum is finished moving
     void addToDrumQueue(double position, WaitState nextState){
@@ -367,7 +408,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     //if the gate is stuck, move the drum back to get the stuck ball out, along with opening gate
     @Override
-    void ohCrap(boolean engage) {
+    void ohCrap (boolean engage) {
         engageOhCrap = engage;
         if (engage) {
             if (drumQueue.size() == 1) {
@@ -379,9 +420,30 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
 
     @Override
-    public PixelColor getSlotColor(int slotIndex) {
+    public PixelColor getSlotColor (int slotIndex) {
         PixelColor artifactColor = slotOccupiedBy.get(slotIndex);
         return artifactColor;
+    }
+
+    @Override
+    void scan () {
+        PixelColor slotColor = coolColorDetector.detectArtifactColor();
+        int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+        slotOccupiedBy.set(slot, slotColor);
+    }
+
+    @Override
+    void manualLaunchOverride () {
+        //TODO: Can I set transfer position here? Does it have to be at the bottom?
+        servoTransfer.setPosition(TRANSFER_INACTIVE_POSITION);
+        ElapsedTime timer = new ElapsedTime();
+        int slot = findSlotFromPosition(hwDrumPosition, LAUNCH_POSITIONS);
+        while (timer.seconds() < TRANSFER_TIME_DOWN) {
+            slotOccupiedBy.set(slot, PixelColor.NONE);
+        }
+        //TODO: Is this the correct state to move into after stopping launch?
+        waitState = WaitState.DRUM_MOVE_WAIT;
+
     }
 
     @Override
@@ -416,6 +478,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         if (intakePower > 0 && waitState != WaitState.DRUM_MOVE) {
             gatePosition = DRUM_GATE_OPEN_POSITION;
+            scanRequired = true;
         } else {
             gatePosition = DRUM_GATE_CLOSED_POSITION;
         }
@@ -437,6 +500,17 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
                 addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
             }
+        }
+
+        if (waitState == WaitState.SCAN) {
+//            int i = 0;
+            if (drumAtPosition()) {
+                scan();
+//                i += 1;
+            }
+
+            waitState = WaitState.DRUM_MOVE;
+            //TODO: Add to drum queue the driver's launch request with requested color that was not done because scan was req
         }
 
         // let a firing request interrupt an intake
@@ -473,15 +547,14 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
         if (waitState == WaitState.INTAKE) {
             launchDistance = LaunchDistance.OFF;
-            PixelColor slotColor = coolColorDetector.detectArtifactColor();
-            if (slotColor != PixelColor.NONE) {
-                int slot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
-                slotOccupiedBy.set(slot, slotColor);
-                waitState = WaitState.DRUM_MOVE_WAIT;
-                intakeTimer = new ElapsedTime();
-                intakeBackTimer = new ElapsedTime();
-            }
+            // Because slot colors don't matter right now
+            // so we assume all 3 slots are purple
+            slotOccupiedBy.set(0, PixelColor.PURPLE);
+            slotOccupiedBy.set(1, PixelColor.PURPLE);
+            slotOccupiedBy.set(2, PixelColor.PURPLE);
         }
+
+        //TODO remove?
         if (waitState == WaitState.DRUM_MOVE_WAIT) {
             if (intakeTimer.seconds() >= INTAKE_TIMER) {
                 waitState = WaitState.IDLE;

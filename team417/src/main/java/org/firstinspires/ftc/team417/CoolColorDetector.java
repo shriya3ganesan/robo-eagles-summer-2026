@@ -47,45 +47,51 @@ public class CoolColorDetector {
         double minDistance;
         NormalizedColorSensor sensor;
 
-        if (distance1 < MAXIMUM_DISTANCE && distance1 > MINIMUM_DISTANCE && distance2 > MINIMUM_DISTANCE) {
-            sensor = sensor1;
-            minDistance = distance1;
-        } else {
-            sensor = sensor2;
-            minDistance = distance2;
-        }
-        if (minDistance > MAXIMUM_DISTANCE || minDistance < MINIMUM_DISTANCE) {
-            String string = String.format(" %.1f, %.1f\"", distance1, distance2);
-            telemetry.addLine(string);
-            Log.d("CoolColorDetector", string);
-            return PixelColor.NONE;
-        }
+//        if (distance1 < MAXIMUM_DISTANCE && distance1 > MINIMUM_DISTANCE && distance2 > MINIMUM_DISTANCE) {
+//            sensor = sensor1;
+//            minDistance = distance1;
+//        } else {
+//            sensor = sensor2;
+//            minDistance = distance2;
+//        }
 
-        NormalizedRGBA colors = sensor.getNormalizedColors();
-        float[] hsv = new float[3];
-        Color.colorToHSV(colors.toColor(), hsv);
-        float hue = hsv[0];
-        float value = hsv[2];
+//        if (minDistance > MAXIMUM_DISTANCE || minDistance < MINIMUM_DISTANCE) {
+//            String string = String.format(" %.1f, %.1f\"", distance1, distance2);
+//            telemetry.addLine(string);
+//            Log.d("CoolColorDetector", string);
+//            return PixelColor.NONE;
+//        }
+        NormalizedRGBA sensor1Color = sensor1.getNormalizedColors();
+        NormalizedRGBA sensor2Color = sensor2.getNormalizedColors();
 
-        String colorCube = String.format("<font color='#%06x'>\u25a0\u25a0\u25a0</font>",
-                colors.toColor() & 0xffffff);
+        float[] hsv1 = new float[3];
+        Color.colorToHSV(sensor1Color.toColor(), hsv1);
+        float hue1 = hsv1[0];
+        float value1 = hsv1[2];
 
-        PixelColor result = PixelColor.NONE;
-        if (value > MIN_VALUE) {
-            if (hue > GREEN_MIN_HUE && hue < GREEN_MAX_HUE) { //range determined from testing
+        float[] hsv2 = new float[3];
+        Color.colorToHSV(sensor2Color.toColor(), hsv2);
+        float hue2 = hsv2[0];
+        float value2 = hsv2[2];
+
+        float averagedHue = (hue1 + hue2)/2;
+
+//        String colorCube = String.format("<font color='#%06x'>\u25a0\u25a0\u25a0</font>",
+//                averagedColor.toColor() & 0xffffff);
+
+        PixelColor result = PixelColor.PURPLE;
+            if (averagedHue > GREEN_MIN_HUE && averagedHue < GREEN_MAX_HUE) { //range determined from testing
                 result = PixelColor.GREEN;
-            } else if (hue >= PURPLE_MIN_HUE && hue <= PURPLE_MAX_HUE) { //range determined from testing
+            } else if (averagedHue >= PURPLE_MIN_HUE && averagedHue <= PURPLE_MAX_HUE) { //range determined from testing
                 result = PixelColor.PURPLE;
             }
-        }
 
-        String string = String.format("%.1f/%.1fmm %s H: %.1f V: %.2f %s",
-                distance1, distance2, colorCube, hue, value, result);
-        if (result != PixelColor.NONE) {
-            telemetry.log().add(string);
-        }
-        telemetry.addLine(string);
-        Log.d("CoolColorDetector", string);
+//        String string = String.format("%.1f/%.1fmm %s H: %.1f V: %.2f %s",
+//                distance1, distance2, colorCube, hue, value, result);
+
+//        telemetry.log().add(string);
+//        telemetry.addLine(string);
+//        Log.d("CoolColorDetector", string);
         // Return the result that was decided in the if statements above
         return result;
 
