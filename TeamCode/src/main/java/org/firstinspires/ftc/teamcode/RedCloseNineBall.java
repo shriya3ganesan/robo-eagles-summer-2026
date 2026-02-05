@@ -40,7 +40,7 @@ public class RedCloseNineBall extends OpMode {
     private final Pose endPose = new Pose(125, 38.5, Math.toRadians(0)); //Finish with 3 balls
 
     private Path startToLaunching;
-    private PathChain launchingToPickupReady1, pickupReady1ToPickup1, pickup1ToLaunching, launchingToPickupReady2, pickupReady2ToPickup2, pickup2ToLaunching2, launchingToPickupReady3, pickupReady3ToFinish;
+    private PathChain launchingToPickupReady1, pickupReady1ToPickup1, pickup1ToLaunching, launchingToPickupReady2, pickupReady2ToPickup2, pickup2ToLaunching2, launchingToPickupReady3, pickupReady3ToFinish, finishToLaunching3;
 
     public void buildPaths() {
 
@@ -48,7 +48,7 @@ public class RedCloseNineBall extends OpMode {
         startToLaunching = new Path(new BezierLine(startPose, launchingPose));
         startToLaunching.setLinearHeadingInterpolation(startPose.getHeading(), launchingPose.getHeading());
 
-        //these next several section set up the rest of the paths, created in the PathChain
+        //these next several sections set up the rest of the paths, created in the PathChain
         launchingToPickupReady1 = follower.pathBuilder()
                 .addPath(new BezierLine(launchingPose, pickupReady1Pose))
                 .setLinearHeadingInterpolation(launchingPose.getHeading(), pickupReady1Pose.getHeading())
@@ -88,9 +88,14 @@ public class RedCloseNineBall extends OpMode {
                 .addPath(new BezierLine(pickupReady3, endPose))
                 .setLinearHeadingInterpolation(pickupReady3.getHeading(), endPose.getHeading())
                 .build();
+
+        finishToLaunching3 = follower.pathBuilder()
+                .addPath(new BezierLine(endPose, launchingPose))
+                .setLinearHeadingInterpolation(endPose.getHeading(), launchingPose.getHeading())
+                .build();
     }
 
-    enum State {
+    public static enum State {
         GO_TO_LAUNCH_1,
         WAIT_TO_FINISH_PATH_1,
         FIND_TAG_1,
@@ -111,11 +116,17 @@ public class RedCloseNineBall extends OpMode {
         SPIN_UP_3,
         LAUNCHING_3,
         PREPARE_TO_INTAKE_POSE_3,
+        INTAKE_3,
+        GO_TO_LAUNCH_4,
+        WAIT_TO_FINISH_PATH_4,
+        SPIN_UP_4,
+        LAUNCHING_4,
+        FIND_TAG_4,
         GO_TO_END_POSE,
-        FINISHED
+        FINISHED,
     }
 
-    RedCloseNineBall.State state;
+    State state;
     ElapsedTime driveTimer = new ElapsedTime();
 
 
@@ -158,7 +169,10 @@ public class RedCloseNineBall extends OpMode {
                 state == State.LAUNCHING_2 ||
                 state == State.FIND_TAG_3 ||
                 state == State.SPIN_UP_3 ||
-                state == State.LAUNCHING_3)
+                state == State.LAUNCHING_3 ||
+                state == State.FIND_TAG_4 ||
+                state == State.SPIN_UP_4 ||
+                state == State.LAUNCHING_4)
         {
             doAprilTag();
         }
@@ -168,6 +182,9 @@ public class RedCloseNineBall extends OpMode {
             case GO_TO_LAUNCH_1:
                 follower.followPath(startToLaunching);
                 state = State.WAIT_TO_FINISH_PATH_1;
+
+                ///SET LAUNCHERS TO START SPINNING HERE, FIND THE IDEAL VELOCITY FOR OUR LAUNCH POSITION
+
                 break;
             case WAIT_TO_FINISH_PATH_1:
                 launcher.presetMotorVelocity(1000);
@@ -198,6 +215,9 @@ public class RedCloseNineBall extends OpMode {
                     //launcher.setMotorVelocity();
                     launcher.stopLauncher();
                     launcher.resetFeeder();
+
+                    //SET BOTH LAUNCHERS TO 0 VELOCITY HERE
+
                     //Launcher.LaunchState = Launcher.LaunchState.IDLE;
                     state = State.PREPARE_TO_INTAKE_POSE_1;
                     driveTimer.reset();
@@ -218,6 +238,11 @@ public class RedCloseNineBall extends OpMode {
                 break;
             case GO_TO_LAUNCH_2:
                 if(!follower.isBusy()){
+
+                    //STOP INTAKE HERE TO AVOID OVERFLOWING BALLS BEFORE LAUNCHING
+
+                    //START SPINNING UP BOTH MOTORS HERE TO IDEAL LAUNCH VELOCITY FROM SHOOTING POSITION
+
                     follower.followPath(pickup1ToLaunching);
                     intake.stopIntake();
                     state = State.WAIT_TO_FINISH_PATH_2;
@@ -250,6 +275,9 @@ public class RedCloseNineBall extends OpMode {
                 else {
                     intake.stopIntake();
                     launcher.resetFeeder();
+
+                    //SET LAUNCHERS BOTH TO 0 VELOCITY
+
                     Launcher.LaunchState = Launcher.LaunchState.IDLE;
                     launcher.stopLauncher();
                     state = State.PREPARE_TO_INTAKE_POSE_2;
@@ -312,21 +340,72 @@ public class RedCloseNineBall extends OpMode {
             case PREPARE_TO_INTAKE_POSE_3:
                 if(!follower.isBusy()){
                     follower.followPath(launchingToPickupReady3, true);
-                    state = State.GO_TO_END_POSE;
+                    state = State.INTAKE_3;
                 }
 
-            case GO_TO_END_POSE:
+            case INTAKE_3:
                 if(!follower.isBusy()){
                     intake.startIntake();
                     follower.followPath(pickupReady3ToFinish);
                     driveTimer.reset();
+                    state = State.GO_TO_LAUNCH_4;
+                }
+                break;
+
+            case GO_TO_LAUNCH_4:
+                if(!follower.isBusy()){
+                    intake.stopIntake();
+                    follower.followPath(finishToLaunching3);
+                    state = State.WAIT_TO_FINISH_PATH_4;
+                }
+                break;
+            case WAIT_TO_FINISH_PATH_4:
+                if(!follower.isBusy()){
+                    launcher.presetMotorVelocity(1000);
+                    state = State.FIND_TAG_4;
+                }
+                break;
+            case FIND_TAG_4:
+                if(id24 != null){
+                    state = State.SPIN_UP_4;
+                }
+                break;
+            case SPIN_UP_4:
+                speedError = launcher.getLaunchSpeedError();
+                angleError = turret.getAngleError();
+                if (speedError < 100){
+                    driveTimer.reset();
+                    state = State.LAUNCHING_4;
+
+                }
+                break;
+            case LAUNCHING_4:
+                if (driveTimer.seconds() < 1.5) {
+                    intake.startIntake();
+                    launcher.loadBall();
+                }
+                else {
+                    intake.stopIntake();
+                    launcher.resetFeeder();
+                    Launcher.LaunchState = Launcher.LaunchState.IDLE;
+                    launcher.stopLauncher();
+                    state = State.GO_TO_END_POSE;
+                    driveTimer.reset();
+                }
+                break;
+            case GO_TO_END_POSE:
+                if(!follower.isBusy()){
+                    intake.startIntake();
+                    follower.followPath(launchingToPickupReady3);
+                    driveTimer.reset();
                     state = State.FINISHED;
                 }
                 break;
+
             case FINISHED:
                 if(!follower.isBusy()) {
                         if(driveTimer.seconds() > 2)
-                        intake.stopIntake();
+                            intake.stopIntake();
                 }
                 break;
 
