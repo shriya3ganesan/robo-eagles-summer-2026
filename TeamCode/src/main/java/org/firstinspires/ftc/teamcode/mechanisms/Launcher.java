@@ -40,6 +40,8 @@ public class Launcher {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
+
+
     /*
      * NOTE: we are not currently using the state machine
      * TECH TIP: State Machines
@@ -90,23 +92,19 @@ public class Launcher {
         lowerLaunch.setDirection(DcMotorSimple.Direction.FORWARD);
         launchFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-
-        // TODO: tets to see if this makes a difference
-        /* add these lines when encoders have been attached to the launch motors
-        upperLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
-                300, 0, 0, 10));
-        lowerLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
-                300, 0, 0, 10));
-*/
-
-        // Set left feeder servo to reverse so both servos work to feed ball into robot.
-        //launchFeeder.setDirection(Servo.Direction.REVERSE);
-        resetFeeder(); // default it to "0" degrees
+        // set feeder motor to speed 0
+        resetFeeder();
 
         // Set initial state of launcher to IDLE.
         launchState = LaunchState.IDLE;
         //stopFeeder();
         stopLauncher();
+    }
+
+    public void SetNewPIDValues(double p, double i, double d, double f) {
+        PIDFCoefficients pidf = new PIDFCoefficients(p, i, d, f);
+        upperLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+        lowerLaunch.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
     }
 
     /// Set launch feeder server back to "0" position
