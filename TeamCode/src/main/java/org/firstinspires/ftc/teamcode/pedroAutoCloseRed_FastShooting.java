@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Disabled
-@Autonomous(name="PedroAutoCloseBlue", group="Autonomous")
-public class pedroAutoCloseBlue extends OpMode{
+@Autonomous(name="pedroAutoCloseRed_FastShooting", group="Autonomous")
+public class pedroAutoCloseRed_FastShooting extends OpMode{
     private DcMotor launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
