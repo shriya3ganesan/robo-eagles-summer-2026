@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Disabled
-@Autonomous(name="PedroAutoCloseRedVoltageAdjust", group="Autonomous")
-public class PedroAutoCloseRedVoltageAdjust extends OpMode{
+@Autonomous(name="pedroAutoCloseRedVoltageAdjust", group="Autonomous")
+public class pedroAutoCloseRedVoltageAdjust extends OpMode{
     private DcMotor launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
