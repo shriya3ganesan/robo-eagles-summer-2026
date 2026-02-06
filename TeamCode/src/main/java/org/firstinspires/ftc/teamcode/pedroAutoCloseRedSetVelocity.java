@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-@Autonomous(name="PedroAutoCloseRed", group="Autonomous")
-public class pedroAutoCloseRed extends OpMode{
+@Disabled
+@Autonomous(name="pedroAutoCloseRedSetVelocity", group="Autonomous")
+public class pedroAutoCloseRedSetVelocity extends OpMode{
     private DcMotorEx launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
