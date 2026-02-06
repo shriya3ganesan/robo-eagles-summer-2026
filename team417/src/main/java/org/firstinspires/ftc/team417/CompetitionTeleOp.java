@@ -155,7 +155,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                 mechGlob.setLaunchVelocity(LaunchDistance.OFF);
             //Manually stop the transfer process
             } else if (gamepad2.rightBumperWasPressed()) {
-                mechGlob.manualLaunchOverride();
+                mechGlob.stopLaunch();
             }
 
             mechGlob.ohCrap(gamepad2.right_trigger > 0);
