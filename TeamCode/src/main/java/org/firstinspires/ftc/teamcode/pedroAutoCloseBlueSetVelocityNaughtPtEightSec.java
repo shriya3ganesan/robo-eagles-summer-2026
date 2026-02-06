@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
+@Disabled
 @Autonomous(name="pedroAutoCloseBlueSetVelocityNaughtPtEightSec", group="Autonomous")
 public class pedroAutoCloseBlueSetVelocityNaughtPtEightSec extends OpMode{
     private DcMotor launchMotor = null;
