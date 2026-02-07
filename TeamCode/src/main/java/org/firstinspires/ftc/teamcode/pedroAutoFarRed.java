@@ -24,7 +24,7 @@ public class pedroAutoFarRed extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    public static double launchPower = 0.78;
+    public static double launchPower = 0.98;
 
     // Servo positions (servos use 0.0 to 1.0)
     public static double triggerStartPos = 0.11;
@@ -45,9 +45,9 @@ public class pedroAutoFarRed extends OpMode{
 
     PathState pathState;
     private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90));
-    private final Pose shootPose = new Pose(87, 8, Math.toRadians(70));
-    private final Pose intakeThree = new Pose(133.43956043956044, 34.28571428571429, Math.toRadians(0));
-    private final Pose intakeN = new Pose(133.36263736263737, 9.043956043956046, Math.toRadians(0));
+    private final Pose shootPose = new Pose(86.7, 24.3, Math.toRadians(67));
+    private final Pose intakeThree = new Pose(140.08206455817657, 34.28571428571429, Math.toRadians(0));
+    private final Pose intakeN = new Pose(142.57660626029653, 9.043956043956046, Math.toRadians(0));
 
     private PathChain driveStartShootFar;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
