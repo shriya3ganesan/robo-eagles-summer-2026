@@ -24,7 +24,7 @@ public class pedroAutoCloseRed extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    public static double launchPower = 0.78;
+    public static double launchPower = 0.75;
 
     // Servo positions (servos use 0.0 to 1.0)
     public static double triggerStartPos = 0.11;
@@ -50,7 +50,7 @@ public class pedroAutoCloseRed extends OpMode{
 
     PathState pathState;
     private final Pose startPose = new Pose(20.77, 122.99, Math.toRadians(145)).mirror();
-    private final Pose shootPose = new Pose(58.78, 84.27, Math.toRadians(140)).mirror();
+    private final Pose shootPose = new Pose(58.78, 84.27, Math.toRadians(132)).mirror();
     private final Pose intakeOne = new Pose(21, 84.43, Math.toRadians(185)).mirror();
     private final Pose intakeTwo = new Pose(16.8, 59, Math.toRadians(185)).mirror();
     private final Pose intakeThree = new Pose(16.3, 35, Math.toRadians(185)).mirror();
@@ -275,7 +275,7 @@ public class pedroAutoCloseRed extends OpMode{
         double elapsed = pathTimer.getElapsedTimeSeconds();
         launchMotor.setPower(launchPower);
 
-        double cycleTime = elapsed % 1.5;
+        double cycleTime = elapsed % 1.3;
         if (cycleTime <= 0.4) {
             telemetry.addLine("Waiting");
         }
@@ -292,7 +292,7 @@ public class pedroAutoCloseRed extends OpMode{
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
         else {
-            if (elapsed > (shotsFired + 1) * 1.5) {
+            if (elapsed > (shotsFired + 1) * 1.3) {
                 shotsFired++;
             }
         }
