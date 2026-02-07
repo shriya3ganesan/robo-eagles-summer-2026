@@ -88,6 +88,7 @@ public class pedroAutoFarRed extends OpMode{
                     follower.followPath(driveStartShootFar, true);
                     launchMotor.setPower(launchPower);  // Start flywheel early                    isShooting = true;
                     trigger.setPosition(triggerStartPos);
+                    isShooting = true;
                 }
                 if (!follower.isBusy()) {
                     setPathState(PathState.SHOOT_PRELOAD);
