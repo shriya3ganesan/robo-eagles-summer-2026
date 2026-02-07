@@ -50,7 +50,7 @@ public class pedroAutoCloseRed extends OpMode{
 
     PathState pathState;
     private final Pose startPose = new Pose(20.77, 122.99, Math.toRadians(145)).mirror();
-    private final Pose shootPose = new Pose(58.78, 84.27, Math.toRadians(132)).mirror();
+    private final Pose shootPose = new Pose(58.78, 84.27, Math.toRadians(137)).mirror();
     private final Pose intakeOne = new Pose(21, 84.43, Math.toRadians(185)).mirror();
     private final Pose intakeTwo = new Pose(16.8, 59, Math.toRadians(185)).mirror();
     private final Pose intakeThree = new Pose(16.3, 35, Math.toRadians(185)).mirror();
