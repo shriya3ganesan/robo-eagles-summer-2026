@@ -16,8 +16,8 @@ import com.bylazar.configurables.annotations.Configurable;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Configurable
-@Autonomous(name="PedroAutoFarRed", group="Autonomous")
-public class pedroAutoFarRed extends OpMode{
+@Autonomous(name="PedroAutoFarBlue", group="Autonomous")
+public class pedroAutoFarBlue extends OpMode{
     private DcMotor launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
