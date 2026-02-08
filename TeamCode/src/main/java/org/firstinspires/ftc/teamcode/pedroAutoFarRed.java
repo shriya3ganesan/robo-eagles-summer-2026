@@ -25,11 +25,12 @@ public class pedroAutoFarRed extends OpMode{
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
     public static double launchPower = 0.91;
-    public static double launchPower23 = 0.85;
+    public static double launchPower2 = 0.75;
+    public static double launchPower3 = 0.85;
 
     // Servo positions (servos use 0.0 to 1.0)
     public static double triggerStartPos = 0.11;
-    public static double triggerShootPos = 0.38;  // Adjust this value based on your mechanism
+    public static double triggerShootPos = 0.3;  // Adjust this value based on your mechanism
     public static double shootAngle = 65.4;
 
     private int shotsFired = 1;
@@ -199,8 +200,10 @@ public class pedroAutoFarRed extends OpMode{
 
         double cycleTime = elapsed % 1.5;
         double shots = elapsed / 1.5;
-        if (shots > 1) {
-            launchMotor.setPower(launchPower23);
+        if (shots > 2) {
+            launchMotor.setPower(launchPower3);
+        } else if (shots > 1) {
+            launchMotor.setPower(launchPower2);
         }
         if (cycleTime <= 0.4) {
             telemetry.addLine("Waiting");
