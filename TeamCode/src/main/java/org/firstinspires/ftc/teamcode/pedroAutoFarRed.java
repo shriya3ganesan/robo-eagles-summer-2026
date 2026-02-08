@@ -24,11 +24,13 @@ public class pedroAutoFarRed extends OpMode{
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    public static double launchPower = 0.98;
+    public static double launchPower = 0.91;
+    public static double launchPower23 = 0.85;
 
     // Servo positions (servos use 0.0 to 1.0)
     public static double triggerStartPos = 0.11;
-    public static double triggerShootPos = 0.4;  // Adjust this value based on your mechanism
+    public static double triggerShootPos = 0.38;  // Adjust this value based on your mechanism
+    public static double shootAngle = 65.4;
 
     private int shotsFired = 1;
     private boolean isShooting = false;
@@ -45,7 +47,7 @@ public class pedroAutoFarRed extends OpMode{
 
     PathState pathState;
     private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90));
-    private final Pose shootPose = new Pose(86.7, 24.3, Math.toRadians(67));
+    private final Pose shootPose = new Pose(86.7, 20.3, Math.toRadians(shootAngle));
     private final Pose intakeThree = new Pose(140.08206455817657, 34.28571428571429, Math.toRadians(0));
     private final Pose intakeN = new Pose(142.57660626029653, 9.043956043956046, Math.toRadians(0));
 
@@ -66,7 +68,7 @@ public class pedroAutoFarRed extends OpMode{
                 .build();
         driveShootIntakeN = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, intakeN))
-                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeN.getHeading())
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeN.getHeading(), 0.6)
                 .build();
         driveIntakeNShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeN, shootPose))
@@ -158,6 +160,11 @@ public class pedroAutoFarRed extends OpMode{
 
             case DRIVE_SHOOTPOS_INTAKE_N:
                 // Keep intake running while driving
+                if (pathTimer.getElapsedTimeSeconds() > 3.0) {
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeNShoot, true);
+                    setPathState(PathState.DRIVE_INTAKE_N_SHOOTPOS);
+                }
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeNShoot, true);
@@ -191,6 +198,10 @@ public class pedroAutoFarRed extends OpMode{
         launchMotor.setPower(launchPower);
 
         double cycleTime = elapsed % 1.5;
+        double shots = elapsed / 1.5;
+        if (shots > 1) {
+            launchMotor.setPower(launchPower23);
+        }
         if (cycleTime <= 0.4) {
             telemetry.addLine("Waiting");
         }
