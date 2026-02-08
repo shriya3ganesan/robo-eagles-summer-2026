@@ -1,0 +1,274 @@
+package org.firstinspires.ftc.teamcode;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.bylazar.configurables.annotations.Configurable;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+@Configurable
+@Autonomous(name="PedroAutoFarRed", group="Autonomous")
+public class pedroAutoFarRed extends OpMode{
+    private DcMotor launchMotor = null;
+    private DcMotor transferMotor = null;
+    private Servo trigger = null;
+    private DcMotor intakeMotor = null;
+    private Follower follower;
+    private Timer pathTimer, opModeTimer, shootTimer;
+    public static double launchPower = 0.91;
+    public static double launchPower23 = 0.85;
+
+    // Servo positions (servos use 0.0 to 1.0)
+    public static double triggerStartPos = 0.11;
+    public static double triggerShootPos = 0.38;  // Adjust this value based on your mechanism
+    public static double shootAngle = 65.4;
+
+    private int shotsFired = 1;
+    private boolean isShooting = false;
+
+    public enum PathState{
+        DRIVE_STARTPOS_SHOOTPOS,
+        SHOOT_PRELOAD,
+        DRIVE_SHOOTPOS_INTAKE_3,
+        DRIVE_INTAKE_3_SHOOTPOS,
+        SHOOT_SAMPLES,
+        DRIVE_SHOOTPOS_INTAKE_N,
+        DRIVE_INTAKE_N_SHOOTPOS
+    }
+
+    PathState pathState;
+    private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90)).mirror();
+    private final Pose shootPose = new Pose(86.7, 20.3, Math.toRadians(shootAngle)).mirror();
+    private final Pose intakeThree = new Pose(140.08206455817657, 34.28571428571429, Math.toRadians(0)).mirror();
+    private final Pose intakeN = new Pose(142.57660626029653, 9.043956043956046, Math.toRadians(0)).mirror();
+
+    private PathChain driveStartShootFar;
+    private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
+    private PathChain driveShootIntakeN, driveIntakeNShoot;
+    public static double spinUpTime = 0.2;
+
+    public void buildPaths(){
+        // Initial paths
+        driveStartShootFar = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, shootPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
+                .build();
+        driveIntakeThreeShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeThree, shootPose))
+                .setLinearHeadingInterpolation(intakeThree.getHeading(), shootPose.getHeading())
+                .build();
+        driveShootIntakeN = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intakeN))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeN.getHeading(), 0.6)
+                .build();
+        driveIntakeNShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeN, shootPose))
+                .setLinearHeadingInterpolation(intakeN.getHeading(), shootPose.getHeading())
+                .build();
+
+        // Intake 2 paths with control point
+        Pose controlPointShootToIntake3 = new Pose(82.08791208791206, 40.95604395604395, Math.toRadians(0)).mirror();
+        driveShootIntakeThree = follower.pathBuilder()
+                .addPath(new BezierCurve(shootPose, controlPointShootToIntake3, intakeThree))
+                .setConstantHeadingInterpolation(intakeThree.getHeading())
+                .build();
+    }
+
+    public void statePathUpdate(){
+        switch(pathState){
+            case DRIVE_STARTPOS_SHOOTPOS:
+                if (!isShooting) {
+                    follower.followPath(driveStartShootFar, true);
+                    launchMotor.setPower(launchPower);  // Start flywheel early                    isShooting = true;
+                    trigger.setPosition(triggerStartPos);
+                    isShooting = true;
+                }
+                if (!follower.isBusy()) {
+                    setPathState(PathState.SHOOT_PRELOAD);
+                    shotsFired = 1;
+                }
+                break;
+
+            case SHOOT_PRELOAD:
+                // Wait a moment for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
+                    launchMotor.setPower(launchPower);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 2) {
+                    shootOneShot();
+                } else {
+                    // Done shooting, move to intake 3
+                    follower.followPath(driveShootIntakeThree, true);
+                    //follower.followPath(driveShootIntakeN, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_3);
+                    //setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
+                }
+                break;
+
+            case DRIVE_SHOOTPOS_INTAKE_3:
+                // Keep intake running while driving
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeThreeShoot, true);
+                    setPathState(PathState.DRIVE_INTAKE_3_SHOOTPOS);
+                }
+                break;
+
+            case DRIVE_INTAKE_3_SHOOTPOS:
+                if (!follower.isBusy()) {
+                    launchMotor.setPower(launchPower);  // Spin up flywheel
+
+                    transferMotor.setPower(0);
+                    setPathState(PathState.SHOOT_SAMPLES);
+                    shotsFired = 1;
+                }
+                break;
+
+            case SHOOT_SAMPLES:
+                // Wait for flywheel to spin up
+                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
+                    intakeMotor.setPower(0);
+                    launchMotor.setPower(launchPower);
+                    break;
+                }
+
+                // Fire 3 shots
+                if (shotsFired < 2) {
+                    shootOneShot();
+                } else {
+                    // Done shooting, move to intake N
+                    follower.followPath(driveShootIntakeN, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
+                }
+                break;
+
+            case DRIVE_SHOOTPOS_INTAKE_N:
+                // Keep intake running while driving
+                if (pathTimer.getElapsedTimeSeconds() > 3.0) {
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeNShoot, true);
+                    setPathState(PathState.DRIVE_INTAKE_N_SHOOTPOS);
+                }
+                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    transferMotor.setPower(-1);
+                    follower.followPath(driveIntakeNShoot, true);
+                    setPathState(PathState.DRIVE_INTAKE_N_SHOOTPOS);
+                }
+                break;
+
+            case DRIVE_INTAKE_N_SHOOTPOS:
+                if (!follower.isBusy()) {
+                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    intakeMotor.setPower(0);
+                    transferMotor.setPower(0);
+                    setPathState(PathState.SHOOT_SAMPLES);
+                    shotsFired = 1;
+                }
+                break;
+
+            default:
+                telemetry.addLine("No State Set");
+                break;
+        }
+    }
+
+    private void shootOneShot() {
+        // Check if we're done before starting any shot logic
+        if (shotsFired >= 3) {
+            return;
+        }
+
+        double elapsed = pathTimer.getElapsedTimeSeconds();
+        launchMotor.setPower(launchPower);
+
+        double cycleTime = elapsed % 1.5;
+        double shots = elapsed / 1.5;
+        if (shots > 1) {
+            launchMotor.setPower(launchPower23);
+        }
+        if (cycleTime <= 0.4) {
+            telemetry.addLine("Waiting");
+        }
+        else if (0.4 < cycleTime && cycleTime < 0.9) {
+            transferMotor.setPower(1);
+            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
+        }
+        else if (cycleTime < 1.1) {
+            trigger.setPosition(triggerShootPos);
+            transferMotor.setPower(0);
+        }
+        else if (cycleTime < 1.25) {
+            trigger.setPosition(triggerStartPos);
+            telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
+        }
+        else {
+            if (elapsed > (shotsFired + 1) * 1.5) {
+                shotsFired++;
+            }
+        }
+    }
+
+    public void setPathState(PathState newState){
+        pathState = newState;
+        pathTimer.resetTimer();
+        isShooting = false;
+    }
+
+    @Override
+    public void init(){
+        pathState = PathState.DRIVE_STARTPOS_SHOOTPOS;
+        pathTimer = new Timer();
+        opModeTimer = new Timer();
+        shootTimer = new Timer();
+        follower = Constants.createFollower(hardwareMap);
+
+        launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        transferMotor = hardwareMap.get(DcMotor.class, "transfer");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
+        trigger = hardwareMap.get(Servo.class, "Trigger");
+
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        trigger.setDirection(Servo.Direction.FORWARD);
+        transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        trigger.setPosition(triggerStartPos);
+
+        buildPaths();
+        follower.setPose(startPose);
+    }
+
+    public void start(){
+        opModeTimer.resetTimer();
+        setPathState(pathState);
+    }
+
+    @Override
+    public void loop(){
+        follower.update();
+        statePathUpdate();
+        telemetry.addData("path state", pathState.toString());
+        telemetry.addData("shots fired", shotsFired);
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("path time", pathTimer.getElapsedTimeSeconds());
+        telemetry.update();
+    }
+}
