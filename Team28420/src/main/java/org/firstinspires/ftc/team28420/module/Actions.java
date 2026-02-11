@@ -22,6 +22,7 @@ public class Actions {
 
     private double cachedHeading = 0.0;
 
+
     public Actions(Movement mv, IMU imu, Camera cam, Shooter shooter, Servo parkingServo) {
         this.mv = mv;
         this.imu = imu;
@@ -47,70 +48,33 @@ public class Actions {
     public void updateHeading() {
         cachedHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
     }
-
-    public void updateShooter(Gamepad gamepad) {
-        if (shooter.state == Shooter.ShooterState.IDLE) {
-            if (gamepad.triangle && shooter.manualControl) {
-                shooter.snapToNearestSlot();
-                shooter.manualControl = false;
-            }
-
-            if (gamepad.dpad_left && !shooter.manualRotationActive) {
-                shooter.rotateRevolver(-60);
-                shooter.curMotif = "";
-                shooter.correctMotif = false;
-                shooter.manualRotationActive = true;
-                shooter.manualControl = true;
-            }
-            if (gamepad.dpad_right && !shooter.manualRotationActive) {
-                shooter.rotateRevolver(60);
-                shooter.manualRotationActive = true;
-                shooter.manualControl = true;
-            }
-            if (!gamepad.dpad_right && !gamepad.dpad_left) shooter.manualRotationActive = false;
-        }
-        if (gamepad.left_bumper) {
-            shooter.dribbler.setVelocity(Config.ShooterConf.DRIBBLER_VELOCITY);
-        } else shooter.dribbler.setVelocity(0);
-
-        if (gamepad.right_trigger > 0.44) {
-            shooter.shooterRun(gamepad.right_trigger);
-        } else shooter.shooterStop();
-
-
-        if (gamepad.right_bumper && shooter.state == Shooter.ShooterState.IDLE && shooter.isShootable()) {
-            if (shooter.manualControl ||shooter. correctMotif) {
-                shooter. pushBall(true);
-                shooter.state = Shooter.ShooterState.SHOOTING;
-                shooter.shooterTime.reset();
-            }
-        }
-
-        // stop shooting state
-        if (shooter.state == Shooter.ShooterState.SHOOTING && shooter.shooterTime.milliseconds() >= 2000) {
-            shooter.pushBall(false);
-            shooter.state = Shooter.ShooterState.STOP_SHOOTING;
-            shooter.shooterTime.reset();
-        }
-
-        if (shooter.state == Shooter.ShooterState.STOP_SHOOTING && shooter.shooterTime.milliseconds() >= 1000) {
-            if (shooter.manualControl) {
-                shooter.state = Shooter.ShooterState.IDLE;
-            } else {
-                shooter.sortedNextBall();
-                shooter.state = Shooter.ShooterState.REVOLVER_TURNING;
-                shooter.shooterTime.reset();
-            }
-        }
-
-        if (shooter.state == Shooter.ShooterState.REVOLVER_TURNING && !shooter.revolver.isBusy()) {
-            shooter.state = Shooter.ShooterState.IDLE;
-            shooter.shooterTime.reset();
-        }
-
-        if (!shooter.isShootable() || !shooter.manualControl) shooter.scanBall();
+    public void updateShooter() {
+        shooter.update();
     }
 
+    public void toggleShooterManualControl(boolean active) {
+        shooter.toggleManualControl(active);
+    }
+    public void toggleDribbler(boolean active) {
+        shooter.toggleDribbler(active);
+    }
+
+    public void setShooterVelocityCoefficient(float k) {
+        shooter.setVelocityCoefficient(k);
+    }
+
+    public void shoot() {
+        shooter.shoot();
+    }
+
+    public void revolverRight(){
+        shooter.rotateRevolver(-60);
+        shooter.toggleManualControl(true);
+    }
+    public void revolverLeft(){
+        shooter.rotateRevolver(60);
+        shooter.toggleManualControl(true);
+    }
     public void move(WheelsRatio<Double> ratio) {
         updateHeading();
         mv.setMotorsVelocityRatiosWithAcceleration(ratio, Config.WheelBaseConf.MAX_VELOCITY);

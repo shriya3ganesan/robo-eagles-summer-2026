@@ -17,6 +17,7 @@ import org.firstinspires.ftc.team28420.util.Config;
 
 @TeleOp(name = "New Actions", group = "main")
 public class NewActionsTeleOp extends LinearOpMode {
+    private boolean dpad_active = false;
 
     @Override
     public void runOpMode() {
@@ -54,7 +55,33 @@ public class NewActionsTeleOp extends LinearOpMode {
                 );
             }
 
-            act.updateShooter(gamepad2);
+            if (gamepad2.triangle) act.toggleShooterManualControl(false);
+
+            if (gamepad2.dpad_left && !dpad_active) {
+                act.revolverLeft();
+                dpad_active = true;
+            }
+            if (gamepad2.dpad_right && !dpad_active) {
+                act.revolverRight();
+                dpad_active = true;
+            }
+            // защита от залипания клавиш лежит на движке
+            if (!gamepad2.dpad_right && !gamepad2.dpad_left) dpad_active = false;
+
+            if (gamepad2.left_bumper) {
+                act.toggleDribbler(true);
+            } else act.toggleDribbler(false);
+
+            if (gamepad2.right_trigger > 0.6) {
+                act.setShooterVelocityCoefficient(gamepad2.right_trigger * gamepad2.right_trigger);
+            } else act.setShooterVelocityCoefficient(0);
+
+
+            if (gamepad2.right_bumper){
+                act.shoot();
+            }
+
+            act.updateShooter();
 
             if (gamepad1.dpad_up) {
                 act.park();

@@ -61,8 +61,8 @@ public final class Config {
         public static Scalar cshighGreen = new Scalar(130, 255, 255);
         public static Scalar cslowPurple = new Scalar(130, 0.5, 0.006);
         public static Scalar cshighPurple = new Scalar(240, 0.6, 0.01);
-        public static double MIN_CIRCULARITY = 0.5; // Насколько объект должен быть круглым (0.0 - 1.0)
-        public static double MIN_AREA = 60000; // Минимальный размер объекта
+        public static double MIN_CIRCULARITY = 0.5; // насколько объект должен быть круглым (0.0 - 1.0)
+        public static double MIN_AREA = 60000; // минимальный размер объекта
         public static double MAX_AREA = 120000;
         public static double kP = 0.01;
     }
@@ -70,6 +70,7 @@ public final class Config {
     public static class ShooterConf {
         public static String TARGET_MOTIF = "PGP";
         public static double SORT_MOTOR_POWER = 1;
+        public static double BALL_DETECTION_THRESHOLD = 4;
         public static int VELOCITY = 7000;
         public static int DRIBBLER_VELOCITY = 2000;
         public static double SORT_MOTOR_TICKS_PER_TURN = 2380.0;
