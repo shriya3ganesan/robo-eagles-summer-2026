@@ -139,7 +139,6 @@ class DecodeSlowBotMechSim extends MechSim {
     final double TRANSFER_SERVO_SPEED = (60.0 / 360) / 0.25; // Speed of a goBilda torque servo, position/s
     final double LAUNCH_SPEED = 144; // Ball launch speed, inches per second
     final Point LAUNCH_OFFSET = new Point(-4, 0);
-    final double FEEDER_POWER = 0.1; // Minimum power for the feeder servo
     final double GOAL_EPSILON = 12; // Distance from goal center to consider a goal
     final Point[] GOAL_CENTERS = { new Point(-72, 72), new Point(-72, -72) };
     final Point[] CLASSIFIER_STARTS = { new Point(-BALL_SIZE/2, 72-BALL_SIZE/2),
@@ -192,8 +191,6 @@ class DecodeSlowBotMechSim extends MechSim {
     DcMotorEx intakeMotor;
     Servo drumServo;
     Servo transferServo;
-    CRServo forwardFeederServo;
-    CRServo backwardFeederServo;
 
     // State:
     double accumulatedDeltaT;
@@ -245,12 +242,6 @@ class DecodeSlowBotMechSim extends MechSim {
         if (name.equals("servoTransfer")) {
             transferServo = (Servo) device;
         }
-        if (name.equals("servoFLaunchFeeder")) {
-            forwardFeederServo = (CRServo) device;
-        }
-        if (name.equals("servoBLaunchFeeder")) {
-            backwardFeederServo = (CRServo) device;
-        }
 
         // There have outputs:
         if (name.equals("motULauncher")) {
@@ -289,10 +280,6 @@ class DecodeSlowBotMechSim extends MechSim {
             throw new RuntimeException("Missing drum servo");
         if (transferServo == null)
             throw new RuntimeException("Missing transfer servo");
-        if (forwardFeederServo == null)
-            throw new RuntimeException("Missing forward feeder servo");
-        if (backwardFeederServo == null)
-            throw new RuntimeException("Missing backward feeder servo");
         if (analogDrum == null)
             throw new RuntimeException("Missing analog drum");
         if (sensorColor1 == null)
@@ -449,12 +436,6 @@ class DecodeSlowBotMechSim extends MechSim {
         // Handle load requests for the launch calibration app, signaled by running the launchers
         // backwards:
         if (upperLaunchMotor.getVelocity() < 0) {
-            if (forwardFeederServo.getPower() >= 0) {
-                throw new RuntimeException("When running launch motors backwards, forward feeder servo must too.");
-            }
-            if (backwardFeederServo.getPower() >= 0) {
-                throw new RuntimeException("When running launch motors backwards, backward feeder servo must too.");
-            }
             // If the slot is empty, fill it up with a ball!
             if ((transferSlot != -1) && (slotBalls.get(transferSlot) == null)) {
                 slotBalls.set(transferSlot, new Ball(BallColor.PURPLE, 0, 0));
@@ -478,12 +459,6 @@ class DecodeSlowBotMechSim extends MechSim {
             }
             if (lowerLaunchMotor.getVelocity() <= 0) {
                 throw new RuntimeException("A transfer is requested when lower launcher motor isn't running forward. That won't work!");
-            }
-            if (forwardFeederServo.getPower() < FEEDER_POWER) {
-                throw new RuntimeException("A transfer is requested when forward feeder servo isn't running. That won't work!");
-            }
-            if (Math.abs(backwardFeederServo.getPower()) < FEEDER_POWER) {
-                throw new RuntimeException("A transfer is requested when backward feeder servo isn't running. That won't work!");
             }
             if (slotBalls.get(transferSlot) == null) {
                 if (!hasIntaken && !hasLaunched) {
