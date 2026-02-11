@@ -95,7 +95,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double TRANSFER_TIME_UP = 0.6;
     public static double TRANSFER_TIME_DOWN = 0.25;
     //TODO will need to tune the time for paddle transfer
-    public static double PADDLE_TRANSFER_TIME_UP = 0.25; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
+    public static double PADDLE_TRANSFER_TIME_UP = 3; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
 
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
@@ -115,7 +115,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double INTAKE_BACK_TIME = 0.25;
     public static double NEAR_AUTO_VELOCTIY = 835;
     public static double FAR_AUTO_VELOCITY = 1040;
-    //Todo: Update these constants with the values Caden has
     public static double LEFT_PADDLE_INACTIVE_POSITION = -1;
     public static double RIGHT_PADDLE_INACTIVE_POSITION = -1;
     public static double LEFT_PADDLE_ACTIVE_POSITION = 0.6;
@@ -481,9 +480,13 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
                 int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.PURPLE);
+                if (minSlot == -1) {
+                    minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
+                }
+
                 int a = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
                 if (a == -1) {
-                    addToDrumQueue(minSlot, WaitState.INTAKE);
+                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
                 }
 
 //                if (minSlot != -1) {
@@ -548,10 +551,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer == null) {
                 transferTimer = new ElapsedTime();
             }
-            if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
-                transferPosition = TRANSFER_ACTIVE_POSITION;
-            }
-            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
+            if (transferTimer.seconds() >= TRANSFER_TIME_UP) {
                 if (paddleTransferTimer == null) {
                     paddleTransferTimer = new ElapsedTime();
                 }
@@ -560,6 +560,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                     rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
                 }
 
+                transferPosition = TRANSFER_ACTIVE_POSITION;
+            }
+            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
                 paddleTransferTimer = null;
