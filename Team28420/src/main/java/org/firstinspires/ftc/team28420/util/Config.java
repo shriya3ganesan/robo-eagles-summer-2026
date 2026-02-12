@@ -23,7 +23,7 @@ public final class Config {
         public final static double TICKS_PER_REV = 560.0;
         public final static double TICKS_PER_INCH = TICKS_PER_REV / (WHEEL_DIAMETER_INCHES * Math.PI);
         public final static int MAX_VELOCITY = 3600;
-        public final static double ACCELERATION = 100.0;
+        public final static double ACCELERATION = 250.0;
     }
 
     public final static class GyroConf {
@@ -34,7 +34,7 @@ public final class Config {
 
     public static final class CameraConf {
         public static final String WEBCAM = "Webcam 1";
-        public static final double RANGE_TO_TAG = 60; // inches
+        public static final double RANGE_TO_TAG = 65; // inches
         public static final double ANGLE_MAX_VELOCITY = Math.PI;
 
     }
@@ -68,6 +68,7 @@ public final class Config {
     }
 
     public static class ShooterConf {
+        public static double SCANNED_BALL_MS = 100;
         public static String TARGET_MOTIF = null;
         public static double SORT_MOTOR_POWER = 1;
         public static double BALL_DETECTION_THRESHOLD = 4;

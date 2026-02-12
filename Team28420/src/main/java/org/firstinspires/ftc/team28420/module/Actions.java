@@ -78,18 +78,17 @@ public class Actions {
         shooter.toggleManualControl(true);
     }
     public void move(WheelsRatio<Double> ratio) {
-        updateHeading();
         mv.setMotorsVelocityRatiosWithAcceleration(ratio, Config.WheelBaseConf.MAX_VELOCITY);
     }
 
     public WheelsRatio<Double> getRatios(double axisX, double axisY, double axisR) {
         return Movement.vectorToRatios(
-                PolarVector.fromPos(new Position(axisX, axisY)).rotate(-1 * cachedHeading), axisR);
+                PolarVector.fromPos(new Position(axisX, axisY)), axisR);
     }
 
     public WheelsRatio<Double> getRatiosForApriltag(AprilTag tag) {
         cam.updateApriltags();
-        AprilTagDetection detection = cam.getAprilTagDetection(AprilTag.RED);
+        AprilTagDetection detection = cam.getAprilTagDetection(tag);
         MovementParams params = cam.getMovementParamsToPoint(detection, 0, Config.CameraConf.RANGE_TO_TAG);
         return Movement.vectorToRatios(params.getMoveVector(), params.getTurnAbs());
     }

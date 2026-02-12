@@ -35,6 +35,8 @@ public class Shooter {
     private boolean correctMotif = false;
     private boolean manualControl = false;
     private boolean ballPresent = false;
+    private final ElapsedTime debounceTimer = new ElapsedTime();
+    private boolean potentialBallDetected = false;
     // TODO: DELETE "PG" LATER
     public String curMotif = "PG";
 
@@ -103,7 +105,7 @@ public class Shooter {
     public void snapToNearestSlot() {
         double ticksPerTurn = Config.ShooterConf.SORT_MOTOR_TICKS_PER_TURN;
         double ticksPerSlot = ticksPerTurn / 3.0;
-        double offsetTicks = (60.0 * ticksPerTurn) / 360.0;
+        double offsetTicks = 0; //(60.0 * ticksPerTurn) / 360.0; // ставим в положение для сканирования
 
         globalTarget = (int) (Math.round((globalTarget - offsetTicks) / ticksPerSlot) * ticksPerSlot + offsetTicks);
 
@@ -152,17 +154,22 @@ public class Shooter {
     public void scanBall() {
         if (isMotifFull()) return;
 
-        BallDetection.BallColor color = getDetectedColor();
+        BallDetection.BallColor detectedColor = getDetectedColor();
         boolean ballInRange = isBallInRange();
 
-        if(!ballInRange || color == null){
-            ballPresent = false;
-            return;
-        }
+        boolean currentlySeeingBall = ballInRange && (detectedColor != null);
 
-        if (!ballPresent) {
-            processNewBall(color);
-            ballPresent = true;
+        if (currentlySeeingBall) {
+            if (!potentialBallDetected) {
+                potentialBallDetected = true;
+                debounceTimer.reset();
+            } else if (debounceTimer.milliseconds() >= Config.ShooterConf.SCANNED_BALL_MS && !ballPresent) {
+                processNewBall(detectedColor);
+                ballPresent = true;
+            }
+        } else {
+            potentialBallDetected = false;
+            ballPresent = false;
         }
     }
     private void appendBallToMotif(BallDetection.BallColor color) {
@@ -176,13 +183,14 @@ public class Shooter {
         }
     }
     private boolean alignRevolverToTarget() {
+        rotateRevolver(60);
         if(Config.ShooterConf.TARGET_MOTIF == null || Config.ShooterConf.TARGET_MOTIF.isEmpty()) return false;
+
         int currentIndex = sortSeqMap.getOrDefault(curMotif, 0);
         int targetIndex = sortSeqMap.getOrDefault(Config.ShooterConf.TARGET_MOTIF, 0);
 
         int moveSlots = (targetIndex - currentIndex + 3) % 3;
 
-        rotateRevolver(60);
         if (moveSlots == 1) rotateRevolver(120);
         if (moveSlots == 2) rotateRevolver(-120);
 
@@ -262,7 +270,7 @@ public class Shooter {
 
     public void shoot() {
         if(state == Shooter.ShooterState.IDLE && isShootable()
-            && (manualControl || correctMotif))
+                && (manualControl || correctMotif))
         {
             pushBall(true);
             state = ShooterState.SHOOTING;
@@ -273,14 +281,14 @@ public class Shooter {
     public void update() {
         switch(state) {
             case SHOOTING:
-                if(shooterTime.milliseconds() >= 1000) {
+                if(shooterTime.milliseconds() >= 600) {
                     pushBall(false);
                     state = Shooter.ShooterState.STOP_SHOOTING;
                     shooterTime.reset();
                 }
                 break;
             case STOP_SHOOTING:
-                if(shooterTime.milliseconds() >= 1000) {
+                if(shooterTime.milliseconds() >= 600) {
                     if (manualControl) {
                         // если ручной режим, то после выстрела не поворачиваем барабан
                         state = Shooter.ShooterState.IDLE;

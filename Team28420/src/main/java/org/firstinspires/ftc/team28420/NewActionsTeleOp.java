@@ -42,12 +42,17 @@ public class NewActionsTeleOp extends LinearOpMode {
 
         waitForStart();
 
+//        act.updateHeading();
+
         while (opModeIsActive()) {
             if (Config.ShooterConf.TARGET_MOTIF == null) {
                 act.setMotif();
             }
 
+            telemetry.addData("scanned motif", Config.ShooterConf.TARGET_MOTIF);
+
             if (gamepad1.cross) {
+//                act.updateHeading();
                 act.move(act.getRatiosForApriltag(AprilTag.RED));
             }
             else {
@@ -60,14 +65,19 @@ public class NewActionsTeleOp extends LinearOpMode {
                 );
             }
 
-            if (gamepad2.triangle) act.toggleShooterManualControl(false);
+            if (gamepad2.triangle) {
+                act.toggleShooterManualControl(false);
+                gamepad2.setLedColor(0, 255, 0, -1);
+            }
 
             if (gamepad2.dpad_left && !dpad_active) {
                 act.revolverLeft();
+                gamepad2.setLedColor(0, 255, 0, -1);
                 dpad_active = true;
             }
             if (gamepad2.dpad_right && !dpad_active) {
                 act.revolverRight();
+                gamepad2.setLedColor(255, 0, 0, -1);
                 dpad_active = true;
             }
 
