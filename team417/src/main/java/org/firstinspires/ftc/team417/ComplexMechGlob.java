@@ -92,10 +92,10 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     public static double FEEDER_POWER = 1;
-    public static double TRANSFER_TIME_UP = 0.6;
-    public static double TRANSFER_TIME_DOWN = 0.25;
-    //TODO will need to tune the time for paddle transfer
-    public static double PADDLE_TRANSFER_TIME_UP = 3; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
+    public static double TRANSFER_TIME_UP = 0.3; //was 0.6
+    public static double TRANSFER_TIME_DOWN = 0.7; //was 0.25
+    public static double PADDLE_TRANSFER_DELAY = 0.2;
+    public static double PADDLE_TRANSFER_TIME_UP = 0.5; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
 
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
@@ -110,15 +110,15 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double FLYWHEEL_VELOCITY_TOLERANCE = 22; //this is an epsiiiiiiiiilon  was 10
     public static double VOLTAGE_TOLERANCE = 0.04; //THIS IS AN EPSILON AS WELLLLLL
     public static double DRUM_GATE_OPEN_POSITION = 1;
-    public static double DRUM_GATE_CLOSED_POSITION = 0.7;
+    public static double DRUM_GATE_CLOSED_POSITION = 0.5;
     public static double MOTOR_D_VALUE = 1;
     public static double INTAKE_BACK_TIME = 0.25;
     public static double NEAR_AUTO_VELOCTIY = 835;
     public static double FAR_AUTO_VELOCITY = 1040;
-    public static double LEFT_PADDLE_INACTIVE_POSITION = -1;
-    public static double RIGHT_PADDLE_INACTIVE_POSITION = -1;
-    public static double LEFT_PADDLE_ACTIVE_POSITION = 0.6;
-    public static double RIGHT_PADDLE_ACTIVE_POSITION = 0.6;
+    public static double LEFT_PADDLE_INACTIVE_POSITION = 0.2;
+    public static double RIGHT_PADDLE_INACTIVE_POSITION = 0.2;
+    public static double LEFT_PADDLE_ACTIVE_POSITION = 0.8;
+    public static double RIGHT_PADDLE_ACTIVE_POSITION = 0.8;
 
     ElapsedTime transferTimer;
     ElapsedTime transferDownTimer;
@@ -144,9 +144,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     }
     WaitState waitState = WaitState.IDLE;
     // arrays with placeholder values for servo positions and voltages relative to intake and launch
-    double [] INTAKE_POSITIONS = {0.067, 0.44, 0.803};
+    double [] INTAKE_POSITIONS = {0.078, 0.451, 0.814};
     double [] INTAKE_VOLTS = {2.94, 1.83, 0.74};
-    double [] LAUNCH_POSITIONS = {0.627, 1, 0.258};
+    double [] LAUNCH_POSITIONS = {0.638, 1.11, 0.269};
     double [] LAUNCH_VOLTS = {1.27, 0.155, 2.37};
     double lastQueuedPosition; //where the servo was *queued* to go last. NOT THE SAME AS hwDrumPosition!
     double hwDrumPosition; //where the drum was *told* to go last. NOT THE SAME AS lastQueuedPosition!
@@ -216,8 +216,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         servoLeftPaddle = hardwareMap.get(Servo.class, "servoLeftPaddle");
         coolColorDetector = new CoolColorDetector(hardwareMap, telemetry);
         slotOccupiedBy = new ArrayList<>(Arrays.asList(preloads));
-        servoRightPaddle.setPosition(RIGHT_PADDLE_INACTIVE_POSITION);
-        servoLeftPaddle.setPosition(LEFT_PADDLE_INACTIVE_POSITION);
 
 
         /*
@@ -241,6 +239,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         motLLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         servoRightPaddle.setDirection(Servo.Direction.REVERSE);
+
+        servoRightPaddle.setPosition(RIGHT_PADDLE_INACTIVE_POSITION);
+        servoLeftPaddle.setPosition(LEFT_PADDLE_INACTIVE_POSITION);
+
 
 
 
@@ -479,15 +481,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
         if (waitState == WaitState.IDLE) {
             if (userIntakeSpeed > 0) {
-                int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.PURPLE);
-                if (minSlot == -1) {
-                    minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
-                }
-
-                int a = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
-                if (a == -1) {
-                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
-                }
+                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
+//                int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.PURPLE);
+//                if (minSlot == -1) {
+//                    minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
+//                }
+//
+//                int a = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+//                if (a == -1) {
+//                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+//                }
 
 //                if (minSlot != -1) {
 //                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
@@ -551,22 +554,40 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer == null) {
                 transferTimer = new ElapsedTime();
             }
-            if (transferTimer.seconds() >= TRANSFER_TIME_UP) {
-                if (paddleTransferTimer == null) {
-                    paddleTransferTimer = new ElapsedTime();
-                }
-                if (paddleTransferTimer.seconds() < PADDLE_TRANSFER_TIME_UP) {
-                    leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
-                    rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
-                }
-
+            if ((transferTimer.seconds() <= TRANSFER_TIME_UP)) {
                 transferPosition = TRANSFER_ACTIVE_POSITION;
+            }
+            if ((transferTimer.seconds() >= PADDLE_TRANSFER_DELAY) && (transferTimer.seconds() <= PADDLE_TRANSFER_DELAY + PADDLE_TRANSFER_TIME_UP)) {
+                leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
+                rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
             }
             if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
-                paddleTransferTimer = null;
             }
+
+//            if (transferTimer == null) {
+//                transferTimer = new ElapsedTime();
+//            }
+//            if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
+//                transferPosition = TRANSFER_ACTIVE_POSITION;
+//            }
+//            // only bring the paddles up when the transfer is fully up
+//            if (transferTimer.seconds() >= TRANSFER_TIME_UP+PADDLE_TRANSFER_DELAY) {
+//                transferPosition = TRANSFER_ACTIVE_POSITION;
+//                if (paddleTransferTimer == null) {
+//                    paddleTransferTimer = new ElapsedTime();
+//                }
+//                if (paddleTransferTimer.seconds() < PADDLE_TRANSFER_TIME_UP) {
+//                    leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
+//                    rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
+//                }
+//            }
+//            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
+//                waitState = WaitState.IDLE;
+//                transferTimer = null;
+//                paddleTransferTimer = null;
+//            }
         }
 
         if (waitState == WaitState.INTAKE) {
