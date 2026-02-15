@@ -44,7 +44,7 @@ public class AutoIntakeFromLoadingZoneState extends StateMachine.State {
         if (runtime.milliseconds() - lastRunTime > 500) {
             lastRunTime = runtime.milliseconds();
 
-            double[] target = transform.adjustPos(-42, 8 - ballTries * stepDist, Math.PI / 2 - 0.35);
+            double[] target = transform.adjustPos(-46, 10 - ballTries * stepDist, 1);
             autoPositioner.setTargetX(target[0], pidX);
             autoPositioner.setTargetY(target[1], pidY);
             autoPositioner.setTargetH(target[2], pidH);
@@ -60,8 +60,8 @@ public class AutoIntakeFromLoadingZoneState extends StateMachine.State {
     @Override
     protected void started() {
         lastRunTime = startTimeMS;
-        autoPositioner.enableAutoPositioning(true);
-        double[] target = transform.adjustPos(-42, 8, Math.PI / 2 - 0.35);
+        autoPositioner.enableAutoPositioning(true, true, true);
+        double[] target = transform.adjustPos(-46, 10, 1);
         autoPositioner.setTargetX(target[0], pidX);
         autoPositioner.setTargetY(target[1], pidY);
         autoPositioner.setTargetH(target[2], pidH);

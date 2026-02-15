@@ -4,19 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.nknsd.teamcode.components.handlers.artifact.ArtifactSystem;
-import org.nknsd.teamcode.components.handlers.launch.FiringSystem;
 import org.nknsd.teamcode.components.handlers.odometry.AbsolutePosition;
 import org.nknsd.teamcode.components.handlers.vision.BasketLocator;
 import org.nknsd.teamcode.components.handlers.vision.ID;
-import org.nknsd.teamcode.components.handlers.launch.LaunchSystem;
-import org.nknsd.teamcode.components.handlers.launch.LauncherHandler;
-import org.nknsd.teamcode.components.handlers.artifact.MicrowaveScoopHandler;
-import org.nknsd.teamcode.components.handlers.artifact.SlotTracker;
 import org.nknsd.teamcode.components.handlers.vision.TargetingSystem;
-import org.nknsd.teamcode.components.handlers.launch.TrajectoryHandler;
-import org.nknsd.teamcode.components.handlers.color.BallColorInterpreter;
-import org.nknsd.teamcode.components.handlers.color.ColorReader;
 import org.nknsd.teamcode.components.motormixers.AbsolutePowerMixer;
 import org.nknsd.teamcode.components.motormixers.AutoPositioner;
 import org.nknsd.teamcode.components.motormixers.MecanumMotorMixer;
@@ -27,74 +18,44 @@ import org.nknsd.teamcode.components.utility.RobotVersion;
 import org.nknsd.teamcode.components.utility.StateMachine;
 import org.nknsd.teamcode.frameworks.NKNComponent;
 import org.nknsd.teamcode.frameworks.NKNProgram;
-import org.nknsd.teamcode.states.TimerState;
 
 import java.util.List;
 
-@TeleOp(name = "firing system test", group = "Tests")
-public class FiringSystemTest extends NKNProgram {
+@TeleOp(name = "Targeting Test", group = "Tests")
+public class TargetingTest extends NKNProgram {
 
-    LaunchSystem launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 2, 16, 132);
+    class Targeting extends StateMachine.State{
 
-    class FireAllState extends StateMachine.State {
+        private final TargetingSystem targetingSystem;
 
-        private final FiringSystem firingSystem;
-
-        FireAllState(FiringSystem firingSystem) {
-            this.firingSystem = firingSystem;
+        Targeting(TargetingSystem targetingSystem) {
+            this.targetingSystem = targetingSystem;
         }
 
         @Override
         protected void run(ElapsedTime runtime, Telemetry telemetry) {
-            if (launchSystem.isReady()) {
-                firingSystem.fireAll();
-                StateMachine.INSTANCE.stopAnonymous(this);
-            }
+            targetingSystem.enableAutoTargeting(true);
         }
 
         @Override
         protected void started() {
-//            firingSystem.setTargetColor(ID.BLUE);
+
         }
 
         @Override
         protected void stopped() {
-            StateMachine.INSTANCE.startAnonymous(new TimerState(5000, new String[]{"fire all"}, new String[]{}));
+
         }
     }
 
 
     @Override
     public void createComponents(List<NKNComponent> components, List<NKNComponent> telemetryEnabled) {
+        RobotVersion.setRobotAlliance(ID.BLUE);
+        RobotVersion.setIsAutonomous(true);
 
         components.add(StateMachine.INSTANCE);
         telemetryEnabled.add(StateMachine.INSTANCE);
-
-
-        TrajectoryHandler trajectoryHandler = new TrajectoryHandler();
-        components.add(trajectoryHandler);
-        telemetryEnabled.add(trajectoryHandler);
-
-        LauncherHandler launcherHandler = new LauncherHandler(0.95, 1.10);
-        components.add(launcherHandler);
-        telemetryEnabled.add(launcherHandler);
-        launcherHandler.setEnabled(true);
-
-
-        MicrowaveScoopHandler microwaveScoopHandler = new MicrowaveScoopHandler();
-        components.add(microwaveScoopHandler);
-
-        SlotTracker slotTracker = new SlotTracker();
-        components.add(slotTracker);
-        telemetryEnabled.add(slotTracker);
-
-        ArtifactSystem artifactSystem = new ArtifactSystem();
-
-        ColorReader colorReader = new ColorReader("ColorSensor");
-        components.add(colorReader);
-        BallColorInterpreter ballColorInterpreter = new BallColorInterpreter(10, 0.01);
-        components.add(ballColorInterpreter);
-
 
         FlowSensor flowSensor1 = new FlowSensor("RODOS");
         components.add(flowSensor1);
@@ -117,6 +78,7 @@ public class FiringSystemTest extends NKNProgram {
 
         AutoPositioner autoPositioner = new AutoPositioner();
         components.add(autoPositioner);
+        telemetryEnabled.add(autoPositioner);
 
 
         AprilTagSensor aprilTagSensor = new AprilTagSensor();
@@ -127,30 +89,18 @@ public class FiringSystemTest extends NKNProgram {
         components.add(basketLocator);
         telemetryEnabled.add(basketLocator);
 
-
         TargetingSystem targetingSystem = new TargetingSystem();
         components.add(targetingSystem);
         telemetryEnabled.add(targetingSystem);
         targetingSystem.setTargetingColor(ID.BLUE);
 
 
-        FiringSystem firingSystem = new FiringSystem();
-        components.add(firingSystem);
-        telemetryEnabled.add(firingSystem);
-
-
-        slotTracker.link(microwaveScoopHandler, ballColorInterpreter);
-        targetingSystem.link(basketLocator, absolutePosition, autoPositioner);
-        basketLocator.link(aprilTagSensor);
+        absolutePowerMixer.link(mecanumMotorMixer, absolutePosition);
         powerInputMixer.link(absolutePowerMixer, mecanumMotorMixer);
-        ballColorInterpreter.link(colorReader);
-        launchSystem.link(trajectoryHandler, launcherHandler);
-        artifactSystem.link(microwaveScoopHandler, slotTracker, launchSystem);
-        firingSystem.link(launchSystem, targetingSystem, artifactSystem);
         autoPositioner.link(powerInputMixer, absolutePosition);
+        basketLocator.link(aprilTagSensor);
+        targetingSystem.link(basketLocator, absolutePosition, autoPositioner);
 
-
-        StateMachine.INSTANCE.addState("fire all", new FireAllState(firingSystem));
-        StateMachine.INSTANCE.startState("fire all");
+        StateMachine.INSTANCE.startAnonymous( new Targeting(targetingSystem));
     }
 }

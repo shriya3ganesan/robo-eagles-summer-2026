@@ -25,7 +25,7 @@ import java.util.List;
 @TeleOp(name = "chute adjust test", group = "Tests")
 public class ChuteAdjustTest extends NKNProgram {
 
-    private double distance = 16;
+    private double distance = 36;
 
     class IntakeState extends StateMachine.State {
 
@@ -164,7 +164,7 @@ public class ChuteAdjustTest extends NKNProgram {
 //        telemetryEnabled.add(ballColorInterpreter);
         ballColorInterpreter.link(colorReader);
 
-        LaunchSystem launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 3, 16, 132);
+        LaunchSystem launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 4, 16, 132);
         launchSystem.link(trajectoryHandler, launcherHandler);
 
         SlotTracker slotTracker = new SlotTracker();

@@ -16,17 +16,19 @@ public class BalancedLiftHandler implements NKNComponent {
     CRServo brLift;
     CRServo flLift;
 
-    private final double blInitial = 0.39;
-    private final double brInitial = 0.33;
-    private final double flInitial = 0.36;
+    private final double blInitial = 0.3;
+    private final double brInitial = 0.37;
+    private final double flInitial = 0.37;
 
-    private final double rollTarget = 2;
-    private final double pitchTarget = -19;
+    private final double rollTarget = 0.05;
+    private final double pitchTarget = -0.05;
 
-    private final double kpfl = 0.05, kpbl = -0.1, kpbr = -0.05;
-    private final double krfl = 0.05, krbl = 0.1, krbr = -0.05;
+    private final double kpfl = 0.5, kpbl = -0.2, kpbr = -0.5;
+    private final double krfl = 0.5, krbl = 0.2, krbr = -0.5;
+
     private IMUSensor imuSensor;
     private boolean isLifting = false;
+    private double pitch, roll;
 
     @Override
     public boolean init(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
@@ -34,8 +36,8 @@ public class BalancedLiftHandler implements NKNComponent {
         brLift = hardwareMap.crservo.get("BRlift");
         flLift = hardwareMap.crservo.get("FLlift");
 
-        brLift.setDirection(DcMotorSimple.Direction.REVERSE);
-        flLift.setDirection(DcMotorSimple.Direction.REVERSE);
+        blLift.setDirection(DcMotorSimple.Direction.REVERSE);
+
         brLift.setPower(0);
         flLift.setPower(0);
         blLift.setPower(0);
@@ -67,8 +69,8 @@ public class BalancedLiftHandler implements NKNComponent {
     @Override
     public void loop(ElapsedTime runtime, Telemetry telemetry) {
         if (isLifting){
-            double pitch = imuSensor.getPitch() - pitchTarget;
-            double roll = imuSensor.getRoll() - rollTarget;
+             pitch = imuSensor.getPitch() - pitchTarget;
+             roll = imuSensor.getRoll() - rollTarget;
 
             double flPower = flInitial + (pitch * kpfl + roll * krfl);
             double blPower = blInitial + (pitch * kpbl + roll * krbl);
@@ -82,16 +84,24 @@ public class BalancedLiftHandler implements NKNComponent {
 
     @Override
     public void doTelemetry(Telemetry telemetry) {
+        telemetry.addData("lifting", isLifting);
         if(isLifting){
             telemetry.addData("FLlift",flLift.getPower());
             telemetry.addData("BLlift",blLift.getPower());
             telemetry.addData("BRlift",brLift.getPower());
+
         }
+        telemetry.addData("imu roll", imuSensor.getRoll());
+        telemetry.addData("imu pitch", imuSensor.getPitch());
+        telemetry.addData("mult roll", roll);
+        telemetry.addData("mult pitch", pitch);
     }
 
     public void startLift(){
         isLifting = true;
-        imuSensor.resetIMU();
+        imuSensor.relocatilizeIMUinGame();
+//        imuSensor.initIMU();
+//        imuSensor.resetIMU();
     }
 
     public void stopLift(){
@@ -106,3 +116,4 @@ public class BalancedLiftHandler implements NKNComponent {
     }
 }
 
+//

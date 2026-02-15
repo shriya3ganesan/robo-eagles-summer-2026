@@ -76,6 +76,7 @@ public class FiringSystem implements NKNComponent {
     }
 
     public void fireAll() {
+
         if (isReady()) {
             if (pattern == ID.NONE) {
                 artifactSystem.launchAll();

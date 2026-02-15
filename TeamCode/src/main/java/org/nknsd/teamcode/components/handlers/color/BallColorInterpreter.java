@@ -38,12 +38,11 @@ public class BallColorInterpreter implements NKNComponent {
 
     @Override
     public void init_loop(ElapsedTime runtime, Telemetry telemetry) {
-        loop(runtime, telemetry);
     }
 
     @Override
     public void start(ElapsedTime runtime, Telemetry telemetry) {
-
+        timeNext = 0;
     }
 
     @Override

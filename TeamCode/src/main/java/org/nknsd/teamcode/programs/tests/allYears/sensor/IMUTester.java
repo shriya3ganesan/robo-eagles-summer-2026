@@ -10,7 +10,7 @@ import org.nknsd.teamcode.frameworks.NKNProgram;
 
 import java.util.List;
 
-@TeleOp(name = "IMU Tester", group="Tests") @Disabled
+@TeleOp(name = "IMU Tester", group="Tests")
 public class IMUTester extends NKNProgram {
     @Override
     public void createComponents(List<NKNComponent> components, List<NKNComponent> telemetryEnabled) {
@@ -21,7 +21,7 @@ public class IMUTester extends NKNProgram {
 
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
-        IMUSensor imu = new IMUSensor(orientationOnRobot);
+        IMUSensor imu = new IMUSensor();
         components.add(imu);
         telemetryEnabled.add(imu);
     }

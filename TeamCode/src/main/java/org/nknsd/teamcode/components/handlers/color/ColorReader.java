@@ -56,9 +56,9 @@ public class ColorReader implements NKNComponent {
         double[] reading = getReading();
 
         telemetry.addData(sensorName + " distance", reading[3]);
-        telemetry.addData(sensorName + " redness", reading[0]);
-        telemetry.addData(sensorName + " greenness", reading[1]);
-        telemetry.addData(sensorName + " blueness", reading[2]);
+//        telemetry.addData(sensorName + " redness", reading[0]);
+//        telemetry.addData(sensorName + " greenness", reading[1]);
+//        telemetry.addData(sensorName + " blueness", reading[2]);
     }
 
     public void enableLED() {

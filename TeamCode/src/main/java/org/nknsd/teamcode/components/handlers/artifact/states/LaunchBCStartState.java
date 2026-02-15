@@ -15,16 +15,18 @@ public class LaunchBCStartState extends StateMachine.State {
     private final SlotTracker slotTracker;
     private final ArtifactSystem artifactSystem;
     private final MicrowavePositions slot;
-    public LaunchBCStartState(MicrowaveScoopHandler microwaveScoopHandler, SlotTracker slotTracker, ArtifactSystem artifactSystem, MicrowavePositions slot){
+    private final int slotNum;
+    public LaunchBCStartState(MicrowaveScoopHandler microwaveScoopHandler, SlotTracker slotTracker, ArtifactSystem artifactSystem, MicrowavePositions slot, int slotNum){
         this.microwaveScoopHandler = microwaveScoopHandler;
         this.slotTracker = slotTracker;
         this.artifactSystem = artifactSystem;
         this.slot = slot;
+        this.slotNum = slotNum;
     }
     @Override
     protected void run(ElapsedTime runtime, Telemetry telemetry) {
         if(microwaveScoopHandler.isDone()){
-            StateMachine.INSTANCE.startAnonymous(new LaunchBCState(microwaveScoopHandler, slotTracker, artifactSystem, slot));
+            StateMachine.INSTANCE.startAnonymous(new LaunchBCState(microwaveScoopHandler, slotTracker, artifactSystem, slot, slotNum));
             StateMachine.INSTANCE.stopAnonymous(this);
         }
     }

@@ -1,32 +1,30 @@
 package org.nknsd.teamcode.components.drivers;
 
-
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.nknsd.teamcode.components.handlers.BalancedLiftHandler;
+import org.nknsd.teamcode.components.handlers.artifact.MicrowaveScoopHandler;
 import org.nknsd.teamcode.components.handlers.gamepad.GamePadHandler;
-import org.nknsd.teamcode.controlSchemes.defaults.LiftControlScheme;
+import org.nknsd.teamcode.controlSchemes.defaults.MicrowaveControlScheme;
 import org.nknsd.teamcode.frameworks.NKNComponent;
 
-public class LiftDriver implements NKNComponent {
+public class IntakeDriverDEPRECATED implements NKNComponent {
     private GamePadHandler gamePadHandler;
-    private BalancedLiftHandler balancedLiftHandler;
-    private LiftControlScheme liftControlScheme;
+    private MicrowaveControlScheme controlScheme;
+    private MicrowaveScoopHandler microwaveScoopHandler;
 
-    Runnable startLift = new Runnable() {
+    Runnable startIntakeSpin = new Runnable(){
         @Override
         public void run() {
-            balancedLiftHandler.startLift();
+            microwaveScoopHandler.toggleIntake(true);
         }
     };
-
-    Runnable stopLift = new Runnable() {
+    Runnable stopIntakeSpin = new Runnable() {
         @Override
         public void run() {
-            balancedLiftHandler.stopLift();
+            microwaveScoopHandler.toggleIntake(false);
         }
     };
 
@@ -42,8 +40,8 @@ public class LiftDriver implements NKNComponent {
 
     @Override
     public void start(ElapsedTime runtime, Telemetry telemetry) {
-//        gamePadHandler.addListener(liftControlScheme.startLift(), startLift, "startLift");
-//        gamePadHandler.addListener(liftControlScheme.stopLift(), stopLift, "stopLift");
+        gamePadHandler.addListener(controlScheme.startIntake(), startIntakeSpin, "startIntakeSpin");
+        gamePadHandler.addListener(controlScheme.stopIntake(), stopIntakeSpin, "stopIntakeSpin");
     }
 
     @Override
@@ -65,10 +63,9 @@ public class LiftDriver implements NKNComponent {
     public void doTelemetry(Telemetry telemetry) {
 
     }
-
-    public void link(GamePadHandler gamePadHandler, BalancedLiftHandler balancedLiftHandler, LiftControlScheme liftControlScheme) {
+    public void link(GamePadHandler gamePadHandler,  MicrowaveScoopHandler microwaveScoopHandler, MicrowaveControlScheme controlScheme) {
         this.gamePadHandler = gamePadHandler;
-        this.liftControlScheme = liftControlScheme;
-        this.balancedLiftHandler = balancedLiftHandler;
+        this.controlScheme = controlScheme;
+        this.microwaveScoopHandler = microwaveScoopHandler;
     }
 }

@@ -27,10 +27,10 @@ public class LaunchAllStartState extends StateMachine.State {
 
     @Override
     protected void run(ElapsedTime runtime, Telemetry telemetry) {
-        if (microwaveScoopHandler.isDone()) {
+//        if (microwaveScoopHandler.isDone()) {
             StateMachine.INSTANCE.startAnonymous(new LaunchAllState(slotOrder,artifactSystem, launchSystem, slotTracker, microwaveScoopHandler, 0));
             StateMachine.INSTANCE.stopAnonymous(this);
-        }
+//        }
     }
 
     @Override

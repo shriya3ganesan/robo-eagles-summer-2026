@@ -25,7 +25,7 @@ public class LiftHandlerTest extends NKNProgram {
 
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
-        IMUSensor imuSensor = new IMUSensor(orientationOnRobot);
+        IMUSensor imuSensor = new IMUSensor(/*orientationOnRobot*/);
 
         components.add(imuSensor);
         telemetryEnabled.add(imuSensor);

@@ -1,5 +1,7 @@
 package org.nknsd.teamcode.programs.parts;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+
 import org.nknsd.teamcode.components.handlers.BalancedLiftHandler;
 import org.nknsd.teamcode.components.handlers.artifact.ArtifactSystem;
 import org.nknsd.teamcode.components.handlers.artifact.MicrowaveScoopHandler;
@@ -21,6 +23,7 @@ import org.nknsd.teamcode.components.motormixers.MecanumMotorMixer;
 import org.nknsd.teamcode.components.motormixers.PowerInputMixer;
 import org.nknsd.teamcode.components.sensors.AprilTagSensor;
 import org.nknsd.teamcode.components.sensors.FlowSensor;
+import org.nknsd.teamcode.components.sensors.IMUSensor;
 import org.nknsd.teamcode.components.utility.RobotVersion;
 import org.nknsd.teamcode.components.utility.StateMachine;
 import org.nknsd.teamcode.frameworks.NKNComponent;
@@ -126,7 +129,10 @@ public class Setup extends ProgramPart {
         }
         launcherHandler.setEnabled(true);
 
-        launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 2, 16, 132);
+
+
+         launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 3, 16, 132);
+
 
         firingSystem = new FiringSystem();
         components.add(firingSystem);
@@ -138,6 +144,7 @@ public class Setup extends ProgramPart {
 //        microwave and artifact system
         ColorReader colorReader = new ColorReader("ColorSensor");
         components.add(colorReader);
+        telemetryEnabled.add(colorReader);
         BallColorInterpreter ballColorInterpreter = new BallColorInterpreter(10, 0.01);
         components.add(ballColorInterpreter);
 
@@ -187,7 +194,8 @@ public class Setup extends ProgramPart {
             telemetryEnabled.add(basketLocator);
         }
 
-        targetingSystem = new TargetingSystem(RobotVersion.INSTANCE.ballEatingPidXY);
+
+         targetingSystem = new TargetingSystem();
         components.add(targetingSystem);
         if (enableTelemetry) {
             telemetryEnabled.add(targetingSystem);
@@ -195,7 +203,10 @@ public class Setup extends ProgramPart {
 
 
         balancedLiftHandler = new BalancedLiftHandler();
-        components.add(basketLocator);
+        components.add(balancedLiftHandler);
+        IMUSensor imuSensor = new IMUSensor(/*new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD)*/);
+        components.add(imuSensor);
+        telemetryEnabled.add(balancedLiftHandler);
 
 
         srsHubHandler = new SRSHubHandler();
@@ -204,7 +215,7 @@ public class Setup extends ProgramPart {
 
 //        all links
         slotTracker.link(microwaveScoopHandler, ballColorInterpreter);
-        targetingSystem.link(basketLocator, powerInputMixer, absolutePosition);
+        targetingSystem.link(basketLocator, absolutePosition, autoPositioner);
         basketLocator.link(aprilTagSensor);
         powerInputMixer.link(absolutePowerMixer, mecanumMotorMixer);
         absolutePowerMixer.link(mecanumMotorMixer, absolutePosition);
@@ -213,6 +224,7 @@ public class Setup extends ProgramPart {
         firingSystem.link(launchSystem, targetingSystem, artifactSystem);
         artifactSystem.link(microwaveScoopHandler, slotTracker, launchSystem);
         autoPositioner.link(powerInputMixer, absolutePosition);
+        balancedLiftHandler.link(imuSensor);
 
         if (scanOnStart) {
             artifactSystem.scanAll();

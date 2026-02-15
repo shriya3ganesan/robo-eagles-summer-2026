@@ -1,6 +1,7 @@
 package org.nknsd.teamcode.autoStates;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.nknsd.teamcode.components.handlers.launch.FiringSystem;
@@ -21,9 +22,12 @@ public class AutoTargetState extends StateMachine.State {
 
     @Override
     protected void run(ElapsedTime runtime, Telemetry telemetry) {
-        if(firingSystem.isReady() && killWhenTargeted){
+        if (firingSystem.isReady() && killWhenTargeted) {
             StateMachine.INSTANCE.stopAnonymous(this);
-//            telemetry.addData("AHA!", "target targeted");
+            RobotLog.v("ending target state");
+        }
+        if (firingSystem.isReady()) {
+            RobotLog.v("AHA! target targeted");
         }
     }
 

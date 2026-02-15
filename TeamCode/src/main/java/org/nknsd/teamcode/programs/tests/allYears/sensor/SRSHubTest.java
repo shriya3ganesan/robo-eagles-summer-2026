@@ -16,7 +16,7 @@ import org.nknsd.teamcode.programs.tests.thisYear.lift.ManualLiftTest;
 
 import java.util.List;
 
-@TeleOp(name = "SRSHub Test", group = "Tests")
+@TeleOp(name = "SRSHub Test", group = "Tests") @Disabled
 public class SRSHubTest extends NKNProgram {
 
 

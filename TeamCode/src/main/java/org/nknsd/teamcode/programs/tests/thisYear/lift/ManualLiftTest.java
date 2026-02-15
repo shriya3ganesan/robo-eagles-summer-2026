@@ -17,7 +17,7 @@ import org.nknsd.teamcode.frameworks.NKNProgram;
 
 import java.util.List;
 
-@TeleOp(name = "manual lift test", group = "Tests")
+@TeleOp(name = "manual lift")
 public class ManualLiftTest extends NKNProgram {
 
     private IMUSensor imuSensor;
@@ -27,11 +27,11 @@ public class ManualLiftTest extends NKNProgram {
 
         @Override
         protected void run(ElapsedTime runtime, Telemetry telemetry) {
-            if (runtime.milliseconds()>startTimeMS+4000) {
-                balancedLiftHandler.startLift();
-            } else if (runtime.milliseconds()>startTimeMS+1000){
-                balancedLiftHandler.stopLift();
-            }
+//            if (runtime.milliseconds()>startTimeMS+4000) {
+//                balancedLiftHandler.startLift();
+//            } else if (runtime.milliseconds()>startTimeMS+1000){
+//                balancedLiftHandler.stopLift();
+//            }
 
         }
 
@@ -51,7 +51,7 @@ public class ManualLiftTest extends NKNProgram {
         components.add(StateMachine.INSTANCE);
         StateMachine.INSTANCE.startAnonymous(new LiftTheServos());
 
-        imuSensor = new IMUSensor(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
+        imuSensor = new IMUSensor(/*new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD)*/);
         components.add(imuSensor);
         telemetryEnabled.add(imuSensor);
 
