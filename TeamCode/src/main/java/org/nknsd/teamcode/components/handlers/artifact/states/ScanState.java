@@ -29,6 +29,7 @@ public class ScanState extends StateMachine.State {
 
     @Override
     protected void run(ElapsedTime runtime, Telemetry telemetry) {
+        RobotLog.v("slot color " + slotTracker.getSlotColor(timesRan));
         if (override) {
             if (microwaveScoopHandler.isDone()) {
                 if (timesRan < 2) {
@@ -58,7 +59,8 @@ public class ScanState extends StateMachine.State {
     protected void stopped() {
         RobotLog.v("stopping scanstate #" + timesRan);
         if(timesRan == 2){
-            int x = timesRan;
+            artifactSystem.setIsScanning(false);
+            RobotLog.v("ending scan sequence");
         }
     }
 }

@@ -1,7 +1,6 @@
 package org.nknsd.teamcode.components.handlers.artifact.states;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.nknsd.teamcode.components.handlers.artifact.ArtifactSystem;
@@ -35,6 +34,7 @@ public class ScanStartState extends StateMachine.State {
     @Override
     protected void started() {
         artifactSystem.setScanState(this);
+        artifactSystem.setIsScanning(true);
 //        RobotLog.v("started startscanstate");
     }
 

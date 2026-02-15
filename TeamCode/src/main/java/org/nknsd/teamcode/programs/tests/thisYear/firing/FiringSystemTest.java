@@ -1,6 +1,5 @@
 package org.nknsd.teamcode.programs.tests.thisYear.firing;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,12 +11,10 @@ import org.nknsd.teamcode.components.handlers.vision.BasketLocator;
 import org.nknsd.teamcode.components.handlers.vision.ID;
 import org.nknsd.teamcode.components.handlers.launch.LaunchSystem;
 import org.nknsd.teamcode.components.handlers.launch.LauncherHandler;
-import org.nknsd.teamcode.components.handlers.artifact.MicrowavePositions;
 import org.nknsd.teamcode.components.handlers.artifact.MicrowaveScoopHandler;
 import org.nknsd.teamcode.components.handlers.artifact.SlotTracker;
 import org.nknsd.teamcode.components.handlers.vision.TargetingSystem;
 import org.nknsd.teamcode.components.handlers.launch.TrajectoryHandler;
-import org.nknsd.teamcode.components.handlers.color.BallColor;
 import org.nknsd.teamcode.components.handlers.color.BallColorInterpreter;
 import org.nknsd.teamcode.components.handlers.color.ColorReader;
 import org.nknsd.teamcode.components.motormixers.AbsolutePowerMixer;
@@ -129,6 +126,7 @@ public class FiringSystemTest extends NKNProgram {
         BasketLocator basketLocator = new BasketLocator(RobotVersion.INSTANCE.aprilDistanceInterpolater);
         components.add(basketLocator);
         telemetryEnabled.add(basketLocator);
+
 
         TargetingSystem targetingSystem = new TargetingSystem();
         components.add(targetingSystem);

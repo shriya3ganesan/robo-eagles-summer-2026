@@ -76,7 +76,7 @@ public class StateMachine implements NKNComponent {
             }
             if (state.starting) {
                 state.startTimeMS = runtime.milliseconds();
-                RobotLog.v("Actively starting %s",state.name);
+//                RobotLog.v("Actively starting %s",state.name);
                 state.started();
                 state.starting = false;
             }
@@ -104,7 +104,7 @@ public class StateMachine implements NKNComponent {
         if (state == null) {
             throw new NullPointerException("State: " + name + " not found!");
         }
-        RobotLog.v("Adding starting state %s which is %s and has time %f",name,state.name,state.startTimeMS);
+//        RobotLog.v("Adding starting state %s which is %s and has time %f",name,state.name,state.startTimeMS);
         state.stopping = false;
         state.starting = true;
         runList.add(state);
@@ -130,5 +130,14 @@ public class StateMachine implements NKNComponent {
         state.stopped();
         state.stopping = true;
         runList.remove(state);
+    }
+
+    public boolean isStateRunning(String stateName) {
+        for (State state : runList) {
+            if (stateName.equals(state.name)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

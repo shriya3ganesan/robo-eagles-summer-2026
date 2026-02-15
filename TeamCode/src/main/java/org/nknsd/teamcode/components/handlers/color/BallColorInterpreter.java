@@ -105,7 +105,7 @@ public class BallColorInterpreter implements NKNComponent {
 
     private void sample() {
         ballColorSamples[sampleCounter] = colorClassifier.classifyColor();
-//        RobotLog.v("sample counter " + sampleCounter + " color " + ballColorSamples[sampleCounter]);
+        RobotLog.v("sample counter " + sampleCounter + " color " + ballColorSamples[sampleCounter]);
         sampleCounter += 1;
         if (sampleCounter >= maxSamples) {
             sampleCounter = 0;

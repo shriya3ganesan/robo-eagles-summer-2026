@@ -14,7 +14,7 @@ import org.nknsd.teamcode.states.TimerState;
 
 import java.util.List;
 
-@TeleOp(name = "MicrowaveTester", group = "Tests") @Disabled
+@TeleOp(name = "MicrowaveTester", group = "Tests")
 public class MicrowaveTester extends NKNProgram {
 
     class TimedSlotSwitchState extends TimerState {

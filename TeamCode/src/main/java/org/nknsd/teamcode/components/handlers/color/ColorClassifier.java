@@ -1,9 +1,10 @@
 package org.nknsd.teamcode.components.handlers.color;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.nknsd.teamcode.components.utility.RobotVersion;
 
 public class ColorClassifier {
-
 
 
     final double maxDist = RobotVersion.INSTANCE.distSensorThreshold;
@@ -15,13 +16,14 @@ public class ColorClassifier {
 
     public BallColor classifyColor() {
         double[] colors = colorReader.getReading();
-        if(colors[3] >= maxDist){
+//        RobotLog.v("Color Reader Dist: " + colors[3]);
+        if (colors[3] >= maxDist) {
             return BallColor.NOTHING;
         }
-        if(colors[1] > colors[0]  && colors[1] > colors[2]){
-           return BallColor.GREEN;
+        if (colors[1] > colors[0] && colors[1] > colors[2]) {
+            return BallColor.GREEN;
         }
-        if(colors[2] > colors[0]){
+        if (colors[2] > colors[0]) {
             return BallColor.PURPLE;
         }
         return BallColor.UNSURE;

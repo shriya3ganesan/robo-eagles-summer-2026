@@ -1,6 +1,5 @@
-package org.nknsd.teamcode.components.sensors;
+package org.nknsd.teamcode.components.handlers.srs;
 
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -8,17 +7,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.nknsd.teamcode.frameworks.NKNComponent;
 
-public class PotentiometerSensor implements NKNComponent {
-    private final String potName = "ServoPos";
+import java.util.concurrent.Callable;
 
-    private AnalogInput pot;
-
-    public PotentiometerSensor() {}
-
+public class SRSDataAverager implements NKNComponent {
+    public short[][] getAveragedData() {
+        return null;
+    }
+    
     @Override
     public boolean init(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
-        pot = hardwareMap.get(AnalogInput.class, this.potName);
-        return true;
+        return false;
     }
 
     @Override
@@ -38,7 +36,7 @@ public class PotentiometerSensor implements NKNComponent {
 
     @Override
     public String getName() {
-        return "PotentiometerHandler";
+        return "";
     }
 
     @Override
@@ -48,10 +46,6 @@ public class PotentiometerSensor implements NKNComponent {
 
     @Override
     public void doTelemetry(Telemetry telemetry) {
-        telemetry.addData("Servo pos", pot.getVoltage());
-    }
 
-    public double getPotVoltage() {
-        return pot.getVoltage();
     }
 }

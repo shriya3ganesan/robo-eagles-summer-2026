@@ -41,7 +41,7 @@ public class FiringSystem implements NKNComponent {
         targetingSystem.enableAutoTargeting(enable);
     }
 
-    public void setManualDistance(double dist){
+    public void setManualDistance(double dist) {
         launchSystem.setDistance(dist);
     }
 
@@ -62,10 +62,6 @@ public class FiringSystem implements NKNComponent {
     }
 
     public boolean fireGreen() {
-        if (!autoLocked) {
-            return artifactSystem.launchColor(BallColor.GREEN);
-        }
-
         if (isReady()) {
             return artifactSystem.launchColor(BallColor.GREEN);
         }
@@ -73,10 +69,6 @@ public class FiringSystem implements NKNComponent {
     }
 
     public boolean firePurple() {
-        if (!autoLocked) {
-            return artifactSystem.launchColor(BallColor.PURPLE);
-        }
-
         if (isReady()) {
             return artifactSystem.launchColor(BallColor.PURPLE);
         }
@@ -84,32 +76,31 @@ public class FiringSystem implements NKNComponent {
     }
 
     public void fireAll() {
-        if (autoLocked && targetingSystem.targetVisible()) {
-            BallColor[] patternColors;
-            switch (pattern.ordinal()) {
-                case 0:
-                    patternColors = new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
-                    break;
-                case 1:
-                    patternColors = new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
-                    break;
-                case 2:
-                    patternColors = new BallColor[]{BallColor.GREEN, BallColor.PURPLE, BallColor.PURPLE};
-                    break;
-                default:
-                    patternColors = new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.PURPLE};
-            }
-            artifactSystem.launchAll(patternColors);
-            isFiring = true;
-            return;
-        }
 
         if (isReady()) {
-            isFiring = true;
-            artifactSystem.launchAll();
+            if (pattern == ID.NONE) {
+                artifactSystem.launchAll();
+            } else {
+                BallColor[] patternColors;
+                switch (pattern.ordinal()) {
+                    case 0:
+                        patternColors = new BallColor[]{BallColor.PURPLE, BallColor.GREEN, BallColor.PURPLE};
+                        break;
+                    case 1:
+                        patternColors = new BallColor[]{BallColor.PURPLE, BallColor.PURPLE, BallColor.GREEN};
+                        break;
+                    case 2:
+                        patternColors = new BallColor[]{BallColor.GREEN, BallColor.PURPLE, BallColor.PURPLE};
+                        break;
+                    default:
+                        artifactSystem.launchAll();
+                        isFiring = true;
+                        return;
+                }
+                artifactSystem.launchAll(patternColors);
+            }
         }
     }
-
 
     @Override
     public boolean init(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {

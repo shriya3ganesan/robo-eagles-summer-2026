@@ -13,6 +13,8 @@ import org.nknsd.teamcode.components.handlers.launch.LaunchSystem;
 import org.nknsd.teamcode.components.handlers.launch.LauncherHandler;
 import org.nknsd.teamcode.components.handlers.launch.TrajectoryHandler;
 import org.nknsd.teamcode.components.handlers.odometry.AbsolutePosition;
+import org.nknsd.teamcode.components.handlers.srs.PeakFinder;
+import org.nknsd.teamcode.components.handlers.srs.SRSHubHandler;
 import org.nknsd.teamcode.components.handlers.vision.BasketLocator;
 import org.nknsd.teamcode.components.handlers.vision.TargetingSystem;
 import org.nknsd.teamcode.components.motormixers.AbsolutePowerMixer;
@@ -35,6 +37,24 @@ public class Setup extends ProgramPart {
     private ArtifactSystem artifactSystem;
     private PowerInputMixer powerInputMixer;
     private BalancedLiftHandler balancedLiftHandler;
+
+    public SRSHubHandler getSrsHubHandler() {
+        return srsHubHandler;
+    }
+
+    private SRSHubHandler srsHubHandler;
+
+    public SlotTracker getSlotTracker() {
+        return slotTracker;
+    }
+
+    private SlotTracker slotTracker;
+
+    public MicrowaveScoopHandler getMicrowaveScoopHandler() {
+        return microwaveScoopHandler;
+    }
+
+    private MicrowaveScoopHandler microwaveScoopHandler;
 
     public PowerInputMixer getPowerInputMixer() {
         return powerInputMixer;
@@ -79,6 +99,14 @@ public class Setup extends ProgramPart {
         return balancedLiftHandler;
     }
 
+
+    boolean scanOnStart = true, enableTelemetry = true;
+
+    public void changeEnableSettings(boolean scanOnStart, boolean enableTelemetry){
+        this.scanOnStart = scanOnStart;
+        this.enableTelemetry = enableTelemetry;
+    }
+
     @Override
     public void createComponents(List<NKNComponent> components, List<NKNComponent> telemetryEnabled) {
 
@@ -90,18 +118,27 @@ public class Setup extends ProgramPart {
 //        firing
         TrajectoryHandler trajectoryHandler = new TrajectoryHandler();
         components.add(trajectoryHandler);
-        telemetryEnabled.add(trajectoryHandler);
+        if (enableTelemetry) {
+            telemetryEnabled.add(trajectoryHandler);
+        }
 
         LauncherHandler launcherHandler = new LauncherHandler(0.95, 1.10);
         components.add(launcherHandler);
-        telemetryEnabled.add(launcherHandler);
+        if (enableTelemetry) {
+            telemetryEnabled.add(launcherHandler);
+        }
         launcherHandler.setEnabled(true);
+
+
 
          launchSystem = new LaunchSystem(RobotVersion.INSTANCE.launchSpeedInterpolater, RobotVersion.INSTANCE.launchAngleInterpolater, 3, 16, 132);
 
-         firingSystem = new FiringSystem();
+
+        firingSystem = new FiringSystem();
         components.add(firingSystem);
-//        telemetryEnabled.add(firingSystem);
+        if (enableTelemetry) {
+            telemetryEnabled.add(firingSystem);
+        }
 
 
 //        microwave and artifact system
@@ -111,14 +148,14 @@ public class Setup extends ProgramPart {
         BallColorInterpreter ballColorInterpreter = new BallColorInterpreter(10, 0.01);
         components.add(ballColorInterpreter);
 
-        SlotTracker slotTracker = new SlotTracker();
+        slotTracker = new SlotTracker();
         components.add(slotTracker);
         telemetryEnabled.add(slotTracker);
 
-        MicrowaveScoopHandler microwaveScoopHandler = new MicrowaveScoopHandler();
+        microwaveScoopHandler = new MicrowaveScoopHandler();
         components.add(microwaveScoopHandler);
 
-         artifactSystem = new ArtifactSystem();
+        artifactSystem = new ArtifactSystem();
 
 
 //        driving
@@ -126,7 +163,7 @@ public class Setup extends ProgramPart {
         components.add(flowSensor1);
         FlowSensor flowSensor2 = new FlowSensor("LODOS");
         components.add(flowSensor2);
-         absolutePosition = new AbsolutePosition(flowSensor1, flowSensor2);
+        absolutePosition = new AbsolutePosition(flowSensor1, flowSensor2);
         components.add(absolutePosition);
         telemetryEnabled.add(absolutePosition);
 
@@ -137,25 +174,32 @@ public class Setup extends ProgramPart {
         AbsolutePowerMixer absolutePowerMixer = new AbsolutePowerMixer();
         components.add(absolutePowerMixer);
 
-         powerInputMixer = new PowerInputMixer();
+        powerInputMixer = new PowerInputMixer();
         components.add(powerInputMixer);
 
-         autoPositioner = new AutoPositioner();
+        autoPositioner = new AutoPositioner();
         components.add(autoPositioner);
 
 
 //        apriltag tracking
-         aprilTagSensor = new AprilTagSensor();
+        aprilTagSensor = new AprilTagSensor();
         components.add(aprilTagSensor);
-        telemetryEnabled.add(aprilTagSensor);
+        if (enableTelemetry) {
+            telemetryEnabled.add(aprilTagSensor);
+        }
 
         BasketLocator basketLocator = new BasketLocator(RobotVersion.INSTANCE.aprilDistanceInterpolater);
         components.add(basketLocator);
-//        telemetryEnabled.add(basketLocator);
+        if (enableTelemetry) {
+            telemetryEnabled.add(basketLocator);
+        }
+
 
          targetingSystem = new TargetingSystem();
         components.add(targetingSystem);
-        telemetryEnabled.add(targetingSystem);
+        if (enableTelemetry) {
+            telemetryEnabled.add(targetingSystem);
+        }
 
 
         balancedLiftHandler = new BalancedLiftHandler();
@@ -165,13 +209,16 @@ public class Setup extends ProgramPart {
         telemetryEnabled.add(balancedLiftHandler);
 
 
+        srsHubHandler = new SRSHubHandler();
+        components.add(srsHubHandler);
+
 
 //        all links
         slotTracker.link(microwaveScoopHandler, ballColorInterpreter);
         targetingSystem.link(basketLocator, absolutePosition, autoPositioner);
         basketLocator.link(aprilTagSensor);
         powerInputMixer.link(absolutePowerMixer, mecanumMotorMixer);
-        absolutePowerMixer.link(mecanumMotorMixer,absolutePosition);
+        absolutePowerMixer.link(mecanumMotorMixer, absolutePosition);
         ballColorInterpreter.link(colorReader);
         launchSystem.link(trajectoryHandler, launcherHandler);
         firingSystem.link(launchSystem, targetingSystem, artifactSystem);
@@ -179,7 +226,12 @@ public class Setup extends ProgramPart {
         autoPositioner.link(powerInputMixer, absolutePosition);
         balancedLiftHandler.link(imuSensor);
 
+        if (scanOnStart) {
+            artifactSystem.scanAll();
+        }
 
-        artifactSystem.scanAll();
+        if(RobotVersion.isAutonomous()){
+            autoPositioner.enableAutoPositioning(true);
+        }
     }
 }

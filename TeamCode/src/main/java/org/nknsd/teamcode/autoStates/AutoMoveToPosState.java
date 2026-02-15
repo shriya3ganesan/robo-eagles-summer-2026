@@ -29,6 +29,10 @@ public class AutoMoveToPosState extends StateMachine.State {
     private final String[] toStartOnEnd;
 
 
+    public AutoMoveToPosState(AutoPositioner autoPositioner, AbsolutePosition absolutePosition, boolean killSelf, double[] target, double errorXMargin, double errorYMargin, double errorHMargin, double speedError, String[] toStopOnEnd, String[] toStartOnEnd) {
+        this(autoPositioner, absolutePosition, killSelf, target, errorXMargin, errorYMargin, errorHMargin, speedError, RobotVersion.INSTANCE.pidControllerX, RobotVersion.INSTANCE.pidControllerY, RobotVersion.INSTANCE.pidControllerH, toStopOnEnd, toStartOnEnd);
+    }
+
     /**
      * @param target sets the absolute X target, Y target, H target
      * @param errorXMargin sets the x error margin based on (SOMETHING IDK)

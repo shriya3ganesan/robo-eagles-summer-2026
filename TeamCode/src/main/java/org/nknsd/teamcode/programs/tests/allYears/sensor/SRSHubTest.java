@@ -33,25 +33,27 @@ public class SRSHubTest extends NKNProgram {
         @Override
         protected void run(ElapsedTime runtime, Telemetry telemetry) {
             if (runtime.milliseconds() > lastRun + 500) {
-                double start = lastRun = runtime.milliseconds();
-                short[][] distances = hub.getDistances();
-                for (int i = 0; i < 8; i++) {
-                    double a = (double) distances[i][7];
-                    double b = (double) distances[i][0];
-
-                    double c = Math.sqrt(a * a + b * b - 2 * a * b * COS_45);
-                    double aAngle = Math.asin(a / (c / SIN_45));
-//                    RobotLog.v("Iteration: "+i);
-//                    RobotLog.v("angle " + aAngle);
-
-                    double cameraHeight = b * Math.sin(aAngle);
-//                    RobotLog.v("cameraHeight " + cameraHeight);
-
-                    double cameraAngle = Math.PI / 2 - aAngle;
-//                    RobotLog.v("camera angle " + cameraAngle);
-
-                }
-
+                hub.getNormalizedDists();
+                hub.ballLocation();
+//                double start = lastRun = runtime.milliseconds();
+//                short[][] distances = hub.getDistances();
+//                for (int i = 0; i < 8; i++) {
+//                    double a = (double) distances[i][7];
+//                    double b = (double) distances[i][0];
+//
+//                    double c = Math.sqrt(a * a + b * b - 2 * a * b * COS_45);
+//                    double aAngle = Math.asin(a / (c / SIN_45));
+////                    RobotLog.v("Iteration: "+i);
+////                    RobotLog.v("angle " + aAngle);
+//
+//                    double cameraHeight = b * Math.sin(aAngle);
+////                    RobotLog.v("cameraHeight " + cameraHeight);
+//
+//                    double cameraAngle = Math.PI / 2 - aAngle;
+////                    RobotLog.v("camera angle " + cameraAngle);
+//
+//                }
+//
 //                RobotLog.v("ReadHubState interval (ms):" + (runtime.milliseconds() - start));
             }
 

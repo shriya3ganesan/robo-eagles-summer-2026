@@ -18,6 +18,7 @@ public class ArtifactSystem {
     private SlotTracker slotTracker;
     private LaunchSystem launchSystem;
     private boolean isLaunching;
+    private boolean isScanning;
 
     public void setIntakeState(StateMachine.State intakeState) {
         this.intakeState = intakeState;
@@ -30,6 +31,11 @@ public class ArtifactSystem {
 
     public void setScanState(StateMachine.State scanState) {
         this.scanState = scanState;
+    }
+
+    public void setIsScanning(boolean scanning){
+        isScanning = scanning;
+        RobotLog.v("changing scanning mode to " + scanning);
     }
 
     private StateMachine.State intakeState;
@@ -48,7 +54,7 @@ public class ArtifactSystem {
         if (isLaunching) {
             return false;
         }
-        if (scanState != null && scanState.isRunning()) {
+        if (isScanning) {
             return false;
         }
         return true;

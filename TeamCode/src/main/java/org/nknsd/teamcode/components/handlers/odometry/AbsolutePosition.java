@@ -36,6 +36,18 @@ public class AbsolutePosition implements NKNComponent {
         return avPos;
     }
 
+    /**
+     * returns the position of the robot as a double array instead of a SparkFunOTOS.Pose2D
+     * @return the respective x, y, and h values of the robot as doubles.
+     */
+    public double[] getDoublePosition(){
+        double[] positions = new double[3];
+        positions[0] = avPos.x;
+        positions[1] = avPos.y;
+        positions[2] = avPos.h;
+        return positions;
+    }
+
     @Override
     public boolean init(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         return true;

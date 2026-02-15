@@ -16,6 +16,8 @@ public class PowerInputMixer implements NKNComponent {
     double[] powers = new double[]{0,0,0};
     boolean[] autoEnabled = new boolean[]{false, false, false};
 
+    boolean directEnabled = false;
+
     @Override
     public boolean init(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         return true;
@@ -66,6 +68,9 @@ public class PowerInputMixer implements NKNComponent {
             powers[2] = autoPowers[2];
         }
 //        RobotLog.v("set auto powers x: " + powers[0] + ", y: " + powers[1] + ", h: " + powers[2]);
+        if(directEnabled){
+            absolutePowerMixer.setDirectPowers(powers);
+        }
         absolutePowerMixer.setPowers(powers);
     }
 
@@ -79,6 +84,9 @@ public class PowerInputMixer implements NKNComponent {
         if (!autoEnabled[2]) {
             powers[2] = manualPowers[2];
         }
+        if(directEnabled){
+            absolutePowerMixer.setDirectPowers(powers);
+        }
         mecanumMotorMixer.setPowers(powers);
 //        RobotLog.v("manual powers x: " + powers[0] + ", y: " + powers[1] + ", h: " + powers[2]);
     }
@@ -87,6 +95,10 @@ public class PowerInputMixer implements NKNComponent {
         this.autoEnabled = autoEnable;
 //        Thread.dumpStack();
 //        RobotLog.v("enabling auto " + autoEnable[0] + ", " + autoEnable[1] + ", " + autoEnable[2]);
+    }
+
+    public void setDirectPower(boolean enable){
+        directEnabled = enable;
     }
 
     public void link(AbsolutePowerMixer absolutePowerMixer, MecanumMotorMixer mecanumMotorMixer) {

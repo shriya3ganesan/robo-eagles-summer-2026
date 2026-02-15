@@ -27,7 +27,7 @@ public class IntakeStartState extends StateMachine.State{
             return;
         }
         if(microwaveScoopHandler.isDone()){
-            StateMachine.INSTANCE.startAnonymous(new IntakeBallState(microwaveScoopHandler, slotTracker, artifactSystem, 0));
+            StateMachine.INSTANCE.startAnonymous(new IntakeBallState(microwaveScoopHandler, slotTracker, artifactSystem, 0, true, new String[]{}, new String[]{}));
             StateMachine.INSTANCE.stopAnonymous(this);
         }
     }

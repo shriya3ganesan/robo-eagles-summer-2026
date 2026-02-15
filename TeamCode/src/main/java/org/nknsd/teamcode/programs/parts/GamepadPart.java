@@ -4,10 +4,13 @@ import org.nknsd.teamcode.components.drivers.FiringDriver;
 import org.nknsd.teamcode.components.drivers.IntakeDriver;
 import org.nknsd.teamcode.components.drivers.LiftDriver;
 import org.nknsd.teamcode.components.drivers.MixedInputWheelDriver;
+import org.nknsd.teamcode.components.drivers.SRSDriver;
 import org.nknsd.teamcode.components.handlers.gamepad.GamePadHandler;
+import org.nknsd.teamcode.components.utility.StateMachine;
 import org.nknsd.teamcode.controlSchemes.defaults.FiringControlScheme;
 import org.nknsd.teamcode.controlSchemes.defaults.IntakeControlScheme;
 import org.nknsd.teamcode.controlSchemes.defaults.LiftControlScheme;
+import org.nknsd.teamcode.controlSchemes.defaults.SRSControlScheme;
 import org.nknsd.teamcode.controlSchemes.defaults.WheelControlScheme;
 import org.nknsd.teamcode.frameworks.NKNComponent;
 import org.nknsd.teamcode.frameworks.ProgramPart;
@@ -49,6 +52,9 @@ public class GamepadPart extends ProgramPart {
 
         LiftControlScheme liftControlScheme = new LiftControlScheme();
 
+        SRSControlScheme srsControlScheme = new SRSControlScheme();
+
+        SRSDriver srsDriver = new SRSDriver();
 
 
         firingDriver.link(gamePadHandler, setup.getFiringSystem(), firingControlScheme);
@@ -57,8 +63,8 @@ public class GamepadPart extends ProgramPart {
         wheelControlScheme.link(gamePadHandler);
         intakeDriver.link(gamePadHandler, setup.getArtifactSystem(), intakeControlScheme);
         intakeControlScheme.link(gamePadHandler);
-        liftDriver.link(gamePadHandler, setup.getBalancedLiftHandler(),liftControlScheme);
+        liftDriver.link(gamePadHandler, setup.getBalancedLiftHandler(), liftControlScheme);
         liftControlScheme.link(gamePadHandler);
-
+        srsDriver.link(gamePadHandler, srsControlScheme, StateMachine.INSTANCE, setup.getMicrowaveScoopHandler(), setup.getSlotTracker(), setup.getArtifactSystem());
     }
 }

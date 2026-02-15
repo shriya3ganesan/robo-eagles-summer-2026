@@ -1,6 +1,7 @@
 package org.nknsd.teamcode.autoStates;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.nknsd.teamcode.components.handlers.artifact.ArtifactSystem;
@@ -10,7 +11,6 @@ public class AutoSlotCheck extends StateMachine.State {
     private final ArtifactSystem artifactSystem;
     private final String[] toStopOnEnd;
     private final String[] toStartOnEnd;
-    private boolean scanStarted;
 
     public AutoSlotCheck(ArtifactSystem artifactSystem, String[] toStopOnEnd, String[] toStartOnEnd) {
         this.artifactSystem = artifactSystem;
@@ -20,16 +20,15 @@ public class AutoSlotCheck extends StateMachine.State {
 
     @Override
     protected void run(ElapsedTime runtime, Telemetry telemetry) {
-        if (!scanStarted) {
-            scanStarted = artifactSystem.scanWithOverride();
-        }
-        if (artifactSystem.isReady() && scanStarted) {
+        if (artifactSystem.isReady() && runtime.milliseconds() > 100 + startTimeMS) {
             StateMachine.INSTANCE.stopAnonymous(this);
         }
-    } 
+    }
 
     @Override
     protected void started() {
+        RobotLog.v("started scanning");
+        artifactSystem.scanAll();
 
     }
 
@@ -41,5 +40,7 @@ public class AutoSlotCheck extends StateMachine.State {
         for (String stateName : this.toStartOnEnd) {
             StateMachine.INSTANCE.startState(stateName);
         }
+        RobotLog.v("finished scanning");
     }
 }
+
