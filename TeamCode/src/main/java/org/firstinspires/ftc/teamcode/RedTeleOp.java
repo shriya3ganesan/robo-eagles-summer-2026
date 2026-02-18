@@ -37,7 +37,7 @@ public class RedTeleOp  extends OpMode {
     @Override
     public void loop() {
 
-        if (!gamepad2.b && !gamepad2.right_bumper && !gamepad1.left_bumper) {
+        if (!gamepad2.b && !gamepad2.right_bumper && !gamepad2.left_bumper) {
             //Update the vision portal
             aprilTagWebcam.update();
             AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificId(24); // TAG ID 24 is the red goal
