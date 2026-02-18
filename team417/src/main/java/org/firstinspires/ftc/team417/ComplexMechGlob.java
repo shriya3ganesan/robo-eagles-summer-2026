@@ -124,8 +124,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     ElapsedTime transferDownTimer;
     ElapsedTime intakeTimer;
     ElapsedTime intakeBackTimer;
-    ElapsedTime paddleTransferTimer;
-    ElapsedTime scanTimer; //wait this long after drum rotates to slot before scanning
     double userIntakeSpeed;
     ArrayList<DrumRequest> drumQueue = new ArrayList<> ();
 
@@ -167,8 +165,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     DcMotorEx motLLauncher;
     DcMotorEx motULauncher;
     DcMotorEx motIntake;
-    CRServo servoBLaunchFeeder;
-    CRServo servoFLaunchFeeder;
     Servo servoDrumGate;
     NormalizedColorSensor sensorColor1;
     NormalizedColorSensor sensorColor2;
@@ -209,8 +205,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher = hardwareMap.get(DcMotorEx.class, "motLLauncher");
         motULauncher = hardwareMap.get(DcMotorEx.class, "motULauncher");
         motIntake = hardwareMap.get(DcMotorEx.class, "motIntake");
-//        servoBLaunchFeeder = hardwareMap.get(CRServo.class, "servoBLaunchFeeder");
-//        servoFLaunchFeeder = hardwareMap.get(CRServo.class, "servoFLaunchFeeder");
         servoDrumGate = hardwareMap.get(Servo.class, "servoDrumGate");
         servoRightPaddle = hardwareMap.get(Servo.class, "servoRightPaddle");
         servoLeftPaddle = hardwareMap.get(Servo.class, "servoLeftPaddle");
@@ -379,8 +373,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         else {
             upperLaunchVelocity = 0;
             lowerLaunchVelocity = 0;
-//            servoBLaunchFeeder.setPower(0);
-//            servoFLaunchFeeder.setPower(0);
             feederPower = 0;
         }
     }
@@ -449,16 +441,16 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             // allow the intake to run if the driver wants it to
             intakePower = REVERSE_INTAKE_SPEED;
         } else if (userIntakeSpeed > 0) {
-            intakePower= INTAKE_SPEED;
+            intakePower = INTAKE_SPEED;
+        }
             // if we are in the intake waitState, allow the intake to run
 //            if (waitState == WaitState.INTAKE) {
 //                intakePower = INTAKE_SPEED;
 //            } else if (!drumQueue.isEmpty() && drumQueue.get(0).nextState == WaitState.INTAKE) {
 //                intakePower = INTAKE_SPEED;
 //            }
-        }
         // whenever we see a ball in the drum then we move the intake back so the ball immediately
-        // doesn't get stuck in the drum
+        // so it doesn't get stuck in the drum
         if (intakeBackTimer != null) {
             if(intakeBackTimer.seconds() < INTAKE_BACK_TIME) {
                 intakePower = -1;
@@ -468,10 +460,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         }
 
         if (intakePower > 0 && waitState != WaitState.DRUM_MOVE) {
-            gatePosition = DRUM_GATE_OPEN_POSITION;
-            scanRequired = true;
+            gatePosition = DRUM_GATE_OPEN_POSITION; // Open gate to allow ball in
+            scanRequired = true; // New ball means we will need to detect color if driver presses color launch
         } else {
-            gatePosition = DRUM_GATE_CLOSED_POSITION;
+            gatePosition = DRUM_GATE_CLOSED_POSITION; // By default close gate to prevent balls from falling out
         }
         if (engageOhCrap) {
             gatePosition = DRUM_GATE_OPEN_POSITION;
@@ -479,51 +471,50 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         telemetry.addLine(String.format("intake: %.1f, waitState: %s, gatePosition: %.1f",
                 intakePower, waitState, gatePosition));
 
+        // TODO might be able to remove this state - and stay in current state (for intake/scan) instead of going here
         if (waitState == WaitState.IDLE) {
+            // When driver starts the intake, need to rotate to an intake slot
             if (userIntakeSpeed > 0) {
-                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
-//                int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.PURPLE);
-//                if (minSlot == -1) {
-//                    minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
-//                }
-//
-//                int a = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
-//                if (a == -1) {
-//                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
-//                }
+                // At the beginning or after launching, all slots should be NONE. Find the nearest one.
+                int minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.NONE);
 
-//                if (minSlot != -1) {
-//                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
-                waitState = WaitState.INTAKE;
-//                }
+                // TODO might not need this. Test without it and delete if not needed.
+                if (minSlot == -1) {
+                    minSlot = findNearestSlot(INTAKE_POSITIONS, RequestedColor.PURPLE);
+                }
+
+                // Check if our current slot is an intake slot. In that case, we don't need to do anything
+                int currSlot = findSlotFromPosition(hwDrumPosition, INTAKE_POSITIONS);
+
+                // If it isn't, go to the intake slot we found earlier
+                if (currSlot == -1 && minSlot != -1) {
+                    addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
+                    waitState = WaitState.INTAKE;
+                }
             }
+
             // this makes it so that after we are done launching the drum goes to intake position
 //            if (drumQueue.isEmpty() && slotOccupiedBy.stream().allMatch(e -> e == PixelColor.NONE)) {
 //                addToDrumQueue(INTAKE_POSITIONS[0], WaitState.INTAKE);
 //            }
         }
         if (waitState == WaitState.SCAN) {
-            if (drumAtPosition()) {
-                if (scanTimer == null) {
-                    scanTimer = new ElapsedTime();
-                }
-                if (scanTimer.seconds() >= 1) {
-                    PixelColor slotCo = coolColorDetector.detectArtifactColor();
-                    telemetry.addData("slotco", slotCo);
-                    scan();
-                    scanTimer = null;
-                    waitState = WaitState.IDLE;
-                }
-            }
+            // Rotate to all 3 slots and then detect and store colors
+            scan();
+
+            // Then go to IDLE to wait for launch request
+            waitState = WaitState.IDLE;
         }
 
         // let a firing request interrupt an intake
         if (waitState == WaitState.IDLE || waitState == WaitState.INTAKE) {
+            // If there is a request in drumQueue find the requested position and go to DRUM_MOVE to move there
             if (!drumQueue.isEmpty()) {
                 hwDrumPosition = drumQueue.get(0).newPosition;
                 waitState = WaitState.DRUM_MOVE;
             }
         }
+
         if (waitState == WaitState.DRUM_MOVE) {
             if (drumAtPosition()) {
                 DrumRequest request = drumQueue.get(0);
@@ -554,63 +545,42 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer == null) {
                 transferTimer = new ElapsedTime();
             }
+            // Move the 4bar transfer up
             if ((transferTimer.seconds() <= TRANSFER_TIME_UP)) {
                 transferPosition = TRANSFER_ACTIVE_POSITION;
             }
+            // Wait to ensure the 4bar is fully up, then bring the paddles up
             if ((transferTimer.seconds() >= PADDLE_TRANSFER_DELAY) && (transferTimer.seconds() <= PADDLE_TRANSFER_DELAY + PADDLE_TRANSFER_TIME_UP)) {
                 leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
                 rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
             }
+            // Everything goes down and we go to IDLE
             if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
             }
-
-//            if (transferTimer == null) {
-//                transferTimer = new ElapsedTime();
-//            }
-//            if (transferTimer.seconds() <= TRANSFER_TIME_UP) {
-//                transferPosition = TRANSFER_ACTIVE_POSITION;
-//            }
-//            // only bring the paddles up when the transfer is fully up
-//            if (transferTimer.seconds() >= TRANSFER_TIME_UP+PADDLE_TRANSFER_DELAY) {
-//                transferPosition = TRANSFER_ACTIVE_POSITION;
-//                if (paddleTransferTimer == null) {
-//                    paddleTransferTimer = new ElapsedTime();
-//                }
-//                if (paddleTransferTimer.seconds() < PADDLE_TRANSFER_TIME_UP) {
-//                    leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
-//                    rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
-//                }
-//            }
-//            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
-//                waitState = WaitState.IDLE;
-//                transferTimer = null;
-//                paddleTransferTimer = null;
-//            }
         }
 
         if (waitState == WaitState.INTAKE) {
             launchDistance = LaunchDistance.OFF;
-            // Because slot colors don't matter right now
-            // so we assume all 3 slots are purple
+            // By default we assume all 3 slots are purple
+            // We will check the color later if the driver needs to launch a color
             slotOccupiedBy.set(0, PixelColor.PURPLE);
             slotOccupiedBy.set(1, PixelColor.PURPLE);
             slotOccupiedBy.set(2, PixelColor.PURPLE);
-            waitState = WaitState.IDLE;
         }
+
+        // Manually overrides an ongoing launch
         if (waitState == WaitState.TRANSFER_DOWN) {
             if (transferDownTimer == null) {
                 transferDownTimer = new ElapsedTime();
-            }
-            while (transferDownTimer.seconds() <= TRANSFER_TIME_DOWN) {
+
+                // Mark slot as empty because we stopped the transfer
                 int currSlot = findSlotFromPosition(hwDrumPosition, LAUNCH_POSITIONS);
                 slotOccupiedBy.set(currSlot, PixelColor.NONE);
-                transferPosition = TRANSFER_INACTIVE_POSITION;
-                leftPaddlePosition = LEFT_PADDLE_INACTIVE_POSITION;
-                rightPaddlePosition = RIGHT_PADDLE_INACTIVE_POSITION;
             }
-            if (transferTimer.seconds() > TRANSFER_TIME_DOWN) {
+            // If transfer is fully down, go to IDLE to wait for next action
+            if (transferDownTimer.seconds() > TRANSFER_TIME_DOWN) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
                 transferDownTimer = null;
@@ -632,8 +602,6 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motLLauncher.setVelocity(lowerLaunchVelocity);
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
-//        servoBLaunchFeeder.setPower(feederPower);
-//        servoFLaunchFeeder.setPower(feederPower);
         telemetry.addData("hwDrumPos", hwDrumPosition);
         telemetry.addData("currVoltage ", "%.2f", analogDrum.getVoltage());
     }

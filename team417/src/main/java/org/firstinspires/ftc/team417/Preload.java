@@ -65,10 +65,8 @@ public class Preload extends BaseOpMode {
                 // Only allow intaking/out-taking when not moving the drum:
                 if (gamepad1.a) {
                     // Intake a ball:
-                    feederPower = -ComplexMechGlob.FEEDER_POWER;
                 } else if (gamepad1.b) {
                     // Eject a ball (without the flywheel!):
-                    feederPower = ComplexMechGlob.FEEDER_POWER;
                     transferPosition = ComplexMechGlob.TRANSFER_ACTIVE_POSITION;
                     timeSinceTransfer = new ElapsedTime(); // Start the transfer timer
                 }
@@ -78,8 +76,6 @@ public class Preload extends BaseOpMode {
             loopTime = new ElapsedTime();
 
             // Feed the servos:
-            mechGlob.servoBLaunchFeeder.setPower(feederPower);
-            mechGlob.servoFLaunchFeeder.setPower(feederPower);
             mechGlob.servoTransfer.setPosition(transferPosition);
             mechGlob.servoDrum.setPosition(currentDrumPosition);
 
