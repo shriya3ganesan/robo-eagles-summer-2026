@@ -12,16 +12,41 @@ public class Limelight {
 
     public Limelight (HardwareMap hardwareMap){
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
+        limelight.setPollRateHz(100);
         limelight.start();
+        result = limelight.getLatestResult();// This sets how often we ask Limelight for data (100 times per second)
 
     }
+    public void updateResult(){
+        result = limelight.getLatestResult();
+    }
+
+
     public void switchPipelines(int x){
         limelight.pipelineSwitch(x);
     }
 
-    public String detectMotif(LLResult result){
-return"b";
+    public String detectMotif(){
+        updateResult();
+        limelight.pipelineSwitch(7);
+        if (result !=null){
+            return "PGP";
+        }
+
+        limelight.pipelineSwitch(8);
+        updateResult();
+
+        if (result != null){
+            return "GPP";
+        }
+        limelight.pipelineSwitch(9);
+        updateResult();
+        if (result != null){
+            return "PPG";
+        } else {
+            return "null";
+        }
+
     }
 
     public void updateLimelight(){
