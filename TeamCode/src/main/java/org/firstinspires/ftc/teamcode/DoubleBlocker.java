@@ -8,7 +8,7 @@ public class DoubleBlocker {
     Servo blockerServo = null;
     boolean leftBumperPressed;
     boolean rightBumperPressed;
-    double leftBlockerClosePosition = 0.87;
+    double leftBlockerClosePosition = 0.65;
     double leftBlockerOpenPosition = 0.78;
     double rightBlockerClosePosition = 0.415;
     double rightBlockerOpenPosition = 0.5;
