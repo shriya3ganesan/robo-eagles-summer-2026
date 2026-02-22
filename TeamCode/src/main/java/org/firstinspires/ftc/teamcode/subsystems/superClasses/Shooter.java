@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.superClasses;
 
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -28,6 +29,7 @@ public class Shooter {
     Servo right, left;
     AnalogInput leftEnc;
     private double thetaT;
+    double speed;
 
     public Shooter(HardwareMap hardwareMap, Telemetry t, ElapsedTime r){
         //init servos and motors
@@ -43,21 +45,14 @@ public class Shooter {
         //invertMotor
         shooterR.setInverted(true);
 
-        //break
-        //shooterL.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
-        //shooterR.setZeroPowerBehavior(MotorEx.ZeroPowerBehavior.BRAKE);
-
-        //VelocityMode
-        shooterR.setRunMode(MotorEx.RunMode.VelocityControl);
-        shooterL.setRunMode(MotorEx.RunMode.VelocityControl);
+        shooterR.setRunMode(MotorEx.RunMode.RawPower);
+        shooterL.setRunMode(MotorEx.RunMode.RawPower);
 
         telemetry = t;
         runtime = r;
     }
 
     public double getMotorVel(){
-        //in ticks/sec - gobilda bare is 28 tps
-        //return (shooterL.getVelocity() + shooterR.getVelocity())/2;
         return (shooterL.getVelocity());
 
     }
@@ -82,14 +77,13 @@ public class Shooter {
     }
 
     public void flywheelSpin(double targetVelo, double currentVelo, double kf){//kf is a tester varible
-        double speed = PIDF(targetVelo-currentVelo, targetVelo, 12,0,0.1,0.59);
-        //shooterR.setVeloCoefficients(12, 0, 0.12);
-        //shooterL.setVeloCoefficients(12, 0, 0.12);
-        //shooterR.setFeedforwardCoefficients(0, 2.4, 0);
-        //shooterL.setFeedforwardCoefficients(0, 2.4, 0);
-        //12, 0.59 13
-        shooterR.setVelocity(speed);
-        shooterL.setVelocity(speed);
+        if (targetVelo-currentVelo <= 0){
+            speed = 0;
+        } else {
+            speed = 1;
+        }
+        shooterL.set(speed);
+        shooterR.set(speed);
         telemetry.addData("target velocity", Math.round(targetVelo*100)/100.0);
         telemetry.addData("current velocity", Math.round(currentVelo*100)/100.0);
     }
@@ -109,12 +103,21 @@ public class Shooter {
         }
 
         //setting it
-        theta = 0.48 /*center*/ + theta * (1.74 /(360.0) * 1.3);
+        theta = 0.5025 /*center*/ + theta * (1.74 /(360.0)*1.40);
         right.setPosition(theta);
         left.setPosition(theta);
     }
-    public void rotateTurretAuto(double theta){
+
+    public void rotateTurretZeroTest(double theta){
+        right.setPosition(theta);
+        left.setPosition(theta);
+    }
+
+    public void rotateTurretConversionTest(double theta, double mul){
+        telemetry.addData("turret", Math.round(theta*100)/100.0);
         theta = normalizeDeg(theta);
+
+        thetaT = theta;
 
         //hard stops
         if (theta > 75){
@@ -122,6 +125,22 @@ public class Shooter {
         }
         if (theta < -75){
             theta = -75;
+        }
+
+        //setting it
+        theta = 0.5025 /*center*/ + theta * (1.74 /(360.0)*mul);
+        right.setPosition(theta);
+        left.setPosition(theta);
+    }
+    public void rotateTurretAuto(double theta){
+        theta = normalizeDeg(theta);
+
+        //hard stops
+        if (theta > 72){
+            theta = 72;
+        }
+        if (theta < -72){
+            theta = -72;
         }
 
         //setting it

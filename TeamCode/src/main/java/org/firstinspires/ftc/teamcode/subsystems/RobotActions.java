@@ -55,6 +55,7 @@ public class RobotActions {
     private final double CONSTY = 13.375;
     private final double fieldLength = 144;
     private double speedDif;
+    private double noahMode = 1.0;
 
     public RobotActions (Gamepad g1, Gamepad g2, Drivetrain dt, Intake in, Shooter sh, Follower fo, ElapsedTime ru, Telemetry te, Lights li){
         gamepad1 = g1;
@@ -121,7 +122,7 @@ public class RobotActions {
     }
 
     public void updateIntake(){
-        intake.setIntPower(-gamepad2.right_stick_y + 0.1);
+        intake.setIntPower(noahMode*gamepad2.right_stick_y + 0.1);
         intake.intakeIn();
         intake.intakeMachine();
         if (intake.haveBall()){
@@ -145,16 +146,16 @@ public class RobotActions {
         }
 
         double dist = Math.hypot(delY, delX);
-        double speedMul = 0.60;
+        double speedMul = 0.80;
 
         if(dist > 140){
-            speedMul = 0.56;
+            speedMul = .56;
         }
 
         telemetry.addData("moving mag", vel.getMagnitude());
         telemetry.addData("shooting dif", speedDif);
 
-        if(!rotating && Math.abs(gamepad2.left_stick_y) > 0.05 && vel.getMagnitude() < 20 && Math.abs(turAngle) < 75){
+        if(!rotating && Math.abs(gamepad2.left_stick_y) > 0.05 && vel.getMagnitude() < 20 && Math.abs(turAngle) < 72 && dist >= 66){
             intake.setTransferVelPID(-gamepad2.left_stick_y * speedMul * 2250, intake.getTransferVel(), 0, 0);
         }
         else{
@@ -195,6 +196,26 @@ public class RobotActions {
         updateShooter(currentColor, virtualX, virtualY);
     }
 
+    public void updateConversion(OLDChoose.Alliance currentColor, boolean turretOn, double x, double y, double heading, Vector vel, double rVel, double mul) {
+        double time = time(x, y) * 2.0;
+
+        double virtualX = x + time * vel.getXComponent();
+        double virtualY = y + time * vel.getYComponent();
+        telemetry.addData("virtualX", virtualX);
+        telemetry.addData("virtualY", virtualY);
+        telemetry.addData("virtualXchange", time * vel.getXComponent());
+        telemetry.addData("virtualYchange", time * vel.getYComponent());
+
+        if (turretOn) {
+            updateTurretConversion(currentColor, virtualX, virtualY, heading, mul);
+        }
+        if (!turretOn) {
+            shooter.rotateTurret(0);
+        }
+
+        updateShooter(currentColor, virtualX, virtualY);
+    }
+
     public double time(double x, double y){
         double dist = Math.hypot(x, y);
         if(dist < 140){
@@ -204,15 +225,22 @@ public class RobotActions {
         return time;
     }
 
-    public void updateShooterTesting(OLDChoose.Alliance currentColor, boolean turretOn, double x, double y, double heading, Vector vel) {
+    public void updateShooterTesting(boolean shooterOff) {
         telemetry.addData("setHood", DELETEBUTTHISISHOOD);
         telemetry.addData("setTurret", DELETEBUTTHISISTURRET);
         telemetry.addData("setShooterVel", DELETEBUTTHISISVEL);
         shooter.setHood(DELETEBUTTHISISHOOD);
-        shooter.rotateTurret(DELETEBUTTHISISTURRET);
-        shooter.flywheelSpin(DELETEBUTTHISISVEL, shooter.getMotorVel(), 0);
+        shooter.rotateTurretZeroTest(DELETEBUTTHISISTURRET);
+        if (shooterOff){
+            shooter.flywheelSpin(0, shooter.getMotorVel(), 0);
+        }
+        else{
+            shooter.flywheelSpin(DELETEBUTTHISISVEL, shooter.getMotorVel(), 0);
+        }
     }
-
+    public void toggleNoahMode(){
+        noahMode *= -1;
+    }
 
     private void updateTurret(OLDChoose.Alliance currentColor, double posX, double posY, double h){
         this.posX = posX;
@@ -255,6 +283,47 @@ public class RobotActions {
         turAngle = turretAngle;
     }
 
+    private void updateTurretConversion(OLDChoose.Alliance currentColor, double posX, double posY, double h, double mul){
+        this.posX = posX;
+        this.posY = posY;
+        double heading = Math.toDegrees(h);
+        double turretAngle = 0;
+
+        if(currentColor == OLDChoose.Alliance.BLUE){
+            //targets (0, 124), (20, 144)
+            double delX1 = 0 - posX;
+            double delY1 = 124 - posY;
+            double turretAngle1 = Math.toDegrees(Math.atan2(delY1, delX1)) - (heading);
+            double delX2 = 20 - posX;
+            double delY2 = 144 - posY;
+            double turretAngle2 = Math.toDegrees(Math.atan2(delY2, delX2)) - (heading);
+            turretAngle = averageAngle(turretAngle1, turretAngle2);
+            rawX = posX - CONSTX;
+            rawY = fieldLength - posY - CONSTY;
+            idealAngle = Math.atan(rawY/rawX);
+            delAngle = Math.toDegrees(Math.atan(delY1/delX1) - idealAngle);
+        }
+
+        if(currentColor == OLDChoose.Alliance.RED){
+            //targets (144, 124), (124, 144)
+            double delX1 = 144 - posX;
+            double delY1 = 124 - posY;
+            double turretAngle1 = Math.toDegrees(Math.atan2(delY1, delX1)) - (heading);
+            double delX2 = 124 - posX;
+            double delY2 = 144 - posY;
+            double turretAngle2 = Math.toDegrees(Math.atan2(delY2, delX2)) - (heading);
+            turretAngle = averageAngle(turretAngle1, turretAngle2);
+            rawX = fieldLength - posX - CONSTX;
+            rawY = fieldLength - posY - CONSTY;
+            idealAngle = Math.atan(rawY/rawX);
+            delAngle = Math.toDegrees(Math.atan(delY1/delX1) - idealAngle);
+        }
+
+        telemetry.addData("turretAngle", turretAngle);
+        shooter.rotateTurretConversionTest(turretAngle, mul);
+        turAngle = turretAngle;
+    }
+
     private double averageAngle(double angleA, double angleB){
         double aRad = Math.toRadians(angleA);
         double bRad = Math.toRadians(angleB);
@@ -265,8 +334,8 @@ public class RobotActions {
         double avgRad = Math.atan2(y, x);
         double avgDeg = Math.toDegrees(avgRad);
 
-        // normalize to [0, 360)
-        return (avgDeg + 360) % 360;
+        // normalize to [-180, 180)
+        return ((avgDeg + 180) % 360 + 360) % 360 - 180;
     }
 
 
@@ -287,34 +356,20 @@ public class RobotActions {
         double speed = 0;
 
         if(dist > 120){//far zone
-            shooter.setHood(0.225);
-            speed = -1252.949 + 593.005*Math.log(dist);
-            //593.005
+            shooter.setHood(0.10);
+            speed = -1243 + 593.005*Math.log(dist);
         }
-        else if(dist > 85) { //most of near zone
-            shooter.setHood(0.35);
-            speed = 0.723027*dist+1458.89853;
-        }
-        else if(dist > 76){ //getting close
-            //shooter.setHood(-0.0197368*dist+1.75368);
-            shooter.setHood(0.45);
-
-            //1.75368
-            speed = 0.673027*dist+1435.89853;
-        }
-        else if(dist > 60){ //CRAZY close
-            //shooter.setHood(-0.0357143*dist+2.85714);
-            shooter.setHood(1);
-            speed = -0.216728*dist*dist + 36.10864*dist - 40;
+        else if(dist > 66){ // close
+            shooter.setHood(-0.0000188373*Math.pow(dist, 3)+0.00493387*Math.pow(dist, 2)-0.435788*dist+13.655);
+            speed = 3.30426*dist+1064.70526;
         }
         else{
-
+            shooter.setHood(1);
+            speed = 3.30426*dist+1064.70526;
         }
-
         if(speed < 0){
             speed = 0;
         }
-
         shooter.flywheelSpin(speed, shooter.getMotorVel(), 0);
         speedDif = speed - shooter.getMotorVel();
     }

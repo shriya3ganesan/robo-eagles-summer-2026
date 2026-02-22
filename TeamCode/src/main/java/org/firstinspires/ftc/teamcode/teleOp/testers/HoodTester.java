@@ -1,99 +1,264 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode.teleOp.testers;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Paths.OLD.OLDChoose.Alliance.BLUE;
+import static org.firstinspires.ftc.teamcode.pedroPathing.Paths.OLD.OLDChoose.Alliance.RED;
+
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-/*
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.JaviVision.Position.FinalPositionV3.LimelightProcessor_v3Tele;
+import org.firstinspires.ftc.teamcode.pedroPathing.Config.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Paths.OLD.OLDChoose;
+import org.firstinspires.ftc.teamcode.subsystems.RobotActions;
+import org.firstinspires.ftc.teamcode.subsystems.superClasses.Drivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.superClasses.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.superClasses.Lights;
+import org.firstinspires.ftc.teamcode.subsystems.superClasses.Shooter;
 
-@TeleOp(name="Hood Tester", group="Iterative OpMode")
+import java.util.concurrent.TimeUnit;
+
+
+@TeleOp(name="turret test", group="Iterative OpMode")
 @Config
-@Disabled
-public class HoodTester extends OpMode
-{
-    Servo hood;
-    public static double pos;
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+public class HoodTester extends OpMode {
+
+    //choose
+    private OLDChoose choose;
+    private double mul = 1.0;
+
+    //runtime
+    private ElapsedTime overallRuntime;
+    private double lastTime;
+
+    //subsystems
+    private Drivetrain drivetrain;
+    private Intake intake;
+    private Shooter shooter;
+    private Lights light;
+
+    //localization
+    private Follower follower;
+
+    //robot
+    private RobotActions robot;
+    public boolean turretOn = true;
+    private OLDChoose.Alliance currentColor = RED;
+    private double x;
+    private double y;
+    private double heading;
+    private Vector vel;
+    private double counter = 0;
+    private double timeSinceLastLochalazationReset = 0;
+    private boolean moving;
+    private boolean rotating;
+    private boolean movingOrRotating;
+    LimelightProcessor_v3Tele ll;
+    private Telemetry dash;
+    public static double kf = 0.59;
+    private double timeDif = 1.0;
+    private double oldHeading = 0;
+
     @Override
     public void init() {
-        hood = hardwareMap.get(Servo.class, "hood");
+        ll = new LimelightProcessor_v3Tele(hardwareMap);
+        //choose
+        choose = new OLDChoose(gamepad1, telemetry);
 
+
+        //localization
+        follower = Constants.createFollower(hardwareMap);
+
+        //runtime
+        overallRuntime = new ElapsedTime();
+
+        //subsystems
+        drivetrain = new Drivetrain(hardwareMap, telemetry);
+        intake = new Intake(hardwareMap, telemetry, overallRuntime);
+        shooter = new Shooter(hardwareMap, telemetry, overallRuntime);
+        light = new Lights(hardwareMap, overallRuntime, telemetry);
+
+        //telemetry
+        telemetry.addData("Status", "Initialized");
+
+        //robot
+        robot = new RobotActions(gamepad1, gamepad2, drivetrain, intake, shooter, follower, overallRuntime, telemetry, light);
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dash = dashboard.getTelemetry();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
-     */
     @Override
     public void init_loop() {
-
+        currentColor = RED;
+        choose.allianceInit();
+        currentColor = choose.getSelectedAlliance();
+        telemetry.update();
     }
 
-    /*
-     * Code to run ONCE when the driver hits START
-     */
     @Override
     public void start() {
-
+        overallRuntime.reset();
+        if(currentColor == RED){
+            follower.setPose(new Pose(115, 70, Math.PI/2));
+        }
+        if(currentColor == BLUE){
+            follower.setPose(new Pose(29, 70, Math.PI/2));
+        }
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
-     */
     @Override
     public void loop() {
-        hood.setPosition(pos);
+        double nowTime = overallRuntime.time(TimeUnit.MILLISECONDS);
+        timeDif = nowTime - lastTime;
+        double hertz = 1.0/timeDif;
+        lastTime = nowTime;
+
+        ll.updateTele(follower.getPose().getHeading(), robot.turAngle, movingOrRotating);
+        /*
+        telemetry.addLine("------");
+        telemetry.addLine("angles");
+        telemetry.addData("theta", Math.toDegrees(ll.pose.theta));
+        telemetry.addData("heading", Math.toDegrees(follower.getHeading()));
+        telemetry.addData("raw tx", ll.pose.roll);
+        telemetry.addData("tx", ll.pose.tx);
+        telemetry.addData("id", ll.pose.id);
+        telemetry.addData("yaw", Math.toDegrees(ll.pose.yaw));
+        telemetry.addLine("----------");
+        telemetry.addData("distance", ll.pose.distance);
+        telemetry.addData("dx",ll.pose.posX2);
+        telemetry.addData("dy", ll.pose.posY2);
+        telemetry.addData("rawX", ll.pose.rawX);
+        telemetry.addData("rawY", ll.pose.rawY);
+        telemetry.addLine("----------");
+        telemetry.addData("fieldX", ll.pose.posX);
+        telemetry.addData("fieldY", ll.pose.posY);
+        telemetry.addLine("------");
+
+         */
+        /*
+        --------------------------GRAB COORDINATES--------------------------
+         */
+        Pose robotPos = follower.getPose();
+        x = robotPos.getX();
+        y = robotPos.getY();
+        heading = robotPos.getHeading();
+
+        vel = follower.getVelocity();
+
+        if (vel.getMagnitude() < 0.5) {
+            moving = false;
+        } else {
+            moving = true;
+        }
+        if (Math.abs(Math.toDegrees((oldHeading - heading))/timeDif) < .06) {
+            rotating = false;
+        } else {
+            rotating = true;
+        }
+        telemetry.addData("rotating", rotating);
+        /*
+        --------------------------DRIVER ONE CONTROLS--------------------------
+         */
+
+        //reset localization to back
+        if (gamepad1.share){
+            robot.setLocalizationBack();
+        }
+
+        //reset imu to 0
+        if (gamepad1.options){
+            robot.setIMUZero(x, y);
+        }
+
+        //reset position to corner
+        if (gamepad1.dpad_down){
+            robot.setLocalizationOurSide(currentColor);
+        }
+
+        if (gamepad1.dpad_up && ll.pose.valid && !rotating && !moving) {
+            if (counter > 5) {
+                follower.setPose(new Pose(ll.pose.posX, ll.pose.posY, follower.getPose().getHeading()));
+                gamepad1.rumble(500);
+                counter = 0;
+            }
+        }
+        else {
+            counter++;
+        }
+
+        //turn turret on/off
+        if (gamepad1.y){
+            turretOn = !turretOn;
+        }
+
+        //switch alliances
+        if(gamepad1.xWasPressed()) {
+            if(currentColor == OLDChoose.Alliance.RED){
+                currentColor = OLDChoose.Alliance.BLUE;
+            }
+            else{
+                currentColor = OLDChoose.Alliance.RED;
+            }
+        }
+
+        //drive
+        robot.fieldCentricDrive(currentColor, heading);
+
+
+        /*
+        --------------------------DRIVER TWO CONTROLS--------------------------
+         */
+
+        robot.updateIntake();
+        robot.updateTransfer(currentColor, vel, x, y, rotating);
+        if(gamepad2.leftBumperWasPressed()){
+            robot.toggleNoahMode();
+        }
+
+
+        /*
+        --------------------------UPDATE--------------------------
+         */
+        telemetry.addData("alliance Color", currentColor);
+        telemetry.addData("position", "(" + Math.round(x*100)/100.0 + "," + Math.round(y*100)/100.0 + ") Heading: " + Math.round(heading*100)/100.0);
+        telemetry.addData("hertz", hertz);
+
+        robot.updateConversion(currentColor, turretOn, x, y, heading, vel, kf, mul);
+
+        telemetry.addData("mul", mul);
+
+        if(gamepad2.dpadDownWasPressed()){
+            mul -= .05;
+        }
+        if(gamepad2.dpadUpWasPressed()){
+            mul += .05;
+        }
+
+        follower.update();
+
+
+        if(intake.haveBall()){
+            light.setIndicatorLight(new double[]{0.50}, 700);
+        }
+        else {
+            light.setIndicatorLight(new double[]{0.28}, 700);
+        }
+
+        light.update();
+        telemetry.update();
+        dash.update();
+
+        movingOrRotating = moving || rotating;
+        oldHeading = heading;
     }
 
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
     @Override
     public void stop() {
     }
-
 }

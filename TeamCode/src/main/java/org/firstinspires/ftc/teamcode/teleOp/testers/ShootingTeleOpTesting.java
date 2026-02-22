@@ -29,6 +29,7 @@ public class ShootingTeleOpTesting extends OpMode {
 
     //choose
     private OLDChoose choose;
+    private boolean shooterOff = false;
 
     //runtime
     private ElapsedTime overallRuntime;
@@ -107,6 +108,20 @@ public class ShootingTeleOpTesting extends OpMode {
 
         vel = follower.getVelocity();
 
+        double dist = 0;
+
+        if(currentColor == OLDChoose.Alliance.BLUE){
+            double delX = -x;
+            double delY = 144-y;
+            dist = Math.hypot(delX, delY);
+        }
+        if(currentColor == OLDChoose.Alliance.RED){
+            double delX = 144-x;
+            double delY = 144-y;
+            dist = Math.hypot(delX, delY);
+        }
+
+
         /*
         --------------------------DRIVER ONE CONTROLS--------------------------
          */
@@ -153,6 +168,9 @@ public class ShootingTeleOpTesting extends OpMode {
 
         robot.updateIntake();
         robot.updateTransfer();
+        if(gamepad2.leftBumperWasPressed()){
+            robot.toggleNoahMode();
+        }
 
         if(gamepad2.dpadUpWasPressed()){
             robot.DELETEBUTTHISISVEL += 5;
@@ -167,10 +185,13 @@ public class ShootingTeleOpTesting extends OpMode {
             robot.DELETEBUTTHISISHOOD -= .05;
         }
         if(gamepad2.yWasPressed()){
-            robot.DELETEBUTTHISISTURRET += 0.01;
+            robot.DELETEBUTTHISISTURRET += 0.0025;
         }
         if(gamepad2.aWasPressed()){
-            robot.DELETEBUTTHISISTURRET -= 0.01;
+            robot.DELETEBUTTHISISTURRET -= 0.0025;
+        }
+        if(gamepad2.rightBumperWasPressed()){
+            shooterOff = !shooterOff;
         }
 
         /*
@@ -184,10 +205,10 @@ public class ShootingTeleOpTesting extends OpMode {
 
         telemetry.addData("alliance Color", currentColor);
         telemetry.addData("position", "(" + Math.round(x*100)/100.0 + "," + Math.round(y*100)/100.0 + ") Heading: " + Math.round(heading*100)/100.0);
-        telemetry.addData("distance", Math.round(Math.hypot(x, y)));
+        telemetry.addData("distance", Math.round(dist*100.0)/100.0);
         telemetry.addData("hertz", hertz);
 
-        robot.updateShooterTesting(currentColor, turretOn, x, y, heading, vel);
+        robot.updateShooterTesting(shooterOff);
 
         follower.update();
         telemetry.update();
