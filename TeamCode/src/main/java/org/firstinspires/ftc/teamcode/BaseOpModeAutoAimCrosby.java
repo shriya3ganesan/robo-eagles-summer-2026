@@ -14,9 +14,9 @@ import static org.firstinspires.ftc.teamcode.Util.Enum.States.None;
 import static org.firstinspires.ftc.teamcode.Util.Enum.States.TurnToBall;
 import static org.firstinspires.ftc.teamcode.Util.RobotPosition.TeamColorRED;
 import static org.firstinspires.ftc.teamcode.Util.RobotPosition.getRobotCoordinates;
+import static org.firstinspires.ftc.teamcode.Util.constants.PART_NAMES.drumslotarray;
 import static org.firstinspires.ftc.teamcode.Util.constants.RobotStats.firingpinfiringposition;
 import static org.firstinspires.ftc.teamcode.Util.constants.RobotStats.firingpinnullposition;
-import static org.firstinspires.ftc.teamcode.Util.constants.PART_NAMES.drumslotarray;
 import static org.firstinspires.ftc.teamcode.launcher.AutoFirePower.autoLaunch;
 import static org.firstinspires.ftc.teamcode.limelight.LimelightMotifSetting.limelightMotifSet;
 import static org.firstinspires.ftc.teamcode.limelight.LimelightPosSetting.limelightposupdate;
@@ -27,7 +27,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -36,7 +35,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Util.Enum.Balls;
 import org.firstinspires.ftc.teamcode.Util.Enum.DrumSlots;
 import org.firstinspires.ftc.teamcode.Util.Enum.States;
-import org.firstinspires.ftc.teamcode.Util.RobotPosition;
 import org.firstinspires.ftc.teamcode.positioning.odometry.FieldOrientedDriving;
 
 
@@ -184,7 +182,7 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
             //sets motor speeds
             motortargetspeedradians = autoLaunch();
-            if (gamepad2.left_trigger >= 0.3) {
+            if (gamepad1.left_trigger >= 0.3) {
                 motortargetspeedradians = 0;
             }
             launcherFL.setVelocity(-motortargetspeedradians, AngleUnit.RADIANS);
@@ -262,7 +260,7 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
             //MAG Dump code
             //test time offsets
-            if (gamepad2.dpad_up && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
+            if (gamepad1.dpad_up && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
                 rapidtime.reset();
                 fullunloadflag = true;
 
