@@ -123,7 +123,7 @@ public class Crosby3ballbackshots extends LinearOpMode {
         int mirrory = (isred) ? 1 : -1;
 
         telemetry.addData("mirroiry",mirrory);
-        Pose2d currentpose = new Pose2d(63, 15 * mirrory, 180);
+        Pose2d currentpose = new Pose2d(63, 15 * mirrory, 0);
         MecanumDrive drive = new MecanumDrive(  hardwareMap, currentpose);
 
         DrumSlots[] drumslotarray = {SLOT_0,SLOT_1,SLOT_2};
@@ -155,17 +155,13 @@ public class Crosby3ballbackshots extends LinearOpMode {
 
                     if (loadcount == 3) movetolaunchzonetangent = 0;
                     Action drivetolaunchzone = drive.actionBuilder(drive.localizer.getPose())
-                            .splineToConstantHeading(new Vector2d(54, 10 * mirrory), movetolaunchzonetangent)
+                            .splineToConstantHeading(new Vector2d(58, 10 * mirrory), movetolaunchzonetangent)
                             .build();
                     Actions.runBlocking(drivetolaunchzone);
                     currentpose = drive.localizer.getPose();
 
 
-                    if (currentpose.position.x < -movetolaunchzonexlimit && currentpose.position.y * mirrory < movetolaunchzoneylimit) {
-                        if (motif[0] != unknown) currentstate = AutoState.RotateToTarget;
-                        else currentstate = AutoState.GetMotif;
-
-                    }
+                    currentstate = AutoState.GetMotif;
                     telemetry.addLine("retrying");
                     telemetry.update();
                     break;
@@ -179,7 +175,7 @@ public class Crosby3ballbackshots extends LinearOpMode {
                     currentpose = drive.localizer.getPose();
                     double motiftargetturn = atan2(predictedmotify - currentpose.position.y, predictedmotifx - currentpose.position.x);
                     Action turnTowardsMotif = drive.actionBuilder(drive.localizer.getPose())
-                            .turnTo((motiftargetturn + Math.toRadians(universalrotationoffset)))
+                            .turnTo(motiftargetturn)
                             .build();
                     Actions.runBlocking(turnTowardsMotif);
 
@@ -220,7 +216,7 @@ public class Crosby3ballbackshots extends LinearOpMode {
                             .build();
                     Actions.runBlocking(rotatetotargetangle);
                     //if (Math.abs(drive.localizer.getPose().heading.toDouble() - robotautoaimtargetangle) < autoaimvariancelimiter) {
-                        currentstate = AutoState.FireWithMotif;
+                        //currentstate = AutoState.FireWithMotif;
                     //}
                     telemetry.addLine("retrying");
                     telemetry.update();

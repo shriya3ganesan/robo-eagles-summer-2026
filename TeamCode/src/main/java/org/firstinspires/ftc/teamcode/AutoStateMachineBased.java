@@ -53,9 +53,9 @@ enum AutoState{
 
 public class AutoStateMachineBased extends LinearOpMode {
 
-
+    public static double firsttwointakelessamountMS = 300;
     public static double movetolaunchzonetangent = 0;
-    public static double targetangnle = -50;
+    public static double targetangnle = -45;
     public static double zonepretargetx = 0;
     public static double loadoneprex = -18;
     public static double loadtwoprex = 0;
@@ -63,19 +63,21 @@ public class AutoStateMachineBased extends LinearOpMode {
 
     public static double movetolaunchzonexlimit = 22.5;
     public static double movetolaunchzoneylimit = 25;
-    public static double motiftimelimitms = 5;
+    public static double motiftimelimitms = 1000;
     public static double autoaimvariancelimiter = 300000;
     public static double preloadingy = 10;
-    public static double ballpickupy = 55;
-    public static double loadonex = -10;
-    public static double loadtwox = 16;
-    public static double loadthreex = 30;
-    public static double intaketimelength = 3500;
+    public static double bluemodifyer = 2;
+    public static double ballpickupy = 60;
+    public static double loadonex = -12;//-12red//-16blue
+    public static double loadtwox = 14;//14red//11blue
+    public static double loadthreex = 49;//49red//44blue
+    public static double intaketimelinghtthree = 3000;
     public static double loadtangent = 45;
     public static double universalrotationoffset = 0;
     public static double launchzoneredx = -30.5;
     public static double launchzonetargety = 22;
-    public static double launchspeed = -3.3;
+    public static double launchspeed = -3.2;
+    public static double blueadd = 4.65;
     public static Boolean pullout = false;
     double zonetargetx = 0;
 
@@ -89,6 +91,7 @@ public class AutoStateMachineBased extends LinearOpMode {
 
     protected boolean isred;
 
+    double intaketimelength;
 
 
     @Override
@@ -145,14 +148,18 @@ public class AutoStateMachineBased extends LinearOpMode {
         DrumSlots[] drumslotarray = {SLOT_0,SLOT_1,SLOT_2};
 
 
+
         Balls[] motif = {unknown,unknown,unknown};
 
         waitForStart();
         while (opModeIsActive()){
             switch (currentstate){
                 case Initialization :
+                    intaketimelength = intaketimelinghtthree;
+                    targetangnle = -45;
                     telemetry.addLine("initilzaing");
                     telemetry.update();
+                    //if(!isred)
 
                     SLOT_0.setLoadedBall(green);
                     SLOT_1.setLoadedBall(purple);
@@ -240,10 +247,13 @@ public class AutoStateMachineBased extends LinearOpMode {
                     arctanintermediatey = usedy - drive.localizer.getPose().position.y;
 
                     if(loadcount > 1) targetangnle = -55;
+                    if(loadcount > 1 && !isred) targetangnle = -35;
                     double robotautoaimtargetangle = Math.toRadians(targetangnle);//Math.atan2(arctanintermediatey, arctanintermediatex);
 
+                    double robotautoaimtargetanlethesecond = robotautoaimtargetangle + Math.PI/2 * mirrory;
+                    if(!isred) robotautoaimtargetanlethesecond += blueadd;
                     Action rotatetotargetangle = drive.actionBuilder(drive.localizer.getPose())
-                            .turnTo(robotautoaimtargetangle + Math.PI/2)
+                            .turnTo(robotautoaimtargetanlethesecond)
                             .build();
                     Actions.runBlocking(rotatetotargetangle);
                     if(Math.abs(drive.localizer.getPose().heading.toDouble() - robotautoaimtargetangle) < autoaimvariancelimiter){
@@ -341,6 +351,7 @@ public class AutoStateMachineBased extends LinearOpMode {
                     telemetry.addLine("loading balls");
                     telemetry.update();
 
+                    if(loadcount < 3) intaketimelength -= firsttwointakelessamountMS;
                     ElapsedTime timer = new ElapsedTime();
                     ElapsedTime intakendingetimer = new ElapsedTime();
 
@@ -399,17 +410,20 @@ public class AutoStateMachineBased extends LinearOpMode {
 
                     switch (loadcount){
                         case 1:
-                            SLOT_0.setLoadedBall(green);
+                            SLOT_0.setLoadedBall(purple);
                             SLOT_1.setLoadedBall(purple);
-                            SLOT_2.setLoadedBall(purple);
+                            SLOT_2.setLoadedBall(green);
+                            break;
                         case 2:
                             SLOT_0.setLoadedBall(purple);
                             SLOT_1.setLoadedBall(green);
                             SLOT_2.setLoadedBall(purple);
+                            break;
                         case 3:
                             SLOT_0.setLoadedBall(green);
                             SLOT_1.setLoadedBall(purple);
                             SLOT_2.setLoadedBall(purple);
+                            break;
                     }
                     loadcount++;
 

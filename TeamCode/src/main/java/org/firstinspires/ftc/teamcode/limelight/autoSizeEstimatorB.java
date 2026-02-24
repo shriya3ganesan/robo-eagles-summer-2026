@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.limelight;
-
+/*
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -12,17 +12,17 @@ public class autoSizeEstimatorB {
         return NetworkTableInstance.getDefault().getTable("limelight");
     }
 
-    /** Horizontal offset from target center (degrees) */
+    /** Horizontal offset from target center (degrees) *//*
     public static double getTx() {
         return getTable().getEntry("tx").getDouble(0.0);
     }
 
-    /** Vertical offset (degrees) */
+    /** Vertical offset (degrees) *//*
     public static double getTy() {
         return getTable().getEntry("ty").getDouble(0.0);
     }
 
-    /** Target area (%) */
+    /** Target area (%) *//*
     public static double getTa() {
         return getTable().getEntry("ta").getDouble(0.0);
     }
@@ -47,3 +47,4 @@ public class autoSizeEstimatorB {
         return calibratedConstant / Math.sqrt(targetArea);
     }
 }
+*/

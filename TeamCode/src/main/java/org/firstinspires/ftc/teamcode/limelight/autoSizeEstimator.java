@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.limelight;
-
+/*
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -14,7 +14,7 @@ public class autoSizeEstimator {
      * Automatically reads from NetworkTables for pixel width and area.
      *
      * @return Estimated real-world width in meters.
-     */
+     *//*
     public static double estimateRealWidthAuto() {
         // Get Limelight NetworkTable
         NetworkTable limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -27,7 +27,7 @@ public class autoSizeEstimator {
         double distanceM = estimateDistanceFromArea(limelightTable.getEntry("ta").getDouble(0.0));
 
         return estimateRealWidth((int) pixelWidth, DEFAULT_HORIZONTAL_FOV_DEGREES, DEFAULT_HORIZONTAL_RESOLUTION_PX, distanceM);
-    }
+    }*/
 
     /**
      * Core estimation logic: real-world width from camera parameters.
@@ -37,7 +37,7 @@ public class autoSizeEstimator {
      * @param resolutionPx Horizontal resolution of the camera in pixels.
      * @param distanceM    Distance from camera to target in meters.
      * @return Estimated real-world width in meters.
-     */
+     *//*
     public static double estimateRealWidth(int pixelWidth, double fovDegrees, int resolutionPx, double distanceM) {
         // Calculate angle per pixel
         double anglePerPixel = fovDegrees / resolutionPx;
@@ -48,14 +48,14 @@ public class autoSizeEstimator {
         // Use trigonometry to calculate real-world width
         double halfAngleRadians = Math.toRadians(totalAngleDegrees / 2.0);
         return 2 * distanceM * Math.tan(halfAngleRadians);
-    }
+    }*/
 
     /**
      * Estimate distance from target area (ta). can be calibrated later
      *
      * @param targetArea The target area (%) as reported by Limelight (0 to 100).
      * @return Estimated distance in meters.
-     */
+     *//*
     private static double estimateDistanceFromArea(double targetArea) {
         // Simple empirical inverse relationship; real value depends on target size & tuning
         if (targetArea <= 0.0) {
@@ -67,3 +67,4 @@ public class autoSizeEstimator {
         return calibratedConstant / Math.sqrt(targetArea);
     }
 }
+*/

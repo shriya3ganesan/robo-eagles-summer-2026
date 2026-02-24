@@ -39,7 +39,7 @@ import org.firstinspires.ftc.teamcode.Util.Enum.States;
 import org.firstinspires.ftc.teamcode.Util.RobotPosition;
 import org.firstinspires.ftc.teamcode.positioning.odometry.FieldOrientedDriving;
 
-
+@TeleOp
 public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
@@ -192,7 +192,6 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
 
 
-
             // sets the velocity of the motors
 
             if( Math.abs(currentleftmotorvelocity - motortargetspeedradians) < .02){
@@ -321,7 +320,6 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
                 }
             }
 
-            if(gamepad2.left_bumper) targetfiringpinangle = firingpinnullposition;
             drumServo.setPosition(targetdrumangle);
             telemetry.addData("drumangle", targetdrumangle);
             firingPinServo.setPosition(targetfiringpinangle);
