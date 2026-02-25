@@ -145,6 +145,9 @@ public class Shooter {
 
     public void setHood(double theta) {
         theta = 1 - theta;
+        if(theta < .2){
+            theta = 0.2;
+        }
         hood.setPosition(theta);
         telemetry.addData("raw hood", Math.round(theta * 100) / 100.0);
     }

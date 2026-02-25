@@ -379,17 +379,17 @@ public class RobotActions {
         double speed = 0;
 
         if(dist > 120){//far zone
-            shooter.setHood(0.10);
-            speed = -1253 + 593.005*Math.log(dist);
+            shooter.setHood(0.20);
+            speed = -1383 + 593.005*Math.log(dist);
         }
-        else if(dist > 66){ // close
-            double hood = 2.725*Math.pow(0.983908, dist);
+        else if(dist > 55){ // close5.84356\cdot0.968317^{x}
+            double hood = 5.84356*Math.pow(0.968317, dist);
             shooter.setHood(hood);
-            speed = 3.30426*dist+1058.70526;
+            speed = 5*dist+860;
         }
         else{
             shooter.setHood(1);
-            speed = 3.30426*dist+1064.70526;
+            speed = 1135;
         }
         if(speed < 0){
             speed = 0;
