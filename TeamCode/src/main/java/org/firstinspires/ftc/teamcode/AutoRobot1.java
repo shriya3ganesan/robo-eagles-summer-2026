@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -27,8 +28,12 @@ public class AutoRobot1 {
     static final double WHEEL_DIAMETER_INCHES = 4.1;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * Math.PI);
+    LinearOpMode opMode;
+    public AutoRobot1(LinearOpMode OP) {
+    opMode = OP;
+    }
 
-    public void Init(HardwareMap hardwareMap){
+    public void init(HardwareMap hardwareMap){
         leftForward = hardwareMap.get(DcMotor.class, "left_Forward");
         rightForward = hardwareMap.get(DcMotor.class, "right_Forward");
 
@@ -89,13 +94,14 @@ public class AutoRobot1 {
                              double leftInches, double rightInches,
                              double timeoutS) {
         int LeftFrontTarget;
+
         int RightFrontTarget;
         int LeftBackTarget;
         int RightBackTarget;
 
 
         // Ensure that the OpMode is still active
-        if (opModeIsActive()) {
+        if (opMode.opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
             LeftFrontTarget = leftForward.getCurrentPosition() + (int) (leftInches * COUNTS_PER_INCH);
@@ -118,7 +124,10 @@ public class AutoRobot1 {
             leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+
             // reset the timeout time and start motion.
+
+
             runtime.reset();
             leftForward.setPower(Math.abs(speed));
             rightForward.setPower(Math.abs(speed));
@@ -132,21 +141,21 @@ public class AutoRobot1 {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() &&
+            while (opMode.opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (leftForward.isBusy() && rightForward.isBusy() && leftBack.isBusy() && rightBack.isBusy())) {
+                    (leftForward.isBusy() && rightForward.isBusy() && leftBack.isBusy()  ))//rightBack.isBusy())) {
 
-
+            {
                 // Display it for the driver.
-                telemetry.addData("Running to", " %7d :%7d", LeftFrontTarget, RightFrontTarget);
-                telemetry.addData("Running to", " %7d :%7d", LeftBackTarget, RightBackTarget);
-                telemetry.addData("Currently at", " at %7d :%7d",
+                opMode.telemetry.addData("Running to", " %7d :%7d", LeftFrontTarget, RightFrontTarget);
+                opMode.telemetry.addData("Running to", " %7d :%7d", LeftBackTarget, RightBackTarget);
+                opMode.telemetry.addData("Currently at", " at %7d :%7d",
                         leftForward.getCurrentPosition(), rightForward.getCurrentPosition());
-                telemetry.addData("Currently at", " at %7d :%7d",
+                opMode.telemetry.addData("Currently at", " at %7d :%7d",
                         leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
 
 
-                telemetry.update();
+                opMode.telemetry.update();
             }
 
             // Stop all motion;
@@ -156,14 +165,20 @@ public class AutoRobot1 {
             leftBack.setPower(0);
             rightBack.setPower(0);
 
+            leftForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightForward.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
             // Turn off RUN_TO_POSITION
-            leftForward.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightForward.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightForward.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightBack.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            sleep(250);   // optional pause after each move.
+            opMode.sleep(250);   // optional pause after each move.
         }
 
 
@@ -176,16 +191,16 @@ public class AutoRobot1 {
         launchMotor.setPower(1);
 
 
-        while (opModeIsActive() && launchMotor.getCurrentPosition() < (targetPos)) {
-            telemetry.addData("Launch pos", launchMotor.getCurrentPosition());
-            telemetry.update();
+        while (opMode.opModeIsActive() && launchMotor.getCurrentPosition() < (targetPos)) {
+            opMode.telemetry.addData("Launch pos", launchMotor.getCurrentPosition());
+            opMode.telemetry.update();
 
         }
         ;
 
         launchMotor.setPower(0);
-        telemetry.addLine("Done Launching");
-        telemetry.update();
+        opMode.telemetry.addLine("Done Launching");
+        opMode.telemetry.update();
 
     }
     public void launch3(){
@@ -195,10 +210,10 @@ public class AutoRobot1 {
         loading();
         topMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         topMotor.setPower(1);
-        sleep(1000);
+        opMode.sleep(1000);
         launch1();
-        telemetry.addLine("doneShooting");
-        telemetry.update();
+        opMode.telemetry.addLine("doneShooting");
+        opMode.telemetry.update();
         topMotor.setPower(0);
     }
     public void loading(){
@@ -208,13 +223,13 @@ public class AutoRobot1 {
         middleMotor.setTargetPosition(topMotor.getCurrentPosition() + (int) (1500));
         middleMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         middleMotor.setPower(1);
-        telemetry.addLine("topMotor on");
-        telemetry.update();
-        sleep(200);
-        while (opModeIsActive()&& topMotor.isBusy()){
-            telemetry.addData("topPosition",topMotor.getCurrentPosition());
-            telemetry.addData("middlePosition",middleMotor.getCurrentPosition());
-            telemetry.update();
+        opMode.telemetry.addLine("topMotor on");
+        opMode.telemetry.update();
+        opMode.sleep(200);
+        while (opMode.opModeIsActive()&& topMotor.isBusy()){
+            opMode.telemetry.addData("topPosition",topMotor.getCurrentPosition());
+            opMode.telemetry.addData("middlePosition",middleMotor.getCurrentPosition());
+            opMode.telemetry.update();
 
 
         };
