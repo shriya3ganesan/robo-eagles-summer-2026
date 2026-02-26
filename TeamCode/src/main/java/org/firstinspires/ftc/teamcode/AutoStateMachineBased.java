@@ -359,10 +359,10 @@ public class AutoStateMachineBased extends LinearOpMode {
                     double[] drumlocations = {SLOT_0.loadPosition,SLOT_1.loadPosition, SLOT_2.loadPosition};
 
 
-                    ////.splineToConstantHeading(new Vector2d(drive.localizer.getPose().position.x, ballpickupy * mirrory),Math.toRadians(0))
+                    //.splineToConstantHeading(new Vector2d(drive.localizer.getPose().position.x, ballpickupy * mirrory),Math.toRadians(0))
                     Action pickUpLoadOne = new ParallelAction(
                             drive.actionBuilder(drive.localizer.getPose())
-                                    .strafeTo(new Vector2d(zonetargetx, ballpickupy * mirrory),new TranslationalVelConstraint(20))
+                                    .strafeTo(new Vector2d(zonetargetx, ballpickupy * mirrory))//,new TranslationalVelConstraint(100)
                                     .build(),
                             new Action() {
                                 Boolean fullyloaded = false;
