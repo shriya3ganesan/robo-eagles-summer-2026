@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.NonOpModes.depreciated;
 import static org.firstinspires.ftc.teamcode.NonOpModes.colorsensing.ColorSensingFunctions.colorDetection;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.Util.Enum.Balls;
 
 
 @Autonomous(name = "DualNormalizedColorSensorTest")
+@Disabled
 public class ColorSensorTestOpMode extends LinearOpMode {
 
 

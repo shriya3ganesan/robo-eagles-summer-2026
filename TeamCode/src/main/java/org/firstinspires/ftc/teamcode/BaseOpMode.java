@@ -139,6 +139,11 @@ public class BaseOpMode extends LinearOpMode {
             double leftstickinputy = gamepad1.left_stick_y; // Forward/backward negative because it's naturally inverted
             double leftstickinputx = gamepad1.left_stick_x; // side to side
             double targetturn = gamepad1.right_stick_x; // Turning
+            if (gamepad1.left_trigger >= 0.3) {
+                leftstickinputy /= 4;
+                leftstickinputx /= 4;
+                targetturn /= 4;
+            }
 
             //slowermovement for the guner
             double leftstickinputy2 = gamepad2.left_stick_y / 4;
@@ -260,7 +265,7 @@ public class BaseOpMode extends LinearOpMode {
 
             //MAG Dump code
             //test time offsets
-            if (gamepad1.dpad_up && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
+            if (gamepad1.right_trigger > .5 && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
                 rapidtime.reset();
                 fullunloadflag = true;
 

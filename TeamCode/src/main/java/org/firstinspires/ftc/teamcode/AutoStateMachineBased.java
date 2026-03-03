@@ -85,7 +85,6 @@ public class AutoStateMachineBased extends LinearOpMode {
     private AutoState currentstate = AutoState.Initialization;
     private int loadcount = 1;
 
-
     DrumSlots targetslotforautolaunch = null;
 
     int motifcyclingautofirearray = 0;
@@ -142,8 +141,8 @@ public class AutoStateMachineBased extends LinearOpMode {
 
         telemetry.addData("mirroiry",mirrory);
         telemetry.update();
-
-        Pose2d currentpose = new Pose2d(-62, 32.5 * mirrory, 0 + Math.toRadians(universalrotationoffset));
+        //-62 is what nominaly works
+        Pose2d currentpose = new Pose2d(-66, 32.5 * mirrory, 0 + Math.toRadians(universalrotationoffset));
         MecanumDrive drive = new MecanumDrive(  hardwareMap, currentpose);
 
         DrumSlots[] drumslotarray = {SLOT_0,SLOT_1,SLOT_2};
@@ -331,18 +330,21 @@ public class AutoStateMachineBased extends LinearOpMode {
                             break;
                     }
 
-
-                    Action DriveToBeforeLoad = drive.actionBuilder(drive.localizer.getPose())
-                            .strafeTo(new Vector2d(zonetargetx,preloadingy * mirrory))
-                            .build();
-                    Actions.runBlocking(DriveToBeforeLoad);
                     double turnangleforloading = 0;
                     if(!isred) turnangleforloading = 180;
+                    Action DriveToBeforeLoad = drive.actionBuilder(drive.localizer.getPose())
+                            .turnTo(Math.toRadians(turnangleforloading))
+                            .strafeTo(new Vector2d(zonetargetx,preloadingy * mirrory))
+                            .turnTo(Math.toRadians(turnangleforloading))
+                            .build();
+                    Actions.runBlocking(DriveToBeforeLoad);
 
+
+                    /*
                     Action TurnToBeforeLoad = drive.actionBuilder(drive.localizer.getPose())
                             .turnTo(Math.toRadians(turnangleforloading))
                             .build();
-                    Actions.runBlocking(TurnToBeforeLoad);
+                    Actions.runBlocking(TurnToBeforeLoad);*/
                     //if(Math.abs(drive.localizer.getPose().heading.toDouble() - Math.PI/2) >3) Actions.runBlocking(TurnToBeforeLoad);
                     telemetry.update();
                     currentstate = AutoState.LoadBalls;
@@ -433,7 +435,23 @@ public class AutoStateMachineBased extends LinearOpMode {
                     currentstate = AutoState.MoveToLaunchZone;
                     break;
             }
-            if (loadcount == 4) break;
+            if (loadcount == 4){
+                double turntodriverangle;
+                if(isred){
+                    turntodriverangle = 3*Math.PI/2;
+                } else{
+                    turntodriverangle = Math.PI/2;
+                }
+                Action turntodriver = drive.actionBuilder(drive.localizer.getPose())
+                        .turnTo(turntodriverangle)
+                        .build();
+                Actions.runBlocking(turntodriver);
+                Action turntodriver2 = drive.actionBuilder(drive.localizer.getPose())
+                        .turnTo(turntodriverangle)
+                        .build();
+                Actions.runBlocking(turntodriver2);
+                break;
+            }
         }
     }
 

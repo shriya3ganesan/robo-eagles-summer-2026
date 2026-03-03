@@ -77,9 +77,9 @@ public final class MecanumDrive {
 
 
         // Path profile parameters (in inches/sec and inches/sec^2)
-        public double maxWheelVel = 400;      // max wheel velocity
-        public double minProfileAccel = -200;  // min acceleration
-        public double maxProfileAccel = 200;   // max acceleration
+        public double maxWheelVel = 380;      // max wheel velocity
+        public double minProfileAccel = -190;  // min acceleration
+        public double maxProfileAccel = 190;   // max acceleration
 
 
         // Turn profile parameters (in radians/sec and radians/sec^2)

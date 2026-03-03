@@ -26,6 +26,7 @@ import static org.firstinspires.ftc.teamcode.Util.constants.FIELD.shoottargetyre
 
 import static java.lang.Math.atan2;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -50,6 +51,7 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime rapidtime = new ElapsedTime();
+    ElapsedTime autoaimthing = new ElapsedTime();
 
     protected boolean isred;
 
@@ -71,7 +73,9 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
         DrumSlots targetslotforautolaunch = null;
 
+        double autoaimleft = 0;
         boolean autoAimLast = false;
+        boolean autoAimPressed = false;
 
         double[] drumlocations = {.27,.6,.92};
         double targetdrumangle = .27;
@@ -147,6 +151,11 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
             double leftstickinputy = gamepad1.left_stick_y; // Forward/backward negative because it's naturally inverted
             double leftstickinputx = gamepad1.left_stick_x; // side to side
             double targetturn = gamepad1.right_stick_x; // Turning
+            if (gamepad1.left_trigger >= 0.3) {
+                leftstickinputy /= 4;
+                leftstickinputx /= 4;
+                targetturn /= 4;
+            }
 
             //slowermovement for the guner
             double leftstickinputy2 = gamepad2.left_stick_y / 4;
@@ -190,9 +199,7 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
             //sets motor speeds
             motortargetspeedradians = autoLaunch();
-            if (gamepad1.left_trigger >= 0.3) {
-                motortargetspeedradians = 0;
-            }
+
             launcherFL.setVelocity(-motortargetspeedradians, AngleUnit.RADIANS);
             currentleftmotorvelocity = launcherFL.getVelocity(AngleUnit.RADIANS);
 
@@ -253,7 +260,6 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
             }
             else scooper.setVelocity(0, AngleUnit.RADIANS);
 
-
             if(gamepad1.right_bumper){
                 targetdrumslot = Math.min(targetdrumslot,2);
                 targetdrumangle = drumlocations[targetdrumslot];
@@ -261,14 +267,11 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
                 targetdrumangle = firingpositions[firingpositionstarget];
             }
 
-
-
-
             telemetry.addData("selected slot",targetdrumslot);
 
             //MAG Dump code
             //test time offsets
-            if (gamepad1.dpad_up && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
+            if (gamepad1.right_trigger > .8 && rapidtime.milliseconds() >= 500) {//use timesrs use cancle when not held
                 rapidtime.reset();
                 fullunloadflag = true;
 
@@ -340,13 +343,12 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
             else if (gamepad1.right_bumper) scooper.setVelocity(-999, AngleUnit.RADIANS);
             else scooper.setVelocity(0, AngleUnit.RADIANS);
 
-            boolean autoAimPressed = gamepad2.right_bumper;
+            //gamepad1.right_trigger > .3
+            if (gamepad1.dpad_up) autoAimPressed = true;
 
-            if (autoAimPressed){
+            if (autoAimPressed && (autoaimthing.milliseconds() % 500) < 100){
 
                 double[] robotcoordinates = RobotPosition.getRobotCoordinates();
-
-
 
                 double arctanintermediatex = shoottargetx-robotcoordinates[0];
                 double arctanintermediatey;
@@ -359,13 +361,16 @@ public class BaseOpModeAutoAimCrosby extends LinearOpMode {
 
                 double robotautoaimtargetangle = atan2(arctanintermediatey, arctanintermediatex);
 
+                //if (!isred) autoaimleft = -Math.PI;
 
                 Action rotatetotargetangle = drive.actionBuilder(drive.localizer.getPose())
-                        .turnTo(robotautoaimtargetangle)
+                        .turnTo(robotautoaimtargetangle + autoaimleft)
                         .build();
-                Actions.runBlocking(rotatetotargetangle);
+                for(int i = 0; i < 20; i++) {
+                    autoAimPressed = rotatetotargetangle.run(new TelemetryPacket());
+                }
 
-
+                //Actions.runBlocking(rotatetotargetangle);
                 //double robotnewrotation = atan2(startPose.heading.imag, startPose.heading.real);
                 //pinpoint.setHeading(robotnewrotation,AngleUnit.RADIANS);
 

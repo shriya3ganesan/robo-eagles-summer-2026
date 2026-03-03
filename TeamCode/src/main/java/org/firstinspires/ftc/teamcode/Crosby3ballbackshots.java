@@ -24,6 +24,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -50,12 +51,14 @@ enum AutoStateCrosby{
 public class Crosby3ballbackshots extends LinearOpMode {
 
 
+    public static double launchzoneredx = 60;
+    public static double launchzonetargety = 22;
     public static double movetolaunchzonetangent = 0;
     public static double targetangnle = 218;
     public static double movetolaunchzonexlimit = 22.5;
     public static double movetolaunchzoneylimit = 25;
-    public static double motiftimelimitms = 5;
-    public static double autoaimvariancelimiter = 300000;
+    public static double motiftimelimitms = 5000;
+    public static double autoaimvariancelimiter = -.4;
     public static double preloadingy = 10;
     public static double ballpickupy = 60;
 
@@ -155,7 +158,8 @@ public class Crosby3ballbackshots extends LinearOpMode {
 
                     if (loadcount == 3) movetolaunchzonetangent = 0;
                     Action drivetolaunchzone = drive.actionBuilder(drive.localizer.getPose())
-                            .splineToConstantHeading(new Vector2d(58, 10 * mirrory), movetolaunchzonetangent)
+                            .lineToX(launchzoneredx)
+                            //.strafeTo(new Vector2d(launchzoneredx , drive.localizer.getPose().position.y))
                             .build();
                     Actions.runBlocking(drivetolaunchzone);
                     currentpose = drive.localizer.getPose();
@@ -175,7 +179,7 @@ public class Crosby3ballbackshots extends LinearOpMode {
                     currentpose = drive.localizer.getPose();
                     double motiftargetturn = atan2(predictedmotify - currentpose.position.y, predictedmotifx - currentpose.position.x);
                     Action turnTowardsMotif = drive.actionBuilder(drive.localizer.getPose())
-                            .turnTo(motiftargetturn)
+                            .turnTo(Math.PI/2)
                             .build();
                     Actions.runBlocking(turnTowardsMotif);
 
@@ -212,12 +216,13 @@ public class Crosby3ballbackshots extends LinearOpMode {
                     double robotautoaimtargetangle = atan2(arctanintermediatey, arctanintermediatex);
 
                     Action rotatetotargetangle = drive.actionBuilder(drive.localizer.getPose())
-                            .turnTo(robotautoaimtargetangle - Math.PI + Math.toRadians(universalrotationoffset))
+                            .turnTo(Math.PI/2 + (autoaimvariancelimiter * mirrory))
                             .build();
                     Actions.runBlocking(rotatetotargetangle);
                     //if (Math.abs(drive.localizer.getPose().heading.toDouble() - robotautoaimtargetangle) < autoaimvariancelimiter) {
                         //currentstate = AutoState.FireWithMotif;
                     //}
+                    currentstate = AutoState.FireWithMotif;
                     telemetry.addLine("retrying");
                     telemetry.update();
                     break;
@@ -229,52 +234,35 @@ public class Crosby3ballbackshots extends LinearOpMode {
 
                     //TODO check if this works now
 
-                    if (targetslotforautolaunch != null) {
+                    if(targetslotforautolaunch != null){
                         DrumServo.setPosition(targetslotforautolaunch.shootPosition);
                         sleep(600);
                         FiringPinServo.setPosition(firingpinfiringposition);
                         sleep(200);
                         FiringPinServo.setPosition(firingpinnullposition);
                         sleep(200);
+                        targetslotforautolaunch.setLoadedBall(unknown);
+                        targetslotforautolaunch = null;
+
                     }
-                    if (targetslotforautolaunch == null) {
-                        Balls currentcolor = motif[motifcyclingautofirearray];
-                        motifcyclingautofirearray++;
-                        if (motifcyclingautofirearray > 2) motifcyclingautofirearray = 2;
+                    Balls currentcolor = motif[motifcyclingautofirearray];
+                    motifcyclingautofirearray++;
+                    if(motifcyclingautofirearray > 2) motifcyclingautofirearray = 2;
 
-                        for (DrumSlots slot : drumslotarray) {
-                            if (slot.getLoadedBall() == currentcolor) {
-                                targetslotforautolaunch = slot;
-                                slot.setLoadedBall(unknown);
-                                break;
-                            }
-                        }
-                    }
-
-                        /*
-                    }
-                    for(Balls currentcolor : motif){
-                        for(DrumSlots slot : drumslotarray){
-                            if (currentcolor == slot.getLoadedBall()){
-                                telemetry.addData("target color", currentcolor);
-                                telemetry.addData("selected slot color", slot.getLoadedBall());
-
-                                slot.setLoadedBall(unknown);
-
-                                DrumServo.setPosition(slot.shootPosition);
-                                sleep(600);
-                                FiringPinServo.setPosition(firingpinfiringposition);
-                                sleep(200);
-                                FiringPinServo.setPosition(firingpinnullposition);
-                                sleep(200);
-
-                            }
-                        }
-                    }*/
                     for (DrumSlots slot : drumslotarray) {
+                        if (slot.getLoadedBall() == currentcolor) {
+                            targetslotforautolaunch = slot;
+                            break;
+                        }
+                    }
 
+                    for (DrumSlots slot : drumslotarray) {
                         if (slot.getLoadedBall() != unknown) break;
-                        else currentstate = AutoState.MoveToLoadZone;
+                        if (slot == SLOT_2) {
+                            currentstate = AutoState.MoveToLoadZone;
+                            motifcyclingautofirearray = 0;
+                            break;
+                        }
                     }
 
                     telemetry.addData("s0", SLOT_0.getLoadedBall());
@@ -290,110 +278,29 @@ public class Crosby3ballbackshots extends LinearOpMode {
                     telemetry.addData("loadcount", loadcount);
                     telemetry.update();
 
-                    double zonetargetx = 0;
-                    switch (loadcount) {
-                        case 1:
-                            zonetargetx = loadonex;
-                            break;
-                        case 2:
-                            zonetargetx = loadtwox;
-                            break;
-                        case 3:
-                            zonetargetx = loadthreex;
-                            break;
-                    }
 
                     Action DriveToBeforeLoad = drive.actionBuilder(drive.localizer.getPose())
-                            .splineToConstantHeading(new Vector2d(63, 35 * mirrory), Math.toRadians(loadtangent * mirrory))
+                            .lineToY(40 * mirrory)
                             .build();
                     Actions.runBlocking(DriveToBeforeLoad);
-                    Action TurnToBeforeLoad = drive.actionBuilder(drive.localizer.getPose())
-                            .turnTo(Math.toRadians(90) * mirrory + Math.toRadians(universalrotationoffset))
-                            .build();
-                    Actions.runBlocking(TurnToBeforeLoad);
-                    //if (Math.abs(drive.localizer.getPose().heading.toDouble() - Math.PI / 2) > 3)
-                    Actions.runBlocking(TurnToBeforeLoad);
-                    telemetry.update();
-                    currentstate = AutoState.LoadBalls;
-                    break;
-/*
-                case LoadBalls:
-                    telemetry.addLine("loading balls");
-                    telemetry.update();
-
-                    ElapsedTime timer = new ElapsedTime();
-                    ElapsedTime intakendingetimer = new ElapsedTime();
-
-                    double[] drumlocations = {SLOT_0.loadPosition,SLOT_1.loadPosition, SLOT_2.loadPosition};
-
-                    Action pickUpLoadOne = new ParallelAction(
-                            drive.actionBuilder(drive.localizer.getPose())
-                                    .splineToConstantHeading(new Vector2d(drive.localizer.getPose().position.x, ballpickupy * mirrory),Math.toRadians(90))
-                                    .build(),
-                            new Action() {
-                                Boolean fullyloaded = false;
-                                int targetdrumslotload = 0;
-                                double targetdrumangleload = 0.27;
-                                @Override
-                                public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-
-                                    Balls loadedcolor = colorDetection(colorSensor1, colorSensor2);
-
-                                    Scooper.setVelocity(-999, AngleUnit.RADIANS);
-                                    telemetry.addData("loaded color", loadedcolor);
-                                    telemetry.addData("targetdrumslot", targetdrumslotload);
-                                    telemetry.addData("timer", timer.milliseconds());
-                                    telemetry.addData("drjum imcrament", targetdrumslotload);
-                                    telemetry.update();
-                                    if (loadedcolor != unknown && targetdrumslotload < 3 && timer.milliseconds() > 600) {
-                                        timer.reset();
-                                        //drumBallColors[targetdrumslotload] = loadedcolor;
-                                        telemetry.addLine("ball Detected");
-                                        targetdrumslotload++;
-                                    }
-                                    fullyloaded = intakendingetimer.milliseconds() < intaketimelength;
-                                    targetdrumslotload = Math.min(targetdrumslotload, 2);
-                                    targetdrumangleload = drumlocations[targetdrumslotload];
-                                    DrumServo.setPosition(targetdrumangleload);
-
-                                    return fullyloaded;//true when below the timer
-                                }
-                            }
-                    );
-                    Actions.runBlocking(pickUpLoadOne);
-
-
-                    Scooper.setVelocity(0);
-                    Action PullOut = drive.actionBuilder(drive.localizer.getPose())
-                            .lineToYConstantHeading(30 * mirrory)
-                            .build();
-                    Actions.runBlocking(PullOut);
-
-
-                    switch (loadcount){
-                        case 1:
-                            SLOT_0.setLoadedBall(purple);
-                            SLOT_1.setLoadedBall(purple);
-                            SLOT_2.setLoadedBall(green);
-                        case 2:
-                            SLOT_0.setLoadedBall(purple);
-                            SLOT_1.setLoadedBall(green);
-                            SLOT_2.setLoadedBall(purple);
-                        case 3:
-                            SLOT_0.setLoadedBall(green);
-                            SLOT_1.setLoadedBall(purple);
-                            SLOT_2.setLoadedBall(purple);
+                    double turntodriverangle;
+                    if(isred){
+                        turntodriverangle = 3*Math.PI/2;
+                    } else{
+                        turntodriverangle = Math.PI/2;
                     }
-                    loadcount++;
-
-                    telemetry.update();
-                    currentstate = AutoState.MoveToLaunchZone;
+                    Action turntodriver = drive.actionBuilder(drive.localizer.getPose())
+                            .turnTo(turntodriverangle)
+                            .build();
+                    Actions.runBlocking(turntodriver);
+                    Action turntodriver2 = drive.actionBuilder(drive.localizer.getPose())
+                            .turnTo(turntodriverangle)
+                            .build();
+                    Actions.runBlocking(turntodriver2);
+                    stop();
+                    //if (Math.abs(drive.localizer.getPose().heading.toDouble() - Math.PI / 2) > 3)
                     break;
-            }
 
-
-            if (loadcount == 4) break;
-            */
             }
 
 
