@@ -97,6 +97,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double PADDLE_TRANSFER_DELAY = 0.2;
     public static double PADDLE_TRANSFER_TIME_UP = 0.5; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
 
+    //todo can decrease this
+    public static double DRUM_TRANSFER_WAIT_TIME = 0.5;
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
     public static double INTAKE_TIMER = 0;
@@ -109,8 +111,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double INTAKE_SPEED = 1;
     public static double FLYWHEEL_VELOCITY_TOLERANCE = 22; //this is an epsiiiiiiiiilon  was 10
     public static double VOLTAGE_TOLERANCE = 0.04; //THIS IS AN EPSILON AS WELLLLLL
-    public static double DRUM_GATE_OPEN_POSITION = 1;
-    public static double DRUM_GATE_CLOSED_POSITION = 0.5;
+    public static double DRUM_GATE_OPEN_POSITION = 0.5;
+    public static double DRUM_GATE_CLOSED_POSITION = 0.75;
     public static double MOTOR_D_VALUE = 1;
     public static double INTAKE_BACK_TIME = 0.25;
     public static double NEAR_AUTO_VELOCTIY = 835;
@@ -489,8 +491,9 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
                 // If it isn't, go to the intake slot we found earlier
                 if (currSlot == -1 && minSlot != -1) {
                     addToDrumQueue(INTAKE_POSITIONS[minSlot], WaitState.INTAKE);
-                    waitState = WaitState.INTAKE;
                 }
+
+                waitState = WaitState.INTAKE;
             }
 
             // this makes it so that after we are done launching the drum goes to intake position
@@ -545,17 +548,18 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
             if (transferTimer == null) {
                 transferTimer = new ElapsedTime();
             }
+
             // Move the 4bar transfer up
-            if ((transferTimer.seconds() <= TRANSFER_TIME_UP)) {
+            if ((transferTimer.seconds() <= TRANSFER_TIME_UP+DRUM_TRANSFER_WAIT_TIME) && (transferTimer.seconds() >= DRUM_TRANSFER_WAIT_TIME)) {
                 transferPosition = TRANSFER_ACTIVE_POSITION;
             }
             // Wait to ensure the 4bar is fully up, then bring the paddles up
-            if ((transferTimer.seconds() >= PADDLE_TRANSFER_DELAY) && (transferTimer.seconds() <= PADDLE_TRANSFER_DELAY + PADDLE_TRANSFER_TIME_UP)) {
+            if ((transferTimer.seconds() >= PADDLE_TRANSFER_DELAY+DRUM_TRANSFER_WAIT_TIME) && (transferTimer.seconds() <= PADDLE_TRANSFER_DELAY + PADDLE_TRANSFER_TIME_UP + DRUM_TRANSFER_WAIT_TIME)) {
                 leftPaddlePosition = LEFT_PADDLE_ACTIVE_POSITION;
                 rightPaddlePosition = RIGHT_PADDLE_ACTIVE_POSITION;
             }
             // Everything goes down and we go to IDLE
-            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN) {
+            if (transferTimer.seconds() >= TRANSFER_TIME_UP + TRANSFER_TIME_DOWN+DRUM_TRANSFER_WAIT_TIME) {
                 waitState = WaitState.IDLE;
                 transferTimer = null;
             }
@@ -603,6 +607,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
         motULauncher.setVelocity(upperLaunchVelocity);
         motIntake.setPower(intakePower);
         telemetry.addData("hwDrumPos", hwDrumPosition);
+        telemetry.addData("transferpos", transferPosition);
         telemetry.addData("currVoltage ", "%.2f", analogDrum.getVoltage());
     }
 }

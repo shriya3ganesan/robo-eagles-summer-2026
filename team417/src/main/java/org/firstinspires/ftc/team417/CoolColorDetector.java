@@ -18,10 +18,10 @@ public class CoolColorDetector {
     public static double MAXIMUM_DISTANCE = 30;
 
     public static double MINIMUM_DISTANCE = 21;
-    public static double PURPLE_MIN_HUE = 200;
+    public static double PURPLE_MIN_HUE = 190;
     public static double PURPLE_MAX_HUE = 320; //increased from 235 to loosen requirement
     public static double GREEN_MIN_HUE = 100; //decreased from 150 to loosen requirement
-    public static double GREEN_MAX_HUE = 180;
+    public static double GREEN_MAX_HUE = 170;
     public static double MIN_VALUE = 0.25;
     public static float GAIN = 85f; // adjust for brightness
 
