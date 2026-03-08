@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.euler;
+package org.firstinspires.ftc.teamcode.euler.driver;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -19,5 +19,13 @@ public class Driver {
     public void drive(float left, float right) {
         leftMotor.setPower(left);
         rightMotor.setPower(right);
+    }
+
+    public DriverState getState() {
+        if (leftMotor.getPower() == 0 && rightMotor.getPower() == 0) {
+            return DriverState.IDLE;
+        } else {
+            return DriverState.MOVING;
+        }
     }
 }

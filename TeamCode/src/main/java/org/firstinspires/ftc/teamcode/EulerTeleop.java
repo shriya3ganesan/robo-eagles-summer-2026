@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.euler.Constant.INTAKE_MOTOR;
 import static org.firstinspires.ftc.teamcode.euler.Constant.LEFT_MOTOR;
 import static org.firstinspires.ftc.teamcode.euler.Constant.RIGHT_MOTOR;
 
@@ -7,32 +8,40 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.euler.Driver;
+import org.firstinspires.ftc.teamcode.euler.driver.Driver;
+import org.firstinspires.ftc.teamcode.euler.intake.Intake;
 
 @TeleOp(name = "EulerTeleop",group = "Euler")
 public class EulerTeleop extends LinearOpMode {
-
+    Driver myDriver;
+    Intake myIntake;
+    void initialize(){
+        myDriver = new Driver(hardwareMap.get(DcMotor.class, LEFT_MOTOR), hardwareMap.get(DcMotor.class, RIGHT_MOTOR));
+        myIntake = new Intake(hardwareMap.get(DcMotor.class, INTAKE_MOTOR));
+    }
 
     @Override
-    public void runOpMode() throws InterruptedException {
-        DcMotor leftMotor = hardwareMap.get(DcMotor.class, LEFT_MOTOR);
-        DcMotor rightMotor = hardwareMap.get(DcMotor.class, RIGHT_MOTOR);
+    public void runOpMode() {
+        initialize();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
 
-        Driver myRobotDriver = new Driver(leftMotor, rightMotor);
-
         while (opModeIsActive()) {
             float left = -gamepad1.left_stick_y;
             float right = -gamepad1.right_stick_y;
+            myDriver.drive(left, right);
 
-            telemetry.addData("Gamepad", "left:"+left+" right:"+right);
-            telemetry.update();
-
-            myRobotDriver.drive(left, right);
+            // attention à l'appui trop long ...
+            // si besoin il faudra avoir un etat precedent et gerer en fonction
+            if(gamepad1.left_bumper) {
+                myIntake.toggleCollect();
+            }
+            if(gamepad1.left_trigger_pressed) {
+                myIntake.toggleEject();
+            }
         }
     }
 }
