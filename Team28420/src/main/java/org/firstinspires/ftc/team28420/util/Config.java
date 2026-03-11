@@ -42,8 +42,10 @@ public final class Config {
 
     public static final class ServoConf {
         public static final String PARKING_SERVO = "parkingServo";
-        public static final double PARKING_SERVO_START_POS = 0.1;
-        public static final double PARKING_SERVO_STOP_POS = 0.7;
+        public static final double PARKING_SERVO_START_POS_1 = 0.1;
+        public static final double PARKING_SERVO_START_POS_2 = 0.9;
+        public static final double PARKING_SERVO_STOP_POS_1 = 0.7;
+        public static final double PARKING_SERVO_STOP_POS_2 = 0.3;
     }
 
     public static final class Etc {

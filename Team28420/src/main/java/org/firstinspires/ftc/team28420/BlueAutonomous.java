@@ -32,7 +32,8 @@ public class BlueAutonomous extends LinearOpMode {
                 hardwareMap.get(IMU.class, Config.GyroConf.IMU),
                 new Camera(hardwareMap.get(WebcamName.class, Config.CameraConf.WEBCAM)),
                 new Shooter(hardwareMap),
-                hardwareMap.get(Servo.class, "parkingServo")
+                hardwareMap.get(Servo.class, "parkingServo1"),
+                hardwareMap.get(Servo.class, "parkingServo2")
         );
 
         ElapsedTime elapsedTime = new ElapsedTime();

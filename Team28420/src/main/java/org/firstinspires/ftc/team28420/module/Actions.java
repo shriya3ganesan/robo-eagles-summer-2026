@@ -14,25 +14,29 @@ import org.firstinspires.ftc.team28420.types.WheelsRatio;
 import org.firstinspires.ftc.team28420.util.Config;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Actions {
 
     private final Movement mv;
     private final IMU imu;
     private final Camera cam;
     private final Shooter shooter;
-    private final Servo parkingServo;
+    private final List<Servo> parkingServo = new ArrayList<>();
 
     public boolean scanAllowed = true;
 
     private double cachedHeading = 0.0;
 
 
-    public Actions(Movement mv, IMU imu, Camera cam, Shooter shooter, Servo parkingServo) {
+    public Actions(Movement mv, IMU imu, Camera cam, Shooter shooter, Servo parkingServo1, Servo parkingServo2) {
         this.mv = mv;
         this.imu = imu;
         this.cam = cam;
         this.shooter = shooter;
-        this.parkingServo = parkingServo;
+        this.parkingServo.add(parkingServo1);
+        this.parkingServo.add(parkingServo2);
     }
 
     public void init() {
@@ -46,7 +50,8 @@ public class Actions {
                 )
         );
         shooter.setup();
-        parkingServo.setPosition(Config.ServoConf.PARKING_SERVO_START_POS);
+        parkingServo.get(0).setPosition(Config.ServoConf.PARKING_SERVO_START_POS_1);
+        parkingServo.get(1).setPosition(Config.ServoConf.PARKING_SERVO_START_POS_2);
     }
 
     public void updateHeading() {
@@ -118,7 +123,8 @@ public class Actions {
     }
 
     public void park() {
-        parkingServo.setPosition(Config.ServoConf.PARKING_SERVO_STOP_POS);
+        parkingServo.get(0).setPosition(Config.ServoConf.PARKING_SERVO_STOP_POS_1);
+        parkingServo.get(1).setPosition(Config.ServoConf.PARKING_SERVO_STOP_POS_2);
     }
 
     public void setMotif() {

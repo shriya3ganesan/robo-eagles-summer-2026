@@ -33,7 +33,8 @@ public class BlueTeleOp extends LinearOpMode {
                 hardwareMap.get(IMU.class, Config.GyroConf.IMU),
                 new Camera(hardwareMap.get(WebcamName.class, Config.CameraConf.WEBCAM)),
                 new Shooter(hardwareMap),
-                hardwareMap.get(Servo.class, "parkingServo")
+                hardwareMap.get(Servo.class, "parkingServo1"),
+                hardwareMap.get(Servo.class, "parkingServo2")
         );
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         Config.Etc.telemetry = telemetry;
