@@ -103,10 +103,10 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     // detects. this is 0 because it will likely become obsolete
     public static double INTAKE_TIMER = 0;
     public static double FAR_FLYWHEEL_VELOCITY = 1080; //was 1500
-    public static double NEAR_FLYWHEEL_VELOCITY = 850; //was 1500
+    public static double NEAR_FLYWHEEL_VELOCITY = 820; //was 1500
     public static double FLYWHEEL_BACK_SPIN = 300; //was 300
     public static double TRANSFER_INACTIVE_POSITION = 0.45;
-    public static double TRANSFER_ACTIVE_POSITION = 0.7;
+    public static double TRANSFER_ACTIVE_POSITION = 0.8;
     public static double REVERSE_INTAKE_SPEED = -1;
     public static double INTAKE_SPEED = 1;
     public static double FLYWHEEL_VELOCITY_TOLERANCE = 22; //this is an epsiiiiiiiiilon  was 10
