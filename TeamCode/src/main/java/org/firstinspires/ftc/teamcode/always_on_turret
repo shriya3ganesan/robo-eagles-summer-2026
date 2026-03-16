@@ -123,13 +123,35 @@ public class always_on_turret extends LinearOpMode {
     private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
     // Turret Motor constants
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ---------------------------- TO BE CHANGED -----------------------------
+    // ---------------------BASED ON ROBOT SPECIFICS/TUNING--------------------
+    // ==============================BELOW CODE================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
     private final double TICKS_PER_REV = 8192.0;
     private final double MAX_TURRET_DEGREES = 270.0;
     private final double TURRET_CENTER_TOLERANCE = 5.0;
     private final double FORCE_BACK_POWER = 0.5;
+    private final double FIND_APRILTAG_POWER = 0.15;
     private final double TURRET_GEAR_RATIO = 1.0; // 1.0 if encoder on turret shaft, actual ratio if on servo shaft
     private double forceBackStartDegrees = 0.0;
 
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ---------------------------- TO BE CHANGED -----------------------------
+    // ---------------------BASED ON ROBOT SPECIFICS/TUNING--------------------
+    // ============================= ABOVE CODE================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
 
     // Triple shot constants
     private final int TRIPLE_SHOT_COUNT = 3;
@@ -182,6 +204,7 @@ public class always_on_turret extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        turretEncoder = hardwareMap.get(DcMotor.class, "turret_encoder");
         turretServo = hardwareMap.get(Servo.class, "turret_servo");
         Trigger = hardwareMap.get(Servo.class, "Trigger");
         push = hardwareMap.get(Servo.class, "push");
@@ -285,7 +308,11 @@ public class always_on_turret extends LinearOpMode {
                             turretServo.setPosition(0.5 + power);
                         }
                     } else {
-                        turretServo.setPosition(0.5);
+                        if (Math.abs(turretDegrees) <= TURRET_CENTER_TOLERANCE) {
+                            turretServo.setPosition(0.5 + FIND_APRILTAG_POWER);
+                        } else {
+                            turretServo.setPosition(0.5 - Math.signum(turretDegrees) * FIND_APRILTAG_POWER);
+                        }
                     }
                     break;
 
