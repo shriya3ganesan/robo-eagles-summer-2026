@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
+
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
-import org.firstinspires.ftc.robotcore.external.JavaUtil;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.RobotContainer;
 
@@ -12,8 +13,12 @@ public class Gyro extends SubsystemBase {
     // robot gyroscope
     private IMU gyro;
 
+    private double YawAngle;
+    private double RollAngle;
+
     // gyro offset
     private double YawAngleOffset;
+    private double RollAngleOffset;
 
     /** Place code here to initialize subsystem */
     public Gyro() {
@@ -22,28 +27,47 @@ public class Gyro extends SubsystemBase {
         gyro = RobotContainer.ActiveOpMode.hardwareMap.get(IMU.class, "imu");
         gyro.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
         gyro.resetYaw();
+        RollAngleOffset = - gyro.getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES);
     }
 
     /** Method called periodically by the scheduler
      * Place any code here you wish to have run periodically */
     @Override
     public void periodic() {
-        RobotContainer.ActiveOpMode.telemetry.addData("Gyro", JavaUtil.formatNumber(getYawAngle(), 2));
+        YawAngle = gyro.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)+YawAngleOffset;
+        RollAngle = gyro.getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES) + RollAngleOffset;
     }
 
-    /** get gyro angle - returns angle in deg between -180 and 180 */
+    /**
+     * Get Yaw angle from gyro
+     *
+     * @return angle in deg between -180 and 180
+     */
     public double getYawAngle() {
-
-        // positive for 'Tiny' robot
-        return (gyro.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES))+YawAngleOffset;
+        return YawAngle;
     }
 
-    // resets gyro and offset value
+    /**
+     * Get Roll angle from gyro
+     *
+     * @return angle in deg between -180 and 180
+     */
+    public double getRollAngle() {
+        return RollAngle;
+    }
+
+    /**
+     * Resets gyro and offset value
+     */
     public void resetYawAngle() {
         setYawAngle(0.0);
     }
 
-    // sets gyro to provided angle (in deg)
+    /**
+     * sets gyro to provided angle (in deg)
+     *
+     * @param angle an angle in degrees
+     */
     public void setYawAngle(double angle) {
 
         YawAngleOffset -= getYawAngle() - angle;
