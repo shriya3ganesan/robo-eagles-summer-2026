@@ -4,8 +4,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
-import org.firstinspires.ftc.team28420.util.Config;
+import org.firstinspires.ftc.team28420.config.BallDetectionConf;
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -47,8 +48,8 @@ public class BallDetection implements VisionProcessor {
         detectedColor = BallColor.NONE;
         ballPosition = null;
 
-        if (!detectBall(hsv, Config.BallDetectionConf.lowGreen, Config.BallDetectionConf.highGreen, BallColor.GREEN)) {
-            detectBall(hsv, Config.BallDetectionConf.lowPurple, Config.BallDetectionConf.highPurple, BallColor.PURPLE);
+        if (!detectBall(hsv, BallDetectionConf.lowGreen, BallDetectionConf.highGreen, BallColor.GREEN)) {
+            detectBall(hsv, BallDetectionConf.lowPurple, BallDetectionConf.highPurple, BallColor.PURPLE);
         }
 
         Imgproc.cvtColor(mask, frame, Imgproc.COLOR_GRAY2RGB);
@@ -73,7 +74,7 @@ public class BallDetection implements VisionProcessor {
             double area = Imgproc.contourArea(contour);
 
             // 1. Area Check
-            if (area > Config.BallDetectionConf.MIN_AREA && area < Config.BallDetectionConf.MAX_AREA) {
+            if (area > BallDetectionConf.MIN_AREA && area < BallDetectionConf.MAX_AREA) {
 
                 // 2. Aspect Ratio Check (Filter out wide Robot Bumpers)
                 Rect rect = Imgproc.boundingRect(contour);
@@ -92,7 +93,7 @@ public class BallDetection implements VisionProcessor {
                     double circularity = (4 * Math.PI * area) / (perimeter * perimeter);
 
                     // If it is circular AND larger than the last one we found
-                    if (circularity > Config.BallDetectionConf.MIN_CIRCULARITY && area > maxArea) {
+                    if (circularity > BallDetectionConf.MIN_CIRCULARITY && area > maxArea) {
                         maxArea = area;
                         bestContour = contour;
                     }
@@ -124,9 +125,9 @@ public class BallDetection implements VisionProcessor {
         }
     }
 
-    public void updateTelemetry() {
-        Config.Etc.telemetry.addData("max area:", maxArea);
-        Config.Etc.telemetry.addData("contours:", contours.size());
+    public void updateTelemetry(Telemetry telemetry) {
+        telemetry.addData("max area:", maxArea);
+        telemetry.addData("contours:", contours.size());
     }
 
     public BallColor getDetectedColor() {

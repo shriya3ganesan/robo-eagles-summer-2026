@@ -11,13 +11,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.team28420.config.ShooterConf;
+import org.firstinspires.ftc.team28420.module.Dribbler;
 import org.firstinspires.ftc.team28420.processors.BallDetection;
-import org.firstinspires.ftc.team28420.util.Config;
 import org.opencv.core.Scalar;
 
 import java.util.HashMap;
@@ -27,20 +27,20 @@ public class Shooter {
     private final ColorSensor cs;
     private final BallDetection.BallColor color = null;
     private final ElapsedTime shooterTime = new ElapsedTime();
+    private final ElapsedTime debounceTimer = new ElapsedTime();
+    private final Dribbler dribbler;
+    private final Pusher pusher;
+    public String curMotif = "";
     private HashMap<String, Integer> sortSeqMap = null;
     private int globalTarget = 0;
     private ShooterState state = ShooterState.IDLE;
     private boolean correctMotif = false;
     private boolean manualControl = false;
     private boolean ballPresent = false;
-    private final ElapsedTime debounceTimer = new ElapsedTime();
     private boolean potentialBallDetected = false;
-    private final Dribbler dribbler;
-    private final Pusher pusher;
-    public String curMotif = "";
+    private Telemetry telemetry;
 
-
-    public Shooter(HardwareMap hMap) {
+    public Shooter(HardwareMap hMap, Telemetry telemetry) {
         initSortSeq();
 
         this.left = hMap.get(DcMotorEx.class, "shLeft");
@@ -50,13 +50,17 @@ public class Shooter {
 
         pusher = new Pusher(hMap);
         dribbler = new Dribbler(hMap);
+
+        this.telemetry = telemetry;
     }
+
     public void initSortSeq() {
         sortSeqMap = new HashMap<String, Integer>();
         sortSeqMap.put("PPG", 0);
         sortSeqMap.put("GPP", 1);
         sortSeqMap.put("PGP", 2);
     }
+
     public void setup() {
         right.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -70,16 +74,18 @@ public class Shooter {
 
         setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+
     public void afterStart() {
         syncTicks();
         pusher.setState(Pusher.PusherState.NEUTRAL);
     }
+
     public void toggleManualControl(boolean active) {
-        if(state == ShooterState.IDLE) {
+        if (state == ShooterState.IDLE) {
             if (!active && manualControl) {
                 snapToNearestSlot();
             }
-            if(active != manualControl) {
+            if (active != manualControl) {
                 manualControl = active;
                 correctMotif = false;
                 curMotif = "";
@@ -117,7 +123,7 @@ public class Shooter {
     }
 
     public void snapToNearestSlot() {
-        double ticksPerTurn = Config.ShooterConf.SORT_MOTOR_TICKS_PER_TURN;
+        double ticksPerTurn = ShooterConf.SORT_MOTOR_TICKS_PER_TURN;
         double ticksPerSlot = ticksPerTurn / 3.0;
         double offsetTicks = 0; //(60.0 * ticksPerTurn) / 360.0; // ставим в положение для сканирования
 
@@ -125,17 +131,17 @@ public class Shooter {
 
         revolver.setTargetPosition(globalTarget);
         revolver.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        revolver.setPower(Config.ShooterConf.SORT_MOTOR_POWER);
+        revolver.setPower(ShooterConf.SORT_MOTOR_POWER);
     }
 
     // 360 = ticks_turn
     // 360 / 120 = ticks_turn / x
     // x = target_deg * ticks_turn / 360
     public void rotateRevolver(double deg) {
-        globalTarget += (int) (deg * Config.ShooterConf.SORT_MOTOR_TICKS_PER_TURN / 360.0);
+        globalTarget += (int) (deg * ShooterConf.SORT_MOTOR_TICKS_PER_TURN / 360.0);
         revolver.setTargetPosition(globalTarget);
         revolver.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        revolver.setPower(Config.ShooterConf.SORT_MOTOR_POWER);
+        revolver.setPower(ShooterConf.SORT_MOTOR_POWER);
     }
 
     public boolean isMotifFull() {
@@ -145,26 +151,28 @@ public class Shooter {
     private BallDetection.BallColor getDetectedColor() {
         NormalizedRGBA colors = ((NormalizedColorSensor) cs).getNormalizedColors();
         float[] hsv = new float[3];
-        Color.RGBToHSV((int)(colors.red * 255), (int)(colors.green * 255), (int)(colors.blue * 255), hsv);
+        Color.RGBToHSV((int) (colors.red * 255), (int) (colors.green * 255), (int) (colors.blue * 255), hsv);
 
-        Config.Etc.telemetry.addData("hue", hsv[0]);
-        Config.Etc.telemetry.addData("saturation", hsv[1]);
-        Config.Etc.telemetry.addData("value", hsv[2]);
+        telemetry.addData("hue", hsv[0]);
+        telemetry.addData("saturation", hsv[1]);
+        telemetry.addData("value", hsv[2]);
 
-        if (checkColors(hsv, Config.ShooterConf.cslowPurple, Config.ShooterConf.cshighPurple)) {
+        if (checkColors(hsv, ShooterConf.cslowPurple, ShooterConf.cshighPurple)) {
             return BallDetection.BallColor.PURPLE;
         }
-        if (checkColors(hsv, Config.ShooterConf.cslowGreen, Config.ShooterConf.cshighGreen)) {
+        if (checkColors(hsv, ShooterConf.cslowGreen, ShooterConf.cshighGreen)) {
             return BallDetection.BallColor.GREEN;
         }
         return null;
     }
+
     private boolean isBallInRange() {
         DistanceSensor sensorDistance = (DistanceSensor) cs;
         double distanceInCm = sensorDistance.getDistance(DistanceUnit.CM);
 
-        return distanceInCm <= Config.ShooterConf.BALL_DETECTION_THRESHOLD;
+        return distanceInCm <= ShooterConf.BALL_DETECTION_THRESHOLD;
     }
+
     public void scanBall() {
         if (isMotifFull()) return;
 
@@ -177,7 +185,7 @@ public class Shooter {
             if (!potentialBallDetected) {
                 potentialBallDetected = true;
                 debounceTimer.reset();
-            } else if (debounceTimer.milliseconds() >= Config.ShooterConf.SCANNED_BALL_MS && !ballPresent) {
+            } else if (debounceTimer.milliseconds() >= ShooterConf.SCANNED_BALL_MS && !ballPresent) {
                 processNewBall(detectedColor);
                 ballPresent = true;
             }
@@ -186,12 +194,15 @@ public class Shooter {
             ballPresent = false;
         }
     }
+
     public void appendBallToMotif(BallDetection.BallColor color) {
         curMotif += (color == BallDetection.BallColor.PURPLE) ? 'P' : 'G';
     }
+
     public void appendBallToMotif(char color) {
         curMotif += color;
     }
+
     private void finalizeMotif() {
         if (isValidSequence(curMotif)) {
             correctMotif = alignRevolverToTarget();
@@ -199,30 +210,33 @@ public class Shooter {
             correctMotif = false;
         }
     }
+
     public boolean alignRevolverToTarget() {
         rotateRevolver(60);
-        if(Config.ShooterConf.TARGET_MOTIF == null || Config.ShooterConf.TARGET_MOTIF.isEmpty()) return false;
+        if (ShooterConf.TARGET_MOTIF == null || ShooterConf.TARGET_MOTIF.isEmpty()) return false;
 
         int currentIndex = sortSeqMap.getOrDefault(curMotif, 0);
-        int targetIndex = sortSeqMap.getOrDefault(Config.ShooterConf.TARGET_MOTIF, 0);
+        int targetIndex = sortSeqMap.getOrDefault(ShooterConf.TARGET_MOTIF, 0);
 
         int moveSlots = (targetIndex - currentIndex + 3) % 3;
 
         if (moveSlots == 1) rotateRevolver(120);
         if (moveSlots == 2) rotateRevolver(-120);
 
-        curMotif = Config.ShooterConf.TARGET_MOTIF;
+        curMotif = ShooterConf.TARGET_MOTIF;
         return true;
     }
+
     private boolean isValidSequence(String motif) {
         long g = motif.chars().filter(ch -> ch == 'G').count();
         long p = motif.chars().filter(ch -> ch == 'P').count();
         return (g == 1 && p == 2);
     }
+
     private void processNewBall(BallDetection.BallColor color) {
         appendBallToMotif(color);
 
-        if(isMotifFull()) {
+        if (isMotifFull()) {
             finalizeMotif();
         } else {
             rotateRevolver(-120);
@@ -283,17 +297,16 @@ public class Shooter {
     }
 
     public double currentAngle() {
-        return revolver.getCurrentPosition() / Config.ShooterConf.SORT_MOTOR_TICKS_PER_TURN * 360.0;
+        return revolver.getCurrentPosition() / ShooterConf.SORT_MOTOR_TICKS_PER_TURN * 360.0;
     }
 
     public void setVelocityCoefficient(float k) {
-        left.setVelocity(Config.ShooterConf.VELOCITY * k);
-        right.setVelocity(Config.ShooterConf.VELOCITY * k);
+        left.setVelocity(ShooterConf.VELOCITY * k);
+        right.setVelocity(ShooterConf.VELOCITY * k);
     }
 
     public boolean shoot() {
-        if(state == Shooter.ShooterState.IDLE && isShootable())
-        {
+        if (state == Shooter.ShooterState.IDLE && isShootable()) {
             pushBall(true);
             state = ShooterState.SHOOTING;
             shooterTime.reset();
@@ -303,16 +316,16 @@ public class Shooter {
     }
 
     public void update(boolean scanAllowed) {
-        switch(state) {
+        switch (state) {
             case SHOOTING:
-                if(shooterTime.milliseconds() >= 600) {
+                if (shooterTime.milliseconds() >= 600) {
                     pushBall(false);
                     state = Shooter.ShooterState.STOP_SHOOTING;
                     shooterTime.reset();
                 }
                 break;
             case STOP_SHOOTING:
-                if(shooterTime.milliseconds() >= 600) {
+                if (shooterTime.milliseconds() >= 600) {
                     if (manualControl) {
                         // если ручной режим, то после выстрела не поворачиваем барабан
                         state = Shooter.ShooterState.IDLE;
@@ -324,7 +337,7 @@ public class Shooter {
                 }
                 break;
             case REVOLVER_TURNING:
-                if(!revolver.isBusy()) {
+                if (!revolver.isBusy()) {
                     state = Shooter.ShooterState.IDLE;
                     shooterTime.reset();
                 }

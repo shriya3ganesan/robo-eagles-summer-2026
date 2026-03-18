@@ -4,68 +4,47 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.team28420.config.CameraConf;
+import org.firstinspires.ftc.team28420.config.GamepadConf;
+import org.firstinspires.ftc.team28420.config.ShooterConf;
 import org.firstinspires.ftc.team28420.module.Actions;
-import org.firstinspires.ftc.team28420.module.Camera;
-import org.firstinspires.ftc.team28420.module.Movement;
-import org.firstinspires.ftc.team28420.module.shooter.Shooter;
 import org.firstinspires.ftc.team28420.types.AprilTag;
-import org.firstinspires.ftc.team28420.util.Config;
 
 @TeleOp(name = "BLUE MAIN", group = "New Actions")
 public class BlueTeleOp extends LinearOpMode {
-    private boolean dpad_active = false;
+    private final boolean dpad_active = false;
     private Actions act;
     private boolean dpadPressed = false;
 
     private void initialize() throws InterruptedException {
-        act = new Actions(
-                new Movement(
-                        hardwareMap.get(DcMotorEx.class, Config.WheelBaseConf.LEFT_TOP_MOTOR),
-                        hardwareMap.get(DcMotorEx.class, Config.WheelBaseConf.RIGHT_TOP_MOTOR),
-                        hardwareMap.get(DcMotorEx.class, Config.WheelBaseConf.LEFT_BOTTOM_MOTOR),
-                        hardwareMap.get(DcMotorEx.class, Config.WheelBaseConf.RIGHT_BOTTOM_MOTOR)
-                ),
-                hardwareMap.get(IMU.class, Config.GyroConf.IMU),
-                new Camera(hardwareMap.get(WebcamName.class, Config.CameraConf.WEBCAM)),
-                new Shooter(hardwareMap),
-                hardwareMap.get(Servo.class, "parkingServo1"),
-                hardwareMap.get(Servo.class, "parkingServo2")
-        );
+        act = new Actions(hardwareMap, telemetry);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        Config.Etc.telemetry = telemetry;
-
         act.init();
     }
 
     private void handleTargeting() {
-        if (Config.ShooterConf.TARGET_MOTIF == null) {
+        if (ShooterConf.TARGET_MOTIF == null) {
             act.setMotif();
         }
 
-        telemetry.addData("scanned motif", Config.ShooterConf.TARGET_MOTIF);
+        telemetry.addData("scanned motif", ShooterConf.TARGET_MOTIF);
     }
 
     private void handleMovement() {
         if (gamepad1.right_trigger > 0.2) {
-            act.move(act.getRatiosForApriltag(AprilTag.BLUE, -2, Config.CameraConf.RANGE_TO_TAG));
-        }
-        else if (gamepad1.right_bumper) {
-            act.move(act.getRatiosLookApriltag(AprilTag.BLUE, 0, Config.CameraConf.RANGE_TO_TAG));
-        }
-        else {
+            act.move(act.getRatiosForApriltag(AprilTag.BLUE, -2, CameraConf.RANGE_TO_TAG));
+        } else if (gamepad1.right_bumper) {
+            act.move(act.getRatiosLookApriltag(AprilTag.BLUE, 0, CameraConf.RANGE_TO_TAG));
+        } else {
             manualDrive();
         }
     }
 
     private void manualDrive() {
-        double x = act.getCubic(act.withDeathzone(gamepad1.left_stick_x, Config.GamepadConf.LEFT_DEAD_ZONE));
-        double y = -1 * act.getCubic(act.withDeathzone(gamepad1.left_stick_y, Config.GamepadConf.LEFT_DEAD_ZONE));
-        double rx = act.getCubic(act.withDeathzone(gamepad1.right_stick_x, Config.GamepadConf.RIGHT_DEAD_ZONE));
+        double x = act.getCubic(act.withDeathzone(gamepad1.left_stick_x, GamepadConf.LEFT_DEAD_ZONE));
+        double y = -1 * act.getCubic(act.withDeathzone(gamepad1.left_stick_y, GamepadConf.LEFT_DEAD_ZONE));
+        double rx = act.getCubic(act.withDeathzone(gamepad1.right_stick_x, GamepadConf.RIGHT_DEAD_ZONE));
 
         act.move(act.getRatios(x, y, rx));
     }
@@ -84,7 +63,7 @@ public class BlueTeleOp extends LinearOpMode {
 
         handleRevolverInput();
 
-        float shooterPower = (float)((gamepad2.right_trigger > 0.4) ? Math.pow(gamepad2.right_trigger, 2) : 0);
+        float shooterPower = (float) ((gamepad2.right_trigger > 0.4) ? Math.pow(gamepad2.right_trigger, 2) : 0);
         act.setShooterVelocityCoefficient(shooterPower);
 
         if (gamepad2.right_bumper) act.shoot();
@@ -105,6 +84,7 @@ public class BlueTeleOp extends LinearOpMode {
         }
         dpadPressed = (gamepad2.dpad_left || gamepad2.dpad_right || gamepad2.dpad_up || gamepad2.dpad_down);
     }
+
     private void handleIntakeAndParking() {
         if (gamepad1.left_bumper) {
             float power = (gamepad1.left_trigger > 0.5) ? -0.5f : 1.0f;
@@ -122,7 +102,7 @@ public class BlueTeleOp extends LinearOpMode {
         waitForStart();
 
         act.afterStart();
-        Config.ShooterConf.TARGET_MOTIF = null;
+        ShooterConf.TARGET_MOTIF = null;
 
         while (opModeIsActive()) {
             handleTargeting();
@@ -130,7 +110,7 @@ public class BlueTeleOp extends LinearOpMode {
             handleShooter();
             handleIntakeAndParking();
 
-            if (gamepad2.right_bumper){
+            if (gamepad2.right_bumper) {
                 act.shoot();
             }
 

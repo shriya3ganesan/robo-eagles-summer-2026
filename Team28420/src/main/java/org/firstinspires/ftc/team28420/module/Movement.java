@@ -2,11 +2,11 @@ package org.firstinspires.ftc.team28420.module;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.team28420.config.WheelBaseConf;
 import org.firstinspires.ftc.team28420.types.PolarVector;
 import org.firstinspires.ftc.team28420.types.WheelsRatio;
-import org.firstinspires.ftc.team28420.util.Config;
 
 public class Movement {
     private final DcMotorEx leftFront, rightFront, leftBack, rightBack;
@@ -15,7 +15,7 @@ public class Movement {
     private double currentLB = 0.0;
     private double currentRB = 0.0;
 
-    public static WheelsRatio<Double> vectorToRatios(PolarVector vector, double turn) {
+        public static WheelsRatio<Double> vectorToRatios(PolarVector vector, double turn) {
         double sin = Math.sin(vector.getTheta() - Math.PI / 4);
         double cos = Math.cos(vector.getTheta() - Math.PI / 4);
         double max = Math.max(Math.abs(sin), Math.abs(cos));
@@ -35,11 +35,11 @@ public class Movement {
         return new WheelsRatio<>(lf, rf, lb, rb);
     }
 
-    public Movement(DcMotorEx leftFront, DcMotorEx rightFront, DcMotorEx leftBack, DcMotorEx rightBack) {
-        this.leftFront = leftFront;
-        this.rightFront = rightFront;
-        this.leftBack = leftBack;
-        this.rightBack = rightBack;
+    public Movement(HardwareMap hMap) {
+        this.leftFront = hMap.get(DcMotorEx.class, WheelBaseConf.LEFT_TOP_MOTOR);
+        this.rightFront = hMap.get(DcMotorEx.class, WheelBaseConf.RIGHT_TOP_MOTOR);
+        this.leftBack = hMap.get(DcMotorEx.class, WheelBaseConf.LEFT_BOTTOM_MOTOR);
+        this.rightBack = hMap.get(DcMotorEx.class, WheelBaseConf.RIGHT_BOTTOM_MOTOR);
     }
 
     public void setup() {
@@ -106,10 +106,10 @@ public class Movement {
     
     private double accelerate(double current, double target) {
         double difference = target - current;
-        if (Math.abs(difference) <= Config.WheelBaseConf.ACCELERATION) {
+        if (Math.abs(difference) <= WheelBaseConf.ACCELERATION) {
             return target;
         }
-        return current + Math.signum(difference) * Config.WheelBaseConf.ACCELERATION;
+        return current + Math.signum(difference) * WheelBaseConf.ACCELERATION;
     }
 
     public void brake() {

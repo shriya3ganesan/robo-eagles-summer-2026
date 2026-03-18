@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.team28420.module;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.team28420.config.CameraConf;
 import org.firstinspires.ftc.team28420.types.AprilTag;
 import org.firstinspires.ftc.team28420.types.MovementParams;
 import org.firstinspires.ftc.team28420.types.PolarVector;
-import org.firstinspires.ftc.team28420.util.Config;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -26,7 +27,9 @@ public class Camera {
 
     private List<AprilTagDetection> lastDetections = new ArrayList<>();
 
-    public Camera(WebcamName webcamName) throws InterruptedException {
+    public Camera(HardwareMap hMap) throws InterruptedException {
+        WebcamName webcamName = hMap.get(WebcamName.class, CameraConf.WEBCAM);
+
         aprilTag = new AprilTagProcessor.Builder()
                 .setDrawAxes(true)
                 .setDrawCubeProjection(true)
@@ -62,7 +65,7 @@ public class Camera {
     }
 
     private double getRotateForce(double angle) {
-        return angle / Config.CameraConf.ANGLE_MAX_VELOCITY * 0.5;
+        return angle / CameraConf.ANGLE_MAX_VELOCITY * 0.5;
     }
 
     public MovementParams getMovementParamsToPoint(AprilTagDetection detection, double offsetX, double offsetY) {
