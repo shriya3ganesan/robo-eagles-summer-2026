@@ -92,9 +92,9 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
 @Config
 public class ComplexMechGlob extends MechGlob { //a class encompassing all code that IS for slowbot
     public static double FEEDER_POWER = 1;
-    public static double TRANSFER_TIME_UP = 0.3; //was 0.6
-    public static double TRANSFER_TIME_DOWN = 0.7; //was 0.25
-    public static double PADDLE_TRANSFER_DELAY = 0.2;
+    public static double TRANSFER_TIME_UP = 0.4; //was 0.6
+    public static double TRANSFER_TIME_DOWN = 1.2; //was 0.25
+    public static double PADDLE_TRANSFER_DELAY = 0.3;
     public static double PADDLE_TRANSFER_TIME_UP = 0.5; // How long we wait before bringing the paddles down (we don't need time for down because they don't interfere with drum)
 
     //todo can decrease this
