@@ -21,7 +21,7 @@ public class Nora extends OpMode {
 
         telemetry.addData("Number", seamus);
 
-        // Fixed: Use 100.0 to prevent integer division (20/100 = 0, 20/100.0 = 0.2)
+
         motor.setPower(seamus / 100.0);
     }
 }
