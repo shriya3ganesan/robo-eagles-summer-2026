@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 @TeleOp(name="Proctor 0pMode")
 public class proctor extends OpMode {
     DcMotorEx pen;
+
     @Override
     public void init() {
 
@@ -23,8 +24,11 @@ public class proctor extends OpMode {
 
         int pop_corn = sketchy_van_guy + explosive_barcode_scanner;
 
-        telemetry.addData("Number",pop_corn);
+        telemetry.addData("Number", pop_corn);
 
-        pen.setPower(pop_corn * gamepad1.left_stick_y);
+        if (gamepad1.a) {
+            pen.setPower(pop_corn);
+        }
     }
+
 }

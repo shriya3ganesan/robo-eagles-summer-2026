@@ -24,8 +24,9 @@ public class Murali extends OpMode {
         int tiger = 67;
         int Williamsburg = 89;
         Williamsburg = tiger + MurMur + declaration;
-
-        motor.setPower(Williamsburg *gamepad1. left_stick_y);
+if (gamepad1.a) {
+        motor.setPower(Williamsburg);
         telemetry.addData("Letter", declaration);
+}
         }
 }
