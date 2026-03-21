@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.robotcontroller;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -25,6 +25,6 @@ public class proctor extends OpMode {
 
         telemetry.addData("Number",pop_corn);
 
-        pen.setPower(pop_corn/65);
+        pen.setPower(pop_corn/6500);
     }
 }

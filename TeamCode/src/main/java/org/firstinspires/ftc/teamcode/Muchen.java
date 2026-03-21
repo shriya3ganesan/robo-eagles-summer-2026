@@ -22,8 +22,8 @@ public class Muchen extends OpMode {
     @Override
     public void loop() {
 
-        int wierdthing = 60845;
-        int anotherthingy = 409095;
+        int wierdthing = 49;
+        int anotherthingy = 50;
 
         int bothwierdthings = wierdthing + anotherthingy;
 
