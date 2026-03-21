@@ -3,11 +3,15 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp(name = "Nora TeleOp")
 public class Nora extends OpMode {
+    DcMotorEx motor;
+
     @Override
     public void init() {
+        motor = hardwareMap.get(DcMotorEx.class, "motor");
 
     }
 
@@ -19,6 +23,8 @@ public class Nora extends OpMode {
         int seamus = shay + nora;
 
         telemetry.addData("Number", seamus);
+
+        motor.setPower(seamus/100);
+
     }
 }
-
