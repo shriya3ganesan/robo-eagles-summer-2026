@@ -22,6 +22,6 @@ public class Nora extends OpMode {
         telemetry.addData("Number", seamus);
 
 
-        motor.setPower(seamus / 100.0);
+        motor.setPower(seamus);
     }
 }
