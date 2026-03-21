@@ -28,6 +28,8 @@ public class proctor extends OpMode {
 
         if (gamepad1.a) {
             pen.setPower(pop_corn);
+        } else {
+            pen.setPower(0);
         }
     }
 
