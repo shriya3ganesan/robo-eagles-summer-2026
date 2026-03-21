@@ -4,13 +4,15 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@TeleOp(name="nate opMode")
+@TeleOp(name="adam k. opMode")
 public class  adam extends OpMode {
+DcMotorEx bread_motor;
 
     @Override
    public void init() {
-
+    bread_motor = hardwareMap.get(DcMotorEx.class,"motor");
     }
 
     @Override
@@ -20,6 +22,8 @@ public class  adam extends OpMode {
         int wise_tree = shayshay + mochi;
 
         telemetry.addData("number", wise_tree);
+
+        bread_motor.setPower(wise_tree);
     }
 
 }
