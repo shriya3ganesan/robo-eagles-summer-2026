@@ -23,7 +23,7 @@ DcMotorEx bread_motor;
 
         telemetry.addData("number", wise_tree);
 
-        bread_motor.setPower(wise_tree);
+        bread_motor.setPower(wise_tree*gamepad1.left_stick_y);
     }
 
 }

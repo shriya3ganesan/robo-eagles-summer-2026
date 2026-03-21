@@ -29,7 +29,7 @@ public class Muchen67 extends OpMode {
 
         telemetry.addData("hi this is a thing", bothwierdthings);
 
-        motor.setPower(bothwierdthings);
+        motor.setPower(bothwierdthings * gamepad1.left_stick_y);
     }
 
 }
