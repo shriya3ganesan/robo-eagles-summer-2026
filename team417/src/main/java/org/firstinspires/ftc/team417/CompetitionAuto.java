@@ -35,7 +35,7 @@ import org.firstinspires.ftc.team417.roadrunner.RobotAction;
 
 class BaseCompetitonMode extends BaseOpMode {
     static public double FEEDER_TIME = 0.5;
-    static public double ROBOT_SPEED = 10;
+    static public double ROBOT_SPEED = 25;
     static public double INTAKE_SPEED = 1;
 
     public enum Alliance {

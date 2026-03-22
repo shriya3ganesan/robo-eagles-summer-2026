@@ -102,8 +102,8 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     // how long we wait before continuing after the color detector
     // detects. this is 0 because it will likely become obsolete
     public static double INTAKE_TIMER = 0;
-    public static double FAR_FLYWHEEL_VELOCITY = 1080; //was 1500
-    public static double NEAR_FLYWHEEL_VELOCITY = 820; //was 1500
+    public static double FAR_FLYWHEEL_VELOCITY = 1000; //was 1500
+    public static double NEAR_FLYWHEEL_VELOCITY = 810; //was 1500
     public static double FLYWHEEL_BACK_SPIN = 300; //was 300
     public static double TRANSFER_INACTIVE_POSITION = 0.45;
     public static double TRANSFER_ACTIVE_POSITION = 0.8;
@@ -115,7 +115,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
     public static double DRUM_GATE_CLOSED_POSITION = 0.75;
     public static double MOTOR_D_VALUE = 1;
     public static double INTAKE_BACK_TIME = 0.25;
-    public static double NEAR_AUTO_VELOCTIY = 835;
+    public static double NEAR_AUTO_VELOCTIY = 780;
     public static double FAR_AUTO_VELOCITY = 1040;
     public static double LEFT_PADDLE_INACTIVE_POSITION = 0.2;
     public static double RIGHT_PADDLE_INACTIVE_POSITION = 0.2;
