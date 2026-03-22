@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
+import org.firstinspires.ftc.team417.apriltags.LimelightAprilTagDetector;
 import org.firstinspires.ftc.team417.apriltags.Pattern;
 import org.firstinspires.ftc.team417.javatextmenu.MenuFinishedButton;
 import org.firstinspires.ftc.team417.javatextmenu.MenuHeader;
@@ -140,7 +140,7 @@ class BaseCompetitonMode extends BaseOpMode {
                             .afterDisp(0, new SpinUpAction(mechGlob, LaunchDistance.FAR))
                             .splineToSplineHeading(new Pose2d(54, 12, Math.toRadians(157.5)), Math.toRadians(-90))  //go to launch position
                             .stopAndAdd(new LaunchAction(mechGlob, countBalls, detector))
-                            .stopAndAdd(new WaitAction(FEEDER_TIME));;
+                            .stopAndAdd(new WaitAction(FEEDER_TIME));
 
                 trajectoryAction = trajectoryAction.splineToSplineHeading(new Pose2d(36, 32, Math.toRadians(90)), Math.toRadians(90)) //go to intake farthest from goal
                         .afterDisp(0, new IntakeAction(mechGlob, 1))
@@ -303,7 +303,7 @@ class BaseCompetitonMode extends BaseOpMode {
         GetColor countBalls = new GetColor();
 
 
-        detector = new LimelightDetector(hardwareMap, drive);
+        detector = new LimelightAprilTagDetector(hardwareMap, drive);
 
         Action trajectoryAction;
         if (chosenAlliance == Alliance.RED) {
@@ -456,9 +456,9 @@ class LaunchAction extends RobotAction {
     MechGlob mechGlob;
     Pattern pattern;
     GetColor orderCount;
-    LimelightDetector detector;
+    LimelightAprilTagDetector detector;
 
-    public LaunchAction(MechGlob mechGlob, GetColor orderCount, LimelightDetector detector) {
+    public LaunchAction(MechGlob mechGlob, GetColor orderCount, LimelightAprilTagDetector detector) {
         this.mechGlob = mechGlob;
         this.pattern = Pattern.PPG;
         this.orderCount = orderCount;

@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
+import org.firstinspires.ftc.team417.apriltags.LimelightAprilTagDetector;
 import org.firstinspires.ftc.team417.roadrunner.Drawing;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
@@ -71,7 +71,7 @@ public class CompetitionTeleOp extends BaseOpMode {
         PixelColor[] preloads = new PixelColor[]{PixelColor.NONE, PixelColor.NONE, PixelColor.NONE};
         MechGlob mechGlob = ComplexMechGlob.create(hardwareMap, telemetry, storedColors);
         AmazingAutoAim amazingAutoAim = null;
-        detector = new LimelightDetector(hardwareMap, drive);
+        detector = new LimelightAprilTagDetector(hardwareMap, drive);
 
         detector.poseCorrectEnabled = TransferState.usePoseCorrection;
 

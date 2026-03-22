@@ -3,7 +3,6 @@ package org.firstinspires.ftc.team417;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -15,7 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.wilyworks.common.WilyWorks;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.team417.apriltags.LimelightDetector;
+import org.firstinspires.ftc.team417.apriltags.LimelightAprilTagDetector;
 import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ class MechGlob { //a placeholder class encompassing all code that ISN'T for slow
     void intake (double intakeValue){}
 
     //a method that determines what color to launch. Options are purple, green, or either.
-    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
+    boolean launch (RequestedColor requestedColor, LimelightAprilTagDetector detector) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
         return true;
     }
@@ -284,7 +283,7 @@ public class ComplexMechGlob extends MechGlob { //a class encompassing all code 
 
     @Override
     // controls the launcher and transfer
-    boolean launch (RequestedColor requestedColor, LimelightDetector detector) {
+    boolean launch (RequestedColor requestedColor, LimelightAprilTagDetector detector) {
         detector.tryResetRobotPose(telemetry); // Resets the robot pose only if the robot is not moving
 
         if (launchDistance == LaunchDistance.OFF) {

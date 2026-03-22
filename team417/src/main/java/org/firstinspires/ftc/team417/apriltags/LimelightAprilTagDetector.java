@@ -55,27 +55,9 @@ import java.util.List;
 
 /**
  * This class is used to detect AprilTags using the Limelight3A Vision Sensor.
- *
- * @see <a href="https://limelightvision.io/">Limelight</a>
- * <p>
- * Notes on configuration:
- * <p>
- *   The device presents itself, when plugged into a USB port on a Control Hub as an ethernet
- *   interface.  A DHCP server running on the Limelight automatically assigns the Control Hub an
- *   ip address for the new ethernet interface.
- * <p>
- *   Since the Limelight is plugged into a USB port, it will be listed on the top level configuration
- *   activity along with the Control Hub Portal and other USB devices such as webcams.  Typically
- *   serial numbers are displayed below the device's names.  In the case of the Limelight device, the
- *   Control Hub's assigned ip address for that ethernet interface is used as the "serial number".
- * <p>
- *   Tapping the Limelight's name, transitions to a new screen where the user can rename the Limelight
- *   and specify the Limelight's ip address.  Users should take care not to confuse the ip address of
- *   the Limelight itself, which can be configured through the Limelight settings page via a web browser,
- *   and the ip address the Limelight device assigned the Control Hub and which is displayed in small text
- *   below the name of the Limelight on the top level configuration screen.
+ * It is currently used for our pose updating using the april tag.
  */
-public class LimelightDetector implements Closeable {
+public class LimelightAprilTagDetector implements Closeable {
     /**
      * The variable to store our instance of the Mecanum drive.
      */
@@ -117,7 +99,7 @@ public class LimelightDetector implements Closeable {
     /**
      * Initialize the AprilTag processor.
      */
-    public LimelightDetector(HardwareMap hardwareMap, MecanumDrive drive) {
+    public LimelightAprilTagDetector(HardwareMap hardwareMap, MecanumDrive drive) {
         // Create the AprilTag processor.
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
