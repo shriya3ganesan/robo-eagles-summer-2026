@@ -100,7 +100,11 @@ public class BlueTeleOp extends LinearOpMode {
     }
 
     private void handleTurret() {
-        act.goTurretToGyroAngle(gamepad2.right_stick_x * 10);
+        if (gamepad2.triangle) {
+            act.goTurretToAprilTag(AprilTag.BLUE, gamepad2.right_stick_x * 10);
+        } else {
+            act.goTurretToGyroAngle(gamepad2.right_stick_x * 10);
+        }
     }
 
     @Override
@@ -113,6 +117,7 @@ public class BlueTeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
             act.updateLastAngles();
+            act.updateApriltags();
 
             handleTargeting();
             handleMovement();

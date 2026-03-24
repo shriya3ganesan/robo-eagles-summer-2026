@@ -17,6 +17,9 @@ import org.firstinspires.ftc.team28420.types.PolarVector;
 import org.firstinspires.ftc.team28420.types.WheelsRatio;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Actions {
 
     private final Movement mv;
@@ -27,6 +30,7 @@ public class Actions {
     private final Turret turret;
     private final Telemetry telemetry;
 
+    private final List<AprilTagDetection> lastDetections = new ArrayList<>();
     private YawPitchRollAngles lastAngles = new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0);
 
     public Actions(HardwareMap hMap, Telemetry telemetry) throws InterruptedException {
@@ -41,10 +45,7 @@ public class Actions {
 
     public void init() {
         mv.setup();
-        imu.initialize(new IMU.Parameters(
-                new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                        RevHubOrientationOnRobot.UsbFacingDirection.UP)));
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP)));
         shooter.setup();
         parking.setup();
     }
@@ -117,15 +118,17 @@ public class Actions {
         return Movement.vectorToRatios(new MovementParams(new PolarVector(x, y), rx));
     }
 
-    public WheelsRatio<Double> getRatiosForApriltag(AprilTag tag, double offsetX, double offsetY) {
+    public void updateApriltags() {
         cam.updateApriltags();
+    }
+
+    public WheelsRatio<Double> getRatiosForApriltag(AprilTag tag, double offsetX, double offsetY) {
         AprilTagDetection detection = cam.getAprilTagDetection(tag);
         MovementParams params = cam.getMovementParamsToPoint(detection, offsetX, offsetY);
         return Movement.vectorToRatios(params);
     }
 
     public WheelsRatio<Double> getRatiosLookApriltag(AprilTag tag, double offsetX, double offsetY) {
-        cam.updateApriltags();
         AprilTagDetection detection = cam.getAprilTagDetection(tag);
         MovementParams params = cam.getMovementParamsToOffset(detection, offsetX, offsetY);
         return Movement.vectorToRatios(params);
@@ -136,12 +139,18 @@ public class Actions {
     }
 
     public void setMotif() {
-        cam.updateApriltags();
-
         AprilTagDetection detection = cam.getAprilTagDetection(AprilTag.GREEN);
         if (detection != null) {
             ShooterConf.TARGET_MOTIF = AprilTag.getMotif(detection.id);
         }
+    }
+
+    public void goTurretToAprilTag(AprilTag tag, double offset) {
+        AprilTagDetection detection = cam.getAprilTagDetection(tag);
+        if (detection == null) {
+            return;
+        }
+        turret.goAngle(detection.ftcPose.yaw + offset);
     }
 
     public void goTurretToGyroAngle(double offset) {
