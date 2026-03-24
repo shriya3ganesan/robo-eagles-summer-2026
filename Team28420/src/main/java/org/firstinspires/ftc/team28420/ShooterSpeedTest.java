@@ -19,12 +19,8 @@ import org.firstinspires.ftc.team28420.types.AprilTag;
 
 @TeleOp(name = "Shooter Speed test", group = "New Actions")
 public class ShooterSpeedTest extends LinearOpMode {
-    private final boolean dpad_active = false;
     private boolean dpadPressed = false;
     Shooter shooter;
-    DcMotorEx left, right;
-
-    Servo ballDeliver;
 
     public void initialize() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -35,8 +31,8 @@ public class ShooterSpeedTest extends LinearOpMode {
 
     private void handleRevolverInput() {
         if (!dpadPressed) {
-            if (gamepad1.dpad_left) shooter.rotateRevolver(-40);
-            if (gamepad1.dpad_right) shooter.rotateRevolver(40);
+            if (gamepad1.dpad_left) shooter.rotateRevolver(-120);
+            if (gamepad1.dpad_right) shooter.rotateRevolver(120);
             if (gamepad1.dpad_up)  shooter.pushBall(true);
             if (gamepad1.dpad_down)  shooter.pushBall(false);
         }
@@ -53,10 +49,15 @@ public class ShooterSpeedTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             if(gamepad1.right_trigger > 0.2) {
+                shooter.pushBall(true);
                 shooter.setVelocityCoefficient(gamepad1.right_trigger);
             } else {
+                shooter.pushBall(false);
                 shooter.setVelocityCoefficient(0);
             }
+            if(gamepad1.circle) shooter.setPids();
+            if (gamepad1.cross) shooter.rotateRevolver(-1);
+            if (gamepad1.triangle) shooter.rotateRevolver(1);
 
             handleRevolverInput();
             shooter.log(telemetry);

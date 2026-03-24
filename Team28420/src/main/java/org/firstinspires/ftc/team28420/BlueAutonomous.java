@@ -22,7 +22,6 @@ public class BlueAutonomous extends LinearOpMode {
 
         act.init();
         act.setDefaultAutoMotif("PPG");
-        act.scanAllowed = false;
 
         waitForStart();
 

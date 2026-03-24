@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -69,8 +70,8 @@ public class Shooter {
 
         pusher.setState(Pusher.PusherState.NEUTRAL);
         revolver.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, new PIDFCoefficients(10, 0, 0, 0));
-        left.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, 0, ShooterConf.SHOOTER_F));
-        right.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, 0, ShooterConf.SHOOTER_F));
+        left.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, ShooterConf.SHOOTER_D, ShooterConf.SHOOTER_F));
+        right.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, ShooterConf.SHOOTER_D, ShooterConf.SHOOTER_F));
 
         setMotorsZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
@@ -122,6 +123,7 @@ public class Shooter {
         telemetry.addData("CURRENT VELOCITY RIGHT", right.getVelocity());
         telemetry.addData("CURRENT RPM LEFT", toRPM(left.getVelocity()));
         telemetry.addData("CURRENT RPM RIGHT", toRPM(right.getVelocity()));
+        telemetry.addData("CURRENT REVOLVER TICKS", revolver.getCurrentPosition());
     }
 
     public void snapToNearestSlot() {
@@ -292,9 +294,17 @@ public class Shooter {
         return revolver.getCurrentPosition() / ShooterConf.SORT_MOTOR_TICKS_PER_TURN * 360.0;
     }
 
+    public void setPids() {
+        left.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, ShooterConf.SHOOTER_D, ShooterConf.SHOOTER_F));
+        right.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(ShooterConf.SHOOTER_P, ShooterConf.SHOOTER_I, ShooterConf.SHOOTER_D, ShooterConf.SHOOTER_F));
+    }
+
+
     public void setVelocityCoefficient(float k) {
-        left.setVelocity(ShooterConf.VELOCITY * k);
-        right.setVelocity(ShooterConf.VELOCITY * k);
+        double desired = ShooterConf.VELOCITY * k;
+
+        left.setVelocity(desired);
+        right.setVelocity(desired);
     }
 
     public boolean shoot() {

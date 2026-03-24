@@ -14,10 +14,11 @@ public class ShooterConf {
     public static String TARGET_MOTIF = null;
     public static double SORT_MOTOR_POWER = 0.5;
     public static double BALL_DETECTION_THRESHOLD = 4;
-    public static double SHOOTER_F = 0.1;
-    public static double SHOOTER_I = 3;
-    public static double SHOOTER_P = 0.1;
-    public static int VELOCITY = 1600;
+    public static double SHOOTER_F = 15;
+    public static double SHOOTER_I = 0;
+    public static double SHOOTER_P = 11;
+    public static double SHOOTER_D = 2;
+    public static int VELOCITY = 800;
     public static int DRIBBLER_VELOCITY = 2800;
-    public static double SORT_MOTOR_TICKS_PER_TURN = 2380.0;
+    public static double SORT_MOTOR_TICKS_PER_TURN = 1430.0;
 }
