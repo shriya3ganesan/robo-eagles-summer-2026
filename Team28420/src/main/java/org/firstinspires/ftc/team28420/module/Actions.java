@@ -30,7 +30,6 @@ public class Actions {
     private final Turret turret;
     private final Telemetry telemetry;
 
-    private final List<AprilTagDetection> lastDetections = new ArrayList<>();
     private YawPitchRollAngles lastAngles = new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0);
 
     public Actions(HardwareMap hMap, Telemetry telemetry) throws InterruptedException {
@@ -48,6 +47,7 @@ public class Actions {
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT, RevHubOrientationOnRobot.UsbFacingDirection.UP)));
         shooter.setup();
         parking.setup();
+        imu.resetYaw();
     }
 
     public void updateShooter() {
@@ -150,11 +150,11 @@ public class Actions {
         if (detection == null) {
             return;
         }
-        turret.goAngle(detection.ftcPose.yaw + offset);
+        turret.goAngle(- detection.ftcPose.yaw + offset);
     }
 
     public void goTurretToGyroAngle(double offset) {
-        turret.goAngle(-getRobotAngles().getYaw(AngleUnit.RADIANS) + offset);
+        turret.goAngle(- getRobotAngles().getYaw(AngleUnit.RADIANS) + offset);
     }
 
     public double getCubic(double axis) {
@@ -168,5 +168,6 @@ public class Actions {
     public void log() {
         cam.log(telemetry);
         shooter.log(telemetry);
+        telemetry.addData("yaw", getRobotAngles().getYaw(AngleUnit.RADIANS));
     }
 }
