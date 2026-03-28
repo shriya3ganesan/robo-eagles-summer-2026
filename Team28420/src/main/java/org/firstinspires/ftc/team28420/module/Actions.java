@@ -36,7 +36,7 @@ public class Actions {
     private final Servo cameraServo;
     private final Shooter shooter;
     private final Parking parking;
-    private BallDetection ballDetection;
+    private final BallDetection ballDetection;
     private final Telemetry telemetry;
 
     private YawPitchRollAngles lastAngles = new YawPitchRollAngles(AngleUnit.RADIANS, 0, 0, 0, 0);

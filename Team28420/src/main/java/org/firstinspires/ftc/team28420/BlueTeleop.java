@@ -71,7 +71,7 @@ public class BlueTeleop extends LinearOpMode {
         handleRevolverInput();
 
         float shooterPower = (float) ((gamepad2.right_trigger > 0.4) ? Math.pow(gamepad2.right_trigger, 2) : 0);
-        shooterPower *= gamepad2.left_bumper ? 1.1 : 1;
+        shooterPower *= gamepad2.left_bumper ? 1.28 : 1;
 
         act.prepareForShoot(shooterPower);
         if (gamepad2.right_bumper) act.shoot();
@@ -82,6 +82,9 @@ public class BlueTeleop extends LinearOpMode {
         gamepad2.rumble(-1);
     }
     private void handleRevolverInput() {
+        if(gamepad2.square) act.setScanAllowed(true);
+        if(gamepad2.cross) act.setScanAllowed(false);
+
         if (!dpadPressed) {
             int shooterMultiplier = gamepad2.right_trigger > 0.2?2:1;
 

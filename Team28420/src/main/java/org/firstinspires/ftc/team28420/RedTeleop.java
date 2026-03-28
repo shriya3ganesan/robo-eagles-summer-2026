@@ -71,7 +71,7 @@ public class RedTeleop extends LinearOpMode {
         handleRevolverInput();
 
         float shooterPower = (float) ((gamepad2.right_trigger > 0.4) ? Math.pow(gamepad2.right_trigger, 2) : 0);
-        shooterPower *= gamepad2.left_bumper ? 1.1f : 1;
+        shooterPower *= gamepad2.left_bumper ? 1.28 : 1;
 
         act.prepareForShoot(shooterPower);
         if (gamepad2.right_bumper) act.shoot();
@@ -82,16 +82,19 @@ public class RedTeleop extends LinearOpMode {
         gamepad2.rumble(-1);
     }
     private void handleRevolverInput() {
+        if(gamepad2.square) act.setScanAllowed(true);
+        if(gamepad2.cross) act.setScanAllowed(false);
+
         if (!dpadPressed) {
             int shooterMultiplier = gamepad2.right_trigger > 0.2?2:1;
 
-            if (gamepad2.dpad_left) rotateRevolver(60 * shooterMultiplier);
-            if (gamepad2.dpad_right) rotateRevolver(-60 * shooterMultiplier);
+            if (gamepad2.dpad_left) rotateRevolver(-60 * shooterMultiplier);
+            if (gamepad2.dpad_right) rotateRevolver(60 * shooterMultiplier);
         }
         dpadPressed = (gamepad2.dpad_left || gamepad2.dpad_right || gamepad2.dpad_up || gamepad2.dpad_down);
 
-        if (gamepad2.dpad_up) rotateRevolver(5);
-        if (gamepad2.dpad_down) rotateRevolver(-5);
+        if (gamepad2.dpad_up) rotateRevolver(-5);
+        if (gamepad2.dpad_down) rotateRevolver(5);
     }
     private void handleIntakeAndParking() {
         if (gamepad1.left_bumper) {

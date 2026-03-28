@@ -145,18 +145,17 @@ public class Shooter {
                 break;
             case STOP_SHOOTING:
                 if (shooterTime.milliseconds() >= 175) {
-                    if (manualControl) {
-                        rotateRevolver(-120);
-                        state = Shooter.ShooterState.IDLE;
+                    if(manualControl) {
+                        rotateRevolver(120);
                     } else {
                         sortedNextBall();
-                        state = Shooter.ShooterState.REVOLVER_TURNING;
-                        shooterTime.reset();
+                        state = ShooterState.REVOLVER_TURNING;
                     }
+                    shooterTime.reset();
                 }
                 break;
             case REVOLVER_TURNING:
-                if (!revolver.isBusy()) {
+                if (!isMotorBusy(revolver)) {
                     state = Shooter.ShooterState.IDLE;
                     shooterTime.reset();
                 }
@@ -168,18 +167,15 @@ public class Shooter {
         }
     }
     public void sortedNextBall() {
-        if (!isMotorBusy(revolver)) {
+        if (!sorter.getCurMotif().isEmpty()) {
+            sorter.dropLastBall();
 
-            if (!sorter.getCurMotif().isEmpty()) {
-                sorter.dropLastBall();
-
-                if (!sorter.getCurMotif().isEmpty()) rotateRevolver(120);
-                else {
-                    rotateRevolver(60);
-                    sorter.setCorrectMotif(false);
-                }
+            if (!sorter.getCurMotif().isEmpty()) rotateRevolver(120);
+            else {
+                rotateRevolver(60);
+                sorter.setCorrectMotif(false);
             }
-        }
+        } else shot = false;
     }
     public void rotateRevolver(double deg) {
         globalTarget += (int) (deg * ShooterConf.SORT_MOTOR_TICKS_PER_TURN / 360.0);
@@ -313,7 +309,7 @@ public class Shooter {
     public boolean alignRevolverToTarget() {
         if (ShooterConf.TARGET_MOTIF == null || ShooterConf.TARGET_MOTIF.isEmpty()) return false;
         // Default offset is 60 degrees
-        double finalRotationDeg = isNearShootingSlot()?0:60;
+        double finalRotationDeg = isNearShootingSlot() ? 0 : 60;
         int moveSlots = sorter.getMoveSlots();
 
         // Add the extra rotation based on the required slots
@@ -335,7 +331,7 @@ public class Shooter {
         if (sorter.isMotifFull()) {
             finalizeMotif();
         } else {
-            rotateRevolver(-120);
+            rotateRevolver(120);
         }
     }
 
@@ -367,16 +363,15 @@ public class Shooter {
         double currentAngle = currentAngle() % 360;
         if (currentAngle < 0) currentAngle += 360;
 
-        boolean nearSlot1 = Math.abs(currentAngle - 60) < 5;
-        boolean nearSlot2 = Math.abs(currentAngle - 180) < 5;
-        boolean nearSlot3 = Math.abs(currentAngle - 300) < 5;
+        boolean nearSlot1 = Math.abs(currentAngle - 60) < 8;
+        boolean nearSlot2 = Math.abs(currentAngle - 180) < 8;
+        boolean nearSlot3 = Math.abs(currentAngle - 300) < 8;
 
         boolean isNearSlot =  (nearSlot1 || nearSlot2 || nearSlot3);
         return isNearSlot;
     }
 
     public boolean isShootable() {
-
         return isNearShootingSlot() && !shot;
     }
     public void pushBall(boolean push) {
