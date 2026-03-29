@@ -37,6 +37,18 @@ public class EulerTeleop extends LinearOpMode {
             boolean shootMiddle = gamepad1.b;
             boolean shootFar = gamepad1.x;
 
+            if (gamepad1.a) {
+                myShooter.toggleShootNear();
+                myViseur.toggleAimNear();
+            } else if (gamepad1.b) {
+                myShooter.toggleShootMiddle();
+                myViseur.toggleAimMiddle();
+            } else if (gamepad1.x) {
+                myShooter.toggleShootFar();
+                myViseur.toggleAimFar();
+            }
+
+
             float left = -gamepad1.left_stick_y;
             float right = -gamepad1.right_stick_y;
             myDriver.drive(left, right);
