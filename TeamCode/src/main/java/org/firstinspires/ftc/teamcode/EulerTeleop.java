@@ -11,11 +11,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.euler.driver.Driver;
 import org.firstinspires.ftc.teamcode.euler.intake.Intake;
 
-@TeleOp(name = "EulerTeleop",group = "Euler")
+@TeleOp(name = "EulerTeleop", group = "Euler")
 public class EulerTeleop extends LinearOpMode {
     Driver myDriver;
     Intake myIntake;
-    void initialize(){
+
+    void initialize() {
         myDriver = new Driver(hardwareMap.get(DcMotor.class, LEFT_MOTOR), hardwareMap.get(DcMotor.class, RIGHT_MOTOR));
         myIntake = new Intake(hardwareMap.get(DcMotor.class, INTAKE_MOTOR));
     }
@@ -30,16 +31,22 @@ public class EulerTeleop extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+
+            // Shooter & Viseur : règle position viseur + vélocité shooter
+            boolean shootNear = gamepad1.a;
+            boolean shootMiddle = gamepad1.b;
+            boolean shootFar = gamepad1.x;
+
             float left = -gamepad1.left_stick_y;
             float right = -gamepad1.right_stick_y;
             myDriver.drive(left, right);
 
             // attention à l'appui trop long ...
             // si besoin il faudra avoir un etat precedent et gerer en fonction
-            if(gamepad1.left_bumper) {
+            if (gamepad1.left_bumper) {
                 myIntake.toggleCollect();
             }
-            if(gamepad1.left_trigger_pressed) {
+            if (gamepad1.left_trigger_pressed) {
                 myIntake.toggleEject();
             }
         }
