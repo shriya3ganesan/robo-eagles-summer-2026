@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 @TeleOp(name="Teleop_V1")
 public class Teleop_V1 extends OpMode {
     DcMotorEx frontLeftDrive;
@@ -27,13 +29,23 @@ public class Teleop_V1 extends OpMode {
 
     @Override
     public void loop() {
-        double Power = gamepad1.right_stick_y * 0.25;
+        double axial = gamepad1.left_stick_y;
+        double lateral = gamepad1.left_stick_x;
+        double yaw = gamepad1.right_stick_x;
 
-        frontLeftDrive.setPower(Power);
-        backLeftDrive.setPower(Power);
-        frontRightDrive.setPower(Power);
-        backRightDrive.setPower(Power);
+        frontLeftDrive.setPower((axial + lateral + yaw) * 0.5);
+        backLeftDrive.setPower((axial - lateral - yaw) * 0.50);
+        frontRightDrive.setPower((axial - lateral + yaw) * 0.5);
+        backRightDrive.setPower((axial + lateral - yaw) * 0.5);
 
-        telemetry.addData("Current Power", Power);
+        telemetry.addData("Current axial", axial);
+        telemetry.addData("Current lateral", lateral);
+        telemetry.addData("Current yaw", yaw);
+        telemetry.addData("Average Power", (frontLeftDrive.getPower()
+                + frontLeftDrive.getPower()
+                + backLeftDrive.getPower()
+                + backRightDrive.getPower()) / 4);
     }
+
 }
+
