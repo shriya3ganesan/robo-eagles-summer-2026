@@ -17,8 +17,8 @@ public class Vision {
     private static final double TAG_LOCK_MAX_POWER = 0.4;
 
     // State
-    private boolean hasTarget   = false;
-    private boolean isLockedOn  = false;
+    public boolean hasTarget   = false;
+    public boolean isLockedOn  = false;
     private double  distance    = 0.0;
 
     public Vision(RobotHardware robot) {

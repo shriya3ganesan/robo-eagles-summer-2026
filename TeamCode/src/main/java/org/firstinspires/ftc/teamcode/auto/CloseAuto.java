@@ -4,9 +4,15 @@ import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResult;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.robot.Vision;
 
 public abstract class CloseAuto extends BaseAuto {
+    protected Vision vision = new Vision(robot);
 
     protected Pose intakeOne, intakeTwo, intakeThree;
 
@@ -22,7 +28,7 @@ public abstract class CloseAuto extends BaseAuto {
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
 
 
-    protected double launchTimeoutTime = 1.0; // TIMEOUT watcher
+    protected double launchTimeoutTime = 2.0; // TIMEOUT watcher
     protected double launchWaitTime = 0.4;    // WAITING phase
     protected double launchTransferTime = 0.5; // TRANSFER phase
     protected double launchShootTime = 0.2;    // SHOOT phase
@@ -44,6 +50,7 @@ public abstract class CloseAuto extends BaseAuto {
         SHOOT
     }
     protected LaunchState launchState = LaunchState.WAITING;
+    protected boolean isTargetLocked = false;
     protected PathState pathState = PathState.DRIVE_STARTPOS_SHOOTPOS;
 
     protected void setPathState(PathState newState) {
@@ -98,18 +105,11 @@ public abstract class CloseAuto extends BaseAuto {
                 break;
 
             case SHOOT_PRELOAD:
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
-                    setLaunchPower(launchPower);
-                    launchTimer.reset();
-                    break;
-                }
-                if (shotsFired < 3) {
-                    shootOneShot();
-                }
-                else {
-                    follower.followPath(driveShootIntakeOne, true);
-                    robot.intakeMotor.setPower(1); robot.transferMotor.setPower(-1);
+                shootSequence();
+
+                if (!isShooting) {
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKEONE);
+                    follower.followPath(driveShootIntakeOne, true);
                 }
                 break;
 
@@ -129,16 +129,9 @@ public abstract class CloseAuto extends BaseAuto {
                 break;
 
             case SHOOT_SAMPLES_1:
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
-                    robot.intakeMotor.setPower(0);
-                    setLaunchPower(launchPower);
-                    launchTimer.reset();
-                    break;
-                }
-                if (shotsFired < 3) { shootOneShot(); }
-                else {
+                shootSequence();
+                if (!isShooting) {
                     follower.followPath(driveShootIntakeTwo, true);
-                    robot.intakeMotor.setPower(1); robot.transferMotor.setPower(-1);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETWO);
                 }
                 break;
@@ -159,16 +152,9 @@ public abstract class CloseAuto extends BaseAuto {
                 break;
 
             case SHOOT_SAMPLES_2:
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
-                    robot.intakeMotor.setPower(0);
-                    setLaunchPower(launchPower);
-                    launchTimer.reset();
-                    break;
-                }
-                if (shotsFired < 3) { shootOneShot(); }
-                else {
+                shootSequence();
+                if (!isShooting) {
                     follower.followPath(driveShootIntakeThree, true);
-                    robot.intakeMotor.setPower(1); robot.transferMotor.setPower(-1);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
                 }
                 break;
@@ -189,15 +175,8 @@ public abstract class CloseAuto extends BaseAuto {
                 break;
 
             case SHOOT_SAMPLES_3:
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
-                    robot.intakeMotor.setPower(0);
-                    setLaunchPower(launchPower);
-                    launchTimer.reset();
-                    break;
-                }
-                if (shotsFired < 3) { shootOneShot(); }
-                else {
-                    robot.launchMotor.setPower(0); robot.intakeMotor.setPower(0); robot.transferMotor.setPower(0);
+                shootSequence();
+                if (!isShooting) {
                     setPathState(PathState.DONE);
                 }
                 break;
@@ -267,5 +246,55 @@ public abstract class CloseAuto extends BaseAuto {
                 launchTimer.reset();
                 break;
         }
+    }
+    private void lockOn() {
+        LLResult result = robot.limelight.getLatestResult();   // get vision data
+        vision.hasTarget = (result != null && result.isValid());
+
+        // Use your existing vision method to get correction
+        double correction = vision.getYaw(0.0, true, result);
+
+        // Apply the correction – turn in place
+        // (scale if needed, e.g., multiply by 0.6 to soften)
+        correction *= 0.6;
+        double turnPower = Range.clip(correction, -0.5, 0.5); // limit max turn
+        robot.frontLeftDrive.setPower(-turnPower);
+        robot.frontRightDrive.setPower(turnPower);
+        robot.backLeftDrive.setPower(-turnPower);
+        robot.backRightDrive.setPower(turnPower);
+
+        // Check if locked on (vision class sets its own isLockedOn flag)
+        if (vision.isLockedOn) {
+            isTargetLocked = true;
+            robot.frontLeftDrive.setPower(0);
+            robot.frontRightDrive.setPower(0);
+            robot.backLeftDrive.setPower(0);
+            robot.backRightDrive.setPower(0);
+            follower.resumePathFollowing();          // stop manual control
+            launchTimer.reset();               // prepare for shooting
+
+        }
+    }
+
+    private void shootSequence() {
+        isShooting = true;
+        if (!isTargetLocked) {
+            follower.breakFollowing();
+            lockOn();
+        }
+        if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
+            robot.intakeMotor.setPower(0);
+            setLaunchPower(launchPower);
+            launchTimer.reset();
+            return;
+        }
+        if (shotsFired < 3) {
+            shootOneShot();
+            return;
+        }
+        robot.intakeMotor.setPower(1);
+        robot.transferMotor.setPower(-1);
+        isShooting = false;
+        isTargetLocked = false;
     }
 }
