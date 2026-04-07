@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -9,23 +9,26 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Disabled
-@Autonomous(name="pedroAutoCloseRed_FastShooting", group="Autonomous")
-public class pedroAutoCloseRed_FastShooting extends OpMode{
-    private DcMotor launchMotor = null;
+@Autonomous(name="pedroAutoCloseBlueSetVelocityNaughtPtEightSec", group="Autonomous")
+public class pedroAutoCloseBlueSetVelocityNaughtPtEightSec extends OpMode{
+    private DcMotorEx launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
+    private int Target_RPM = 4000; // TUNING NEEDED
+    private double launchTargetTicks = (Target_RPM * 383.6) / 60;
 
     // Servo positions (servos use 0.0 to 1.0)
-    private double triggerStartPos = 0.0;
-    private double triggerShootPos = 300;  // Adjust this value based on your mechanism
+    private double triggerStartPos = 0.158;
+    private double triggerShootPos = 0.208;  // Adjust this value based on your mechanism
 
     private int shotsFired = 0;
     private boolean isShooting = false;
@@ -46,14 +49,12 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
     }
 
     PathState pathState;
-    private final Pose startPose = new Pose(123.96799999999999, 122.62399999999998, Math.toRadians(35));
-    private final Pose shootPose = new Pose(84.672, 84.38400000000001, Math.toRadians(42));
-    private final Pose intakeOne = new Pose(129.28, 83.90400000000001, Math.toRadians(0));
-    private final Pose intakeTwo = new Pose(128.76, 59.048, Math.toRadians(0));
-    private final Pose intakeThree = new Pose(129.312, 34.848, Math.toRadians(0));
+    private final Pose startPose = new Pose(20.77377049180328, 122.99016393442623, Math.toRadians(145));
+    private final Pose shootPose = new Pose(58.780327868852446, 84.27540983606556, Math.toRadians(138));
+    private final Pose intakeOne = new Pose(21, 84.4295081967213, Math.toRadians(185));
+    private final Pose intakeTwo = new Pose(16, 59, Math.toRadians(185));
+    private final Pose intakeThree = new Pose(16, 35, Math.toRadians(185));
 
-    private double launchPowNorm = 0.68;
-    private double launchPowFirst = 0.98;
     private PathChain driveStartShootClose, driveShootIntakeOne, driveIntakeOneShoot;
     private PathChain driveShootIntakeTwo, driveIntakeTwoShoot;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
@@ -69,6 +70,8 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
         driveShootIntakeOne = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, intakeOne))
                 .setConstantHeadingInterpolation(intakeOne.getHeading())
+                .setBrakingStart(0.6)
+                .setBrakingStrength(0.4)
                 .build();
         driveIntakeOneShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeOne, shootPose))
@@ -76,10 +79,12 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
                 .build();
 
         // Intake 2 paths with control point
-        Pose controlPointShootToIntake2 = new Pose(78.912, 57.6, Math.toRadians(0));
+        Pose controlPointShootToIntake2 = new Pose(55.511475409836066, 54.80983606557377, Math.toRadians(185));
         driveShootIntakeTwo = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake2, intakeTwo))
                 .setConstantHeadingInterpolation(intakeTwo.getHeading())
+                .setBrakingStart(0.6)
+                .setBrakingStrength(0.4)
                 .build();
         driveIntakeTwoShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeTwo, shootPose))
@@ -87,10 +92,12 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
                 .build();
 
         // Intake 3 paths
-        Pose controlPointShootToIntake3 = new Pose(69.108, 32.30799999999999, Math.toRadians(0));
+        Pose controlPointShootToIntake3 = new Pose(60.94098360655738, 31.43934426229508, Math.toRadians(185));
         driveShootIntakeThree = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake3,intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
+                .setBrakingStart(0.6)
+                .setBrakingStrength(0.4)
                 .build();
         driveIntakeThreeShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeThree, shootPose))
@@ -103,7 +110,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
                     follower.followPath(driveStartShootClose, true);
-                    launchMotor.setPower(launchPowNorm);  // Start flywheel early
+                    launchMotor.setVelocity(launchTargetTicks);  // Start flywheel early
                     isShooting = true;
                     trigger.setPosition(triggerStartPos);
                 }
@@ -115,8 +122,8 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 2.5) {
-                    launchMotor.setPower(launchPowNorm);
+                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -144,7 +151,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case DRIVE_INTAKEONE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPowNorm);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
 
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_1);
@@ -154,9 +161,9 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case SHOOT_SAMPLES_1:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() < 1) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPowNorm);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -184,7 +191,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case DRIVE_INTAKETWO_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPowNorm);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
                     intakeMotor.setPower(0);
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_2);
@@ -194,9 +201,9 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case SHOOT_SAMPLES_2:
                 // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < 0.5) {
+                if (pathTimer.getElapsedTimeSeconds() < 1) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPowNorm);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -209,13 +216,15 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
                     launchMotor.setPower(0);
+                    telemetry.addLine("The line right after this is changing the cadse to shootpose to intake 3");
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKETHREE);
                 }
                 break;
 
             case DRIVE_SHOOTPOS_INTAKETHREE:
+                telemetry.addLine("I MADE IT LOOK AT ME WHY DID THE CODE STOP HERE");
                 // Keep intake running while driving
-                if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
+                if (!follower.isBusy()) {
 
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeThreeShoot, true);
@@ -225,7 +234,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
             case DRIVE_INTAKETHREE_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPowNorm);  // Spin up flywheel
+                    launchMotor.setVelocity(launchTargetTicks);  // Spin up flywheel
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES_3);
                     shotsFired = 0;
@@ -236,7 +245,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
                 // Wait for flywheel to spin up
                 if (pathTimer.getElapsedTimeSeconds() < 0.5) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPowNorm);
+                    launchMotor.setVelocity(launchTargetTicks);
                     break;
                 }
 
@@ -264,34 +273,34 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
 
     private void shootOneShot() {
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        if (shotsFired < 1 ){
-            launchMotor.setPower(launchPowFirst);
-        }
-        else {
-            launchMotor.setPower(launchPowNorm);
-        }
-        // Each shot cycle takes ~1'8 seconds
-        double cycleTime = elapsed % 1.8;
-        if (cycleTime <= 0.9) {
+
+        launchMotor.setVelocity(launchTargetTicks);
+        // Each shot cycle takes ~0.8 seconds
+        double cycleTime = elapsed % 0.8;
+        if (cycleTime <= 0.1) {
             telemetry.addLine("Waiting");
         }
-        else if (0.9 < cycleTime && cycleTime < 1.35) {
+        else if (0.1 < cycleTime && cycleTime < 0.2 && shotsFired < 1) {
+            transferMotor.setPower(1);
+            telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
+        }
+        else if (0.2 < cycleTime && cycleTime < 0.5) {
             // Move trigger to shoot position and run transfer
 
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 1.5) {
+        else if (cycleTime < 0.65) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 1.78) {
+        else if (cycleTime < 0.75) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
         else {
             // Wait before next shot
-            if (elapsed > (shotsFired + 1) * 1.8) {
+            if (elapsed > (shotsFired + 1) * 0.8) {
                 shotsFired++;
             }
         }
@@ -311,7 +320,7 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
         shootTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
 
-        launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        launchMotor = hardwareMap.get(DcMotorEx.class, "launch_motor");
         transferMotor = hardwareMap.get(DcMotor.class, "transfer");
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         trigger = hardwareMap.get(Servo.class, "Trigger");
@@ -320,6 +329,8 @@ public class pedroAutoCloseRed_FastShooting extends OpMode{
         trigger.setDirection(Servo.Direction.FORWARD);
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         trigger.setPosition(triggerStartPos);
 

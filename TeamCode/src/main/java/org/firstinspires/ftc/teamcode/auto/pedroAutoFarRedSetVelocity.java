@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -6,33 +7,39 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
-@Configurable
-@Autonomous(name="PedroAutoFarBlueNo3", group="Autonomous")
-public class pedroAutoFarBlueNo3 extends OpMode{
-    private DcMotor launchMotor = null;
+@Disabled
+@Autonomous(name="PedroAutoFarRedSetVelocity", group="Autonomous")
+public class pedroAutoFarRedSetVelocity extends OpMode{
+    private DcMotorEx launchMotor = null;
     private DcMotor transferMotor = null;
     private Servo trigger = null;
     private DcMotor intakeMotor = null;
     private Follower follower;
     private Timer pathTimer, opModeTimer, shootTimer;
-    public static double launchPower = 0.91;
-    public static double launchPower23 = 0.85;
+
+    public static int TARGET_RPM = 2187;
+    public static double TICKS_PER_REV = 383.6;
+    public static double IDLE_RPM = 1000;
+    public static double oneShot_Shoot_time = 2.3;
+    //public static double wait_time = 0.85; We use smart waiting instead
+
+    private double getLaunchTargetTicks() {
+        return (TARGET_RPM * TICKS_PER_REV) / 60.0;
+    }
 
     // Servo positions (servos use 0.0 to 1.0)
-    public static double triggerStartPos = 0.11;
-    public static double triggerShootPos = 0.38;  // Adjust this value based on your mechanism
-    public static double shootAngle = 65.4;
+    private double triggerStartPos = 0.11;
+    private double triggerShootPos = 0.4;  // Adjust this value based on your mechanism
 
-    private int shotsFired = 1;
+    private int shotsFired = 0;
     private boolean isShooting = false;
 
     public enum PathState{
@@ -46,15 +53,14 @@ public class pedroAutoFarBlueNo3 extends OpMode{
     }
 
     PathState pathState;
-    private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90)).mirror();
-    private final Pose shootPose = new Pose(86.7, 20.3, Math.toRadians(shootAngle)).mirror();
-    private final Pose intakeThree = new Pose(140.08206455817657, 34.28571428571429, Math.toRadians(0)).mirror();
-    private final Pose intakeN = new Pose(142.57660626029653, 9.043956043956046, Math.toRadians(0)).mirror();
+    private final Pose startPose = new Pose(87.47252747252746, 8, Math.toRadians(90));
+    private final Pose shootPose = new Pose(87, 8, Math.toRadians(70));
+    private final Pose intakeThree = new Pose(133.43956043956044, 34.28571428571429, Math.toRadians(0));
+    private final Pose intakeN = new Pose(133.36263736263737, 9.043956043956046, Math.toRadians(0));
 
     private PathChain driveStartShootFar;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
     private PathChain driveShootIntakeN, driveIntakeNShoot;
-    public static double spinUpTime = 0.2;
 
     public void buildPaths(){
         // Initial paths
@@ -68,7 +74,7 @@ public class pedroAutoFarBlueNo3 extends OpMode{
                 .build();
         driveShootIntakeN = follower.pathBuilder()
                 .addPath(new BezierLine(shootPose, intakeN))
-                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeN.getHeading(), 0.6)
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeN.getHeading())
                 .build();
         driveIntakeNShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeN, shootPose))
@@ -76,7 +82,7 @@ public class pedroAutoFarBlueNo3 extends OpMode{
                 .build();
 
         // Intake 2 paths with control point
-        Pose controlPointShootToIntake3 = new Pose(82.08791208791206, 40.95604395604395, Math.toRadians(0)).mirror();
+        Pose controlPointShootToIntake3 = new Pose(82.08791208791206, 40.95604395604395, Math.toRadians(0));
         driveShootIntakeThree = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, controlPointShootToIntake3, intakeThree))
                 .setConstantHeadingInterpolation(intakeThree.getHeading())
@@ -84,38 +90,49 @@ public class pedroAutoFarBlueNo3 extends OpMode{
     }
 
     public void statePathUpdate(){
+        double currentVel = launchMotor.getVelocity();
+        double targetVel = getLaunchTargetTicks();
         switch(pathState){
             case DRIVE_STARTPOS_SHOOTPOS:
                 if (!isShooting) {
                     follower.followPath(driveStartShootFar, true);
-                    launchMotor.setPower(launchPower);  // Start flywheel early                    isShooting = true;
-                    trigger.setPosition(triggerStartPos);
+                    launchMotor.setVelocity(getLaunchTargetTicks());  // Start flywheel early
                     isShooting = true;
+                    trigger.setPosition(triggerStartPos);
                 }
                 if (!follower.isBusy()) {
                     setPathState(PathState.SHOOT_PRELOAD);
-                    shotsFired = 1;
+                    shotsFired = 0;
                 }
                 break;
 
             case SHOOT_PRELOAD:
                 // Wait a moment for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
-                    launchMotor.setPower(launchPower);
-                    break;
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
-                if (shotsFired < 2) {
+                if (shotsFired < 3) {
                     shootOneShot();
                 } else {
                     // Done shooting, move to intake 3
-                    //follower.followPath(driveShootIntakeThree, true);
-                    follower.followPath(driveShootIntakeN, true);
+                    follower.followPath(driveShootIntakeThree, true);
+                    //follower.followPath(driveShootIntakeN, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
-                    //setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_3);
-                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
+                    launchMotor.setVelocity(IDLE_RPM);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_3);
+                    //setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
                 }
                 break;
 
@@ -130,41 +147,54 @@ public class pedroAutoFarBlueNo3 extends OpMode{
 
             case DRIVE_INTAKE_3_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    launchMotor.setVelocity(getLaunchTargetTicks());  // Spin up flywheel
 
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES);
-                    shotsFired = 1;
+                    shotsFired = 0;
                 }
                 break;
 
             case SHOOT_SAMPLES:
-                // Wait for flywheel to spin up
-                if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {
+                // Failsafe: If we've been in this state for > 4 seconds, just move on
+                if (pathTimer.getElapsedTimeSeconds() > 4 * oneShot_Shoot_time) {
+                    // Force transition logic here
+                    follower.followPath(driveShootIntakeN, true);
+                    intakeMotor.setPower(1);
+                    transferMotor.setPower(-1);
+                    launchMotor.setVelocity(IDLE_RPM);
+                    setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
+                }
+
+                // Check if we are within 5% of target speed
+                currentVel = launchMotor.getVelocity();
+                targetVel = getLaunchTargetTicks();
+
+                // Only wait if we are spinning too slow
+                if (currentVel < targetVel * 0.95) {
                     intakeMotor.setPower(0);
-                    launchMotor.setPower(launchPower);
-                    break;
+                    launchMotor.setVelocity(targetVel);
+                    // Add telemetry so you know it's waiting on speed
+                    telemetry.addData("Status", "Spinning Up..."); 
+                    telemetry.addData("Current RPM", (currentVel * 60) / TICKS_PER_REV);
+                    break; 
                 }
 
                 // Fire 3 shots
-                if (shotsFired < 2) {
+                if (shotsFired < 3) {
                     shootOneShot();
                 } else {
                     // Done shooting, move to intake N
                     follower.followPath(driveShootIntakeN, true);
                     intakeMotor.setPower(1);
                     transferMotor.setPower(-1);
+                    launchMotor.setVelocity(IDLE_RPM);
                     setPathState(PathState.DRIVE_SHOOTPOS_INTAKE_N);
                 }
                 break;
 
             case DRIVE_SHOOTPOS_INTAKE_N:
                 // Keep intake running while driving
-                if (pathTimer.getElapsedTimeSeconds() > 3.0) {
-                    transferMotor.setPower(-1);
-                    follower.followPath(driveIntakeNShoot, true);
-                    setPathState(PathState.DRIVE_INTAKE_N_SHOOTPOS);
-                }
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 1.0) {
                     transferMotor.setPower(-1);
                     follower.followPath(driveIntakeNShoot, true);
@@ -174,11 +204,11 @@ public class pedroAutoFarBlueNo3 extends OpMode{
 
             case DRIVE_INTAKE_N_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    launchMotor.setPower(launchPower);  // Spin up flywheel
+                    launchMotor.setVelocity(getLaunchTargetTicks());  // Spin up flywheel
                     intakeMotor.setPower(0);
                     transferMotor.setPower(0);
                     setPathState(PathState.SHOOT_SAMPLES);
-                    shotsFired = 1;
+                    shotsFired = 0;
                 }
                 break;
 
@@ -189,36 +219,34 @@ public class pedroAutoFarBlueNo3 extends OpMode{
     }
 
     private void shootOneShot() {
-        // Check if we're done before starting any shot logic
-        if (shotsFired >= 3) {
-            return;
-        }
-
         double elapsed = pathTimer.getElapsedTimeSeconds();
-        launchMotor.setPower(launchPower);
-
-        double cycleTime = elapsed % 1.5;
-        double shots = elapsed / 1.5;
-        if (shots > 1) {
-            launchMotor.setPower(launchPower23);
-        }
-        if (cycleTime <= 0.4) {
+        launchMotor.setVelocity(getLaunchTargetTicks());
+        // Each shot cycle takes ~oneShot_Shoot_time seconds
+        double cycleTime = elapsed % oneShot_Shoot_time;
+        if (cycleTime <= 0.1*oneShot_Shoot_time) {
             telemetry.addLine("Waiting");
         }
-        else if (0.4 < cycleTime && cycleTime < 0.9) {
+        //else if (1.7 < cycleTime && cycleTime < 1.8 && shotsFired < 1) {
+        //    transferMotor.setPower(1);
+        //    telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
+        //}
+        else if (cycleTime < 0.6 * oneShot_Shoot_time) {
+            // Move trigger to shoot position and run transfer
+
             transferMotor.setPower(1);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Firing");
         }
-        else if (cycleTime < 1.1) {
+        else if (cycleTime < 0.84 * oneShot_Shoot_time) {
             trigger.setPosition(triggerShootPos);
             transferMotor.setPower(0);
         }
-        else if (cycleTime < 1.25) {
+        else if (cycleTime < 0.96 * oneShot_Shoot_time) {
             trigger.setPosition(triggerStartPos);
             telemetry.addLine("Shot " + (shotsFired + 1) + ": Resetting");
         }
         else {
-            if (elapsed > (shotsFired + 1) * 1.5) {
+            // Wait before next shot
+            if (elapsed > (shotsFired + 1) * oneShot_Shoot_time) {
                 shotsFired++;
             }
         }
@@ -238,7 +266,7 @@ public class pedroAutoFarBlueNo3 extends OpMode{
         shootTimer = new Timer();
         follower = Constants.createFollower(hardwareMap);
 
-        launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        launchMotor = hardwareMap.get(DcMotorEx.class, "launch_motor");
         transferMotor = hardwareMap.get(DcMotor.class, "transfer");
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         trigger = hardwareMap.get(Servo.class, "Trigger");
@@ -248,6 +276,16 @@ public class pedroAutoFarBlueNo3 extends OpMode{
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
 
+        launchMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        /*
+        launchMotor.setVelocityPIDFCoefficients(
+                0.0,   // kP (start at 0) -> 0 is a terrible idea, regular PIDF is okay, tune if absolutely necesaary
+                0.0,   // kI
+                0.0,   // kD
+                13.5   // kF (starting point for goBILDA 6000 RPM)
+        );
+        */
         trigger.setPosition(triggerStartPos);
 
         buildPaths();
@@ -263,6 +301,14 @@ public class pedroAutoFarBlueNo3 extends OpMode{
     public void loop(){
         follower.update();
         statePathUpdate();
+
+        double velocity = launchMotor.getVelocity();
+        double rpm = (velocity * 60) / TICKS_PER_REV;
+        
+        telemetry.addData("Shooter RPM", rpm);
+        telemetry.addData("Target RPM", TARGET_RPM);
+        telemetry.addData("Error", TARGET_RPM - rpm); // helpful for tuning
+
         telemetry.addData("path state", pathState.toString());
         telemetry.addData("shots fired", shotsFired);
         telemetry.addData("x", follower.getPose().getX());

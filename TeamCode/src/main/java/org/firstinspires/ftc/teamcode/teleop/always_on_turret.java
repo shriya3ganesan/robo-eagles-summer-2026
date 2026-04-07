@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -40,9 +40,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-@TeleOp(name="AprilTagDTalwayson", group="Linear OpMode")
+@TeleOp(name="always_on_turret", group="Linear OpMode")
 
-public class AprilTagDT_alwaysOn extends LinearOpMode {
+public class always_on_turret extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -58,8 +58,11 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     private DcMotor backRightDrive = null;
     private DcMotor intakeMotor = null;
     private DcMotor launchMotor = null;
-    private Servo Trigger = null;
-    private Servo push = null;
+    private DcMotor turretEncoder = null;
+
+    private Servo turretServo = null;
+
+    private Servo push = null;private Servo Trigger = null;
     private DcMotor transferMotor = null;
     GoBildaPinpointDriver pinpoint;
     private Limelight3A limelight;
@@ -70,7 +73,15 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
         FIRING,
         RESETTING
     }
+
     private LaunchState launchState = LaunchState.IDLE;
+
+    private enum TurretState {
+        NORMAL,
+        FORCE_BACK
+    }
+
+    private TurretState turretState = TurretState.NORMAL;
 
     // Intake jitter states
     private enum IntakeJitterState {
@@ -111,6 +122,37 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     private final double QUICK_SHOT_POWER = 0.5;   // Left trigger - quick shot
     private final double POWER_SHOT_POWER = 0.8;   // Right trigger - power shot
 
+    // Turret Motor constants
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ---------------------------- TO BE CHANGED -----------------------------
+    // ---------------------BASED ON ROBOT SPECIFICS/TUNING--------------------
+    // ==============================BELOW CODE================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    private final double TICKS_PER_REV = 8192.0;
+    private final double MAX_TURRET_DEGREES = 270.0;
+    private final double TURRET_CENTER_TOLERANCE = 5.0;
+    private final double FORCE_BACK_POWER = 0.5;
+    private final double FIND_APRILTAG_POWER = 0.15;
+    private final double TURRET_GEAR_RATIO = 1.0; // 1.0 if encoder on turret shaft, actual ratio if on servo shaft
+    private double forceBackStartDegrees = 0.0;
+
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+    // ---------------------------- TO BE CHANGED -----------------------------
+    // ---------------------BASED ON ROBOT SPECIFICS/TUNING--------------------
+    // ============================= ABOVE CODE================================
+    // ========================================================================
+    // ========================================================================
+    // ========================================================================
+
     // Triple shot constants
     private final int TRIPLE_SHOT_COUNT = 3;
     private final double POWER_INCREASE_PER_SHOT = 0.1;
@@ -131,7 +173,7 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
     private final double TAG_LOCK_KP = 0.05;        // Proportional gain for rotation
     private final double TAG_LOCK_TOLERANCE = 0.7;  // Degrees - how close is "locked on"
     private final double TAG_LOCK_MIN_POWER = 0.00; // Minimum rotation power
-    private final double TAG_LOCK_MAX_POWER = 0.4;  // Maximum rotation power
+    private final double TAG_LOCK_MAX_POWER = 0.5;  // Maximum rotation power
 
     private double tagX = 0.0;
     private double tagY = 0.0;
@@ -162,6 +204,8 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         intakeMotor = hardwareMap.get(DcMotor.class, "intake_motor");
         launchMotor = hardwareMap.get(DcMotor.class, "launch_motor");
+        turretEncoder = hardwareMap.get(DcMotor.class, "turret_encoder");
+        turretServo = hardwareMap.get(Servo.class, "turret_servo");
         Trigger = hardwareMap.get(Servo.class, "Trigger");
         push = hardwareMap.get(Servo.class, "push");
         transferMotor = hardwareMap.get(DcMotor.class, "transfer");
@@ -179,6 +223,9 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         Trigger.setDirection(Servo.Direction.FORWARD);
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        turretEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status: ", "Initialized");
@@ -212,8 +259,7 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
 
             // Set launch motor power (triple shot overrides this when active)
             if (tripleShotState != TripleShotState.IDLE) {
-                // Triple shot is controlling the launch motor
-                // Power is set by the triple shot state machine
+                telemetry.addLine("Tripe Shot Inactive");
             } else if (analogShooter) {
                 launchMotor.setPower(currentLaunchPower);
             } else {
@@ -245,51 +291,51 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
             double lateral =  gamepad1.left_stick_x;
             double yaw = gamepad1.right_stick_x;
 
-            // ===== APRILTAG LOCK-ON FEATURE =====
-            // Left bumper activates AprilTag lock-on mode
-            if (gamepad1.left_bumper && result != null && result.isValid()) {
-                // Get horizontal offset from Limelight (tx)
-                double tx = result.getTx();
+            // ===== TURRET CONTROL =====
+            double turretDegrees = getTurretDegrees();
 
-                // Check if we're within tolerance
-                isLockedOn = Math.abs(tx) < TAG_LOCK_TOLERANCE;
-
-                // Calculate proportional correction
-                double rotationCorrection = tx * TAG_LOCK_KP;
-
-                // Add deadband - don't correct if we're close enough
-                if (isLockedOn) {
-                    rotationCorrection = 0.0;  // Stop correcting when locked on
-                }
-                else {
-                    // Clamp the correction to min/max power
-                    rotationCorrection = Range.clip(rotationCorrection, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
-
-                    // Apply minimum power if not locked on
-                    if (Math.abs(rotationCorrection) < TAG_LOCK_MIN_POWER) {
-                        rotationCorrection = TAG_LOCK_MIN_POWER * Math.signum(rotationCorrection);
+            switch (turretState) {
+                case NORMAL:
+                    if (Math.abs(turretDegrees) >= MAX_TURRET_DEGREES) {
+                        turretState = TurretState.FORCE_BACK;
+                        forceBackStartDegrees = turretDegrees;
+                    } else if (result != null && result.isValid()) {
+                        double tx = result.getTx();
+                        if (Math.abs(tx) < TAG_LOCK_TOLERANCE) {
+                            turretServo.setPosition(0.5);
+                        } else {
+                            double power = Range.clip(tx * TAG_LOCK_KP, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
+                            turretServo.setPosition(0.5 + power);
+                        }
+                    } else {
+                        if (Math.abs(turretDegrees) <= TURRET_CENTER_TOLERANCE) {
+                            turretServo.setPosition(0.5 + FIND_APRILTAG_POWER);
+                        } else {
+                            turretServo.setPosition(0.5 - Math.signum(turretDegrees) * FIND_APRILTAG_POWER);
+                        }
                     }
-                }
+                    break;
 
-                // Override yaw with our correction
-                yaw = rotationCorrection;
-
-                tagVisible = true;
-                telemetry.addData("TAG LOCK", "ACTIVE");
-                telemetry.addData("Lock Status", isLockedOn ? "🟢 LOCKED ON" : "🟡 ALIGNING...");
-                telemetry.addData("TX Offset", "%.2f", tx);
-                telemetry.addData("Yaw Correction", "%.2f", yaw);
+                case FORCE_BACK:
+                    double degreesUnwound = Math.abs(turretDegrees - forceBackStartDegrees);
+                    if (degreesUnwound >= 360.0) {
+                        turretServo.setPosition(0.5);
+                        turretState = TurretState.NORMAL;
+                    } else {
+                        double backPower = -Math.signum(forceBackStartDegrees) * FORCE_BACK_POWER;
+                        turretServo.setPosition(0.5 + backPower);
+                    }
+                    break;
             }
-            else {
-                // Normal manual control
-                yaw = gamepad1.right_stick_x;
-                tagVisible = false;
-                isLockedOn = false;
 
-                if (gamepad1.left_bumper) {
-                    telemetry.addData("Tag Lock", "No AprilTag visible");
-                }
-            }
+            // Update tag tracking variables
+            tagVisible = (result != null && result.isValid());
+            isLockedOn = tagVisible && Math.abs(result.getTx()) < TAG_LOCK_TOLERANCE;
+
+            telemetry.addData("Turret Degrees", "%.2f", turretDegrees);
+            telemetry.addData("Turret State", turretState);
+            telemetry.addData("TAG LOCK", tagVisible ? "ACTIVE" : "NO TARGET");
+            telemetry.addData("Lock Status", isLockedOn ? "LOCKED ON" : "ALIGNING...");
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             double frontLeftPower  = (axial + lateral + yaw) * 1.25;
@@ -544,6 +590,10 @@ public class AprilTagDT_alwaysOn extends LinearOpMode {
         double launchPower = MIN_LAUNCH_POWER + (normalizedDistance * (MAX_LAUNCH_POWER - MIN_LAUNCH_POWER));
 
         return launchPower;
+    }
+
+    private double getTurretDegrees() {
+        return (turretEncoder.getCurrentPosition() / TICKS_PER_REV) * 360.0 / TURRET_GEAR_RATIO;
     }
 
     public void configurePinpoint(){
