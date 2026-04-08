@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.robot.Vision;
 
 public abstract class CloseAuto extends BaseAuto {
-    protected Vision vision = new Vision(robot);
 
     protected Pose intakeOne, intakeTwo, intakeThree;
 
@@ -279,7 +278,9 @@ public abstract class CloseAuto extends BaseAuto {
     private void shootSequence() {
         isShooting = true;
         if (!isTargetLocked) {
-            follower.breakFollowing();
+            if (follower.isBusy()) {
+                follower.breakFollowing();
+            }
             lockOn();
         }
         if (pathTimer.getElapsedTimeSeconds() < spinUpTime) {

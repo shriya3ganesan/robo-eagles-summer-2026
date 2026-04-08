@@ -6,6 +6,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
+import org.firstinspires.ftc.teamcode.robot.Vision;
 
 public abstract class BaseAuto extends OpMode {
 
@@ -36,6 +37,8 @@ public abstract class BaseAuto extends OpMode {
     /** Run the state machine each loop */
     protected abstract void statePathUpdate();
 
+    protected Vision vision;
+
     /** Override in velocity autos to use setVelocity instead of setPower */
     protected void setLaunchPower(double power) {
         robot.launchMotor.setPower(power);
@@ -48,6 +51,8 @@ public abstract class BaseAuto extends OpMode {
         pathTimer   = new Timer();
         opModeTimer = new Timer();
         shootTimer  = new Timer();
+
+        vision = new Vision(robot);
 
         definePoses();
         robot.Trigger.setPosition(triggerStartPos);

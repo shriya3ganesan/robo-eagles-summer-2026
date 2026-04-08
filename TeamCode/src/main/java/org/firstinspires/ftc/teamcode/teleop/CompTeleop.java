@@ -74,7 +74,8 @@ public class CompTeleop extends LinearOpMode {
 
         drivetrain = new Drivetrain(robot);
 
-
+        vision = new Vision(robot);
+        vision.init();
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status: ", "Initialized");
@@ -87,8 +88,7 @@ public class CompTeleop extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        vision = new Vision(robot);
-        vision.init();
+
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
