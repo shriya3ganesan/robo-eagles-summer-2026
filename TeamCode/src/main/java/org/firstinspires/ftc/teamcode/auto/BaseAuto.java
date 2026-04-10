@@ -5,6 +5,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.robot.PoseStorage;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
 import org.firstinspires.ftc.teamcode.robot.Vision;
 
@@ -47,6 +48,7 @@ public abstract class BaseAuto extends OpMode {
     @Override
     public void init() {
         robot.init(hardwareMap);
+        robot.imu.resetYaw();
         follower    = Constants.createFollower(hardwareMap);
         pathTimer   = new Timer();
         opModeTimer = new Timer();
@@ -74,5 +76,12 @@ public abstract class BaseAuto extends OpMode {
         telemetry.addData("path time",   pathTimer.getElapsedTimeSeconds());
         telemetry.addData("shots fired", shotsFired);
         telemetry.update();
+        double currentFieldHeading = Math.toDegrees(follower.getPose().getHeading());
+
+        robot.limelight.updateRobotOrientation(currentFieldHeading);
+    }
+    @Override
+    public void stop() {
+        PoseStorage.currentPose = follower.getPose();
     }
 }

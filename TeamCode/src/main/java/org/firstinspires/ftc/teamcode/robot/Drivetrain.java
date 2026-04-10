@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import static org.firstinspires.ftc.teamcode.auto.FarAuto.shootAngle;
 
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -17,9 +18,15 @@ public class Drivetrain {
     public boolean autoDriving = false;
 
     public final Pose CLOSE_BLUE_SHOOT_POSE = new Pose(58.78, 84.27,  Math.toRadians(135));
+    public final Pose CLOSE_BLUE_INTAKE_POSE = new Pose(16.8,  59,     Math.toRadians(185));
+    public final Pose CLOSE_BLUE_INTAKE_CONTROL_POSE = new Pose(55.51, 54.81, Math.toRadians(185));
     public final Pose FAR_BLUE_SHOOT_POSE = new Pose(86.7, 20.3, Math.toRadians(shootAngle)).mirror();
+    public final Pose FAR_BLUE_INTAKE_POSE = new Pose(142.58, 9.04,  Math.toRadians(0)).mirror();
     public final Pose CLOSE_RED_SHOOT_POSE = new Pose(58.78, 84.27,  Math.toRadians(140)).mirror();
+    public final Pose CLOSE_RED_INTAKE_POSE = new Pose(16.8,  59,     Math.toRadians(185)).mirror();
+    public final Pose CLOSE_RED_INTAKE_CONTROL_POSE = new Pose(55.51, 54.81, Math.toRadians(185)).mirror();
     public final Pose FAR_RED_SHOOT_POSE = new Pose(86.7, 20.3, Math.toRadians(shootAngle));
+    public final Pose FAR_RED_INTAKE_POSE = new Pose(142.57660626029653, 9.043956043956046,  Math.toRadians(0));
 
     public Drivetrain(RobotHardware robot) {
         this.robot = robot;
@@ -79,6 +86,16 @@ public class Drivetrain {
                 .build();
 
         follower.followPath(path, false);
+        autoDriving = true;
+    }
+
+    public void startAutoDrive(Pose targetPose, Pose controlPoint) {
+        Pose currentPose = follower.getPose();
+        PathChain path = follower.pathBuilder()
+                .addPath(new BezierCurve(currentPose, controlPoint, targetPose))
+                .setLinearHeadingInterpolation(currentPose.getHeading(), targetPose.getHeading(), 0.6)
+                .build();
+        follower.followPath(path, true);
         autoDriving = true;
     }
 }

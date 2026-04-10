@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -30,10 +34,12 @@ public class RobotHardware {
     public GoBildaPinpointDriver pinpoint;
     public Limelight3A limelight;
     public VoltageSensor myControlHubVoltageSensor;
+    public IMU imu;
 
     public void init(HardwareMap hardwareMap) {
 
         // --- Hardware Map ---
+        IMU imu = hardwareMap.get(IMU.class, "imu");
         frontLeftDrive  = hardwareMap.get(DcMotor.class, "front_left_drive");
         backLeftDrive   = hardwareMap.get(DcMotor.class, "back_left_drive");
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
@@ -56,6 +62,13 @@ public class RobotHardware {
         launchMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         Trigger.setDirection(Servo.Direction.FORWARD);
         transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+
     }
     public void configurePinpoint(){
         pinpoint.setOffsets(-84.0, -168.0, DistanceUnit.MM);

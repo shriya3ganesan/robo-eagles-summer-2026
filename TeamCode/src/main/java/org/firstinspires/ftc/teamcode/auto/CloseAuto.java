@@ -248,7 +248,7 @@ public abstract class CloseAuto extends BaseAuto {
     }
     private void lockOn() {
         LLResult result = robot.limelight.getLatestResult();   // get vision data
-        vision.hasTarget = (result != null && result.isValid());
+        vision.setHasTarget(result != null && result.isValid());
 
         // Use your existing vision method to get correction
         double correction = vision.getYaw(0.0, true, result);
@@ -263,7 +263,7 @@ public abstract class CloseAuto extends BaseAuto {
         robot.backRightDrive.setPower(turnPower);
 
         // Check if locked on (vision class sets its own isLockedOn flag)
-        if (vision.isLockedOn) {
+        if (vision.isLockedOn()) {
             isTargetLocked = true;
             robot.frontLeftDrive.setPower(0);
             robot.frontRightDrive.setPower(0);
