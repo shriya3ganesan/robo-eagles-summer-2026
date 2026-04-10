@@ -1,8 +1,15 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 
 
 
@@ -19,6 +26,7 @@ public class Vision {
     // State
     public boolean hasTarget   = false;
     public boolean isLockedOn  = false;
+    public Pose startPose = null;
     private double  distance    = 0.0;
 
     public Vision(RobotHardware robot) {
@@ -70,6 +78,37 @@ public class Vision {
 
         }
     }
+
+    public boolean setPose() {
+        LLResult result = robot.limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            startPose = limelightToPedroPose(result.getBotpose());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    // |============================================|
+    // |--------------- IMPORTANT! -----------------|
+    // |                                            |
+    // |_____________ Check Accuracy _______________|
+    // |                                            |
+    // |--------------- IMPORTANT! -----------------|
+    // |============================================|
+    public Pose limelightToPedroPose(Pose3D botpose) {
+        // Convert meters to inches and shift origin from center to bottom-left
+        double pedroX = (botpose.getPosition().x * 39.3701) + 72.0;
+        double pedroY = (botpose.getPosition().y * 39.3701) + 72.0;
+
+        // Heading - verify sign at team meeting by rotating robot and checking
+        double pedroHeading = Math.toRadians(botpose.getOrientation().getYaw(AngleUnit.DEGREES));
+
+        return new Pose(pedroX, pedroY, pedroHeading);
+    }
+
+
 
     public double distanceCalc(double ta) {
         return 72.06169 * Math.pow(ta, -0.509117);

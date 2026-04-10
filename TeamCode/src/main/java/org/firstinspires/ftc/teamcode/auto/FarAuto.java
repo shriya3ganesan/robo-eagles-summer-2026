@@ -17,6 +17,8 @@ public abstract class FarAuto extends BaseAuto {
 
     public static double launchPower23 = 0.85;
     public static double shootAngle    = 65.4;
+    private static int shootNTimes = 3;
+    private static int shotCycles = 0;
 
     private PathChain driveStartShootFar;
     private PathChain driveShootIntakeThree, driveIntakeThreeShoot;
@@ -41,9 +43,12 @@ public abstract class FarAuto extends BaseAuto {
     public enum PathState {
         DRIVE_STARTPOS_SHOOTPOS,
         SHOOT_PRELOAD,
-        DRIVE_SHOOTPOS_INTAKE_3, DRIVE_INTAKE_3_SHOOTPOS,
+        DRIVE_SHOOTPOS_INTAKE_3,
+        DRIVE_INTAKE_3_SHOOTPOS,
         SHOOT_SAMPLES,
-        DRIVE_SHOOTPOS_INTAKE_N, DRIVE_INTAKE_N_SHOOTPOS
+        DRIVE_SHOOTPOS_INTAKE_N,
+        DRIVE_INTAKE_N_SHOOTPOS,
+        DONE
     }
 
     protected PathState pathState = PathState.DRIVE_STARTPOS_SHOOTPOS;
@@ -141,9 +146,20 @@ public abstract class FarAuto extends BaseAuto {
 
             case DRIVE_INTAKE_N_SHOOTPOS:
                 if (!follower.isBusy()) {
-                    setLaunchPower(launchPower); robot.intakeMotor.setPower(0); robot.transferMotor.setPower(0);
-                    setPathState(PathState.SHOOT_SAMPLES); shotsFired = 0;
+                    setLaunchPower(launchPower);
+                    robot.intakeMotor.setPower(0);
+                    robot.transferMotor.setPower(0);
+                    setPathState(PathState.SHOOT_SAMPLES);
+                    shotsFired = 0;
+                    ++shotCycles;
+                    if (shotCycles >= shootNTimes || (!skipIntakeThree() && shotCycles >= shootNTimes - 1)) {
+                        setPathState(PathState.DONE);
+                    }
                 }
+                break;
+
+            case DONE:
+                telemetry.addLine("Autonomous Complete!");
                 break;
 
             default:

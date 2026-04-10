@@ -32,23 +32,20 @@ package org.firstinspires.ftc.teamcode.teleop;
 import static org.firstinspires.ftc.teamcode.robot.Launcher.TRIGGER_START_POS;
 
 import com.bylazar.configurables.annotations.Configurable;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.robot.Intake;
 import org.firstinspires.ftc.teamcode.robot.Launcher;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
 import org.firstinspires.ftc.teamcode.robot.Drivetrain;
 import org.firstinspires.ftc.teamcode.robot.Vision;
 
-@TeleOp(name="CompTeleop", group="Linear OpMode")
+@TeleOp(name="CompTeleopRed", group="Linear OpMode")
 @Configurable
-public class CompTeleop extends LinearOpMode {
+public class CompTeleopRed extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -59,6 +56,15 @@ public class CompTeleop extends LinearOpMode {
     private Vision vision = null;
 
     public static double PUSH_START_POS = 0;
+
+    private enum AutoDriveState {
+        MANUAL,
+        PATH_FOLLOWING,
+        LOCKING_ON,
+        LOCKED
+    }
+
+    private AutoDriveState autoDriveState = AutoDriveState.MANUAL;
 
     @Override
     public void runOpMode() {
@@ -73,9 +79,11 @@ public class CompTeleop extends LinearOpMode {
         launcher.init();
 
         drivetrain = new Drivetrain(robot);
+        drivetrain.init(hardwareMap);
 
         vision = new Vision(robot);
         vision.init();
+
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status: ", "Initialized");
@@ -85,30 +93,95 @@ public class CompTeleop extends LinearOpMode {
         robot.Trigger.setPosition(TRIGGER_START_POS);
         robot.push.setPosition(PUSH_START_POS);
 
+        telemetry.addData("Status", "Waiting for limelight...");
+        telemetry.update();
+
+        while (!isStarted()) {
+            if (vision.setPose()) {
+                drivetrain.follower.setPose(vision.startPose);
+                telemetry.addData("Status", "Localized!");
+                telemetry.addData("Pose", "%.1f, %.1f", vision.startPose.getX(), vision.startPose.getY());
+            } else {
+                telemetry.addData("Status", "No tag visible - aim at AprilTag");
+            }
+            telemetry.update();
+        }
+
         waitForStart();
         runtime.reset();
 
-
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            drivetrain.follower.update();
             LLResult result = vision.update();
             double distance = vision.getDistance();
             double voltage = robot.myControlHubVoltageSensor.getVoltage();
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw = vision.getYaw(gamepad1.right_stick_x, gamepad1.left_bumper, result);
-            if (!result.isValid()) {
+            if (result != null && !result.isValid()) {
                 telemetry.addLine("Not Locked On");
             } else {
                 telemetry.addLine("Locked On");
             }
 
-            telemetry.addData("Voltage: ", voltage);
+            // Start auto drive on button press
+            if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && !gamepad1.a) {
+                drivetrain.startAutoDrive(drivetrain.CLOSE_RED_SHOOT_POSE);
+                autoDriveState = AutoDriveState.PATH_FOLLOWING;
+            } else if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && gamepad1.a) {
+                drivetrain.startAutoDrive(drivetrain.FAR_RED_SHOOT_POSE);
+                autoDriveState = AutoDriveState.PATH_FOLLOWING;
+            }
 
-            drivetrain.drive(axial, lateral, yaw);
+            // Cancel auto drive if driver touches the joystick
+            if (drivetrain.autoDriving && (Math.abs(gamepad1.left_stick_y) > 0.1 ||
+                    Math.abs(gamepad1.left_stick_x) > 0.1 ||
+                    Math.abs(gamepad1.right_stick_x) > 0.1)) {
+                drivetrain.cancelAutoDrive();
+                autoDriveState = AutoDriveState.MANUAL;
+            }
 
-            launcher.update(gamepad2.right_trigger, gamepad2.y, vision.hasTarget(), distance, voltage);            intake.update(gamepad2.a, gamepad2.b, gamepad1.y, gamepad2.x, launcher.isTripleShotActive());
+            double yaw = 0;
+
+            switch (autoDriveState) {
+                case MANUAL:
+                    double axial   = -gamepad1.left_stick_y;
+                    double lateral =  gamepad1.left_stick_x;
+                    yaw = vision.getYaw(gamepad1.right_stick_x, gamepad1.left_bumper, result);
+                    drivetrain.drive(axial, lateral, yaw);
+                    break;
+
+                case PATH_FOLLOWING:
+                    telemetry.addLine("Following Path");
+                    if (!drivetrain.follower.isBusy()) {
+                        telemetry.addLine("Arrived");
+                        autoDriveState = AutoDriveState.LOCKING_ON;
+                    }
+                    break;
+
+                case LOCKING_ON:
+                    if (!vision.isLockedOn) {
+                        yaw = vision.getYaw(0.0, true, result);
+                        drivetrain.drive(0, 0, yaw);
+                        telemetry.addLine("Aligning");
+                    } else {
+                        telemetry.addLine("Locked On");
+                        drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
+                        autoDriveState = AutoDriveState.LOCKED;
+                    }
+                    break;
+
+                case LOCKED:
+                    drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
+                    launcher.update(0.0, true, vision.hasTarget(), distance, voltage);
+                    telemetry.addLine("Shooting");
+                    if (!launcher.isTripleShotActive()) {
+                        telemetry.addLine("Done");
+                        drivetrain.cancelAutoDrive();
+                        autoDriveState = AutoDriveState.MANUAL;
+                    }
+                    break;
+            }
+
+            intake.update(gamepad2.a, gamepad2.b, gamepad1.y, gamepad2.x, launcher.isTripleShotActive());
             intake.setTransfer(gamepad2.right_bumper, gamepad2.left_bumper);
 
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", robot.frontLeftDrive.getPower(), robot.frontRightDrive.getPower());
