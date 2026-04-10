@@ -59,12 +59,27 @@ public class CompTeleopRed extends LinearOpMode {
 
     private enum AutoDriveState {
         MANUAL,
-        PATH_FOLLOWING,
+        DRIVING_TO_SHOOT,
         LOCKING_ON,
-        LOCKED
+        SHOOTING,
+        DRIVING_TO_INTAKE,
+        INTAKING,
     }
 
     private AutoDriveState autoDriveState = AutoDriveState.MANUAL;
+    private ElapsedTime autoDriveTimer = new ElapsedTime();
+
+    private void setAutoDriveState(AutoDriveState newState) {
+        autoDriveState = newState;
+        autoDriveTimer.reset();
+    }
+    private double autoDriveTime = 5.5;
+    private double lockOnTime = 2.0;
+    private double shootTime = 6.5;
+    private double intakeTime = 2.0;
+    private boolean loopWantedClose = false;
+    private boolean loopWantedFar = false;
+
 
     @Override
     public void runOpMode() {
@@ -116,73 +131,148 @@ public class CompTeleopRed extends LinearOpMode {
             LLResult result = vision.update();
             double distance = vision.getDistance();
             double voltage = robot.myControlHubVoltageSensor.getVoltage();
-            if (result != null && !result.isValid()) {
+            if (result == null || !result.isValid()) {
                 telemetry.addLine("Not Locked On");
             } else {
                 telemetry.addLine("Locked On");
             }
 
             // Start auto drive on button press
-            if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && !gamepad1.a) {
+            if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && !gamepad1.a && !gamepad1.b) {
                 drivetrain.startAutoDrive(drivetrain.CLOSE_RED_SHOOT_POSE);
-                autoDriveState = AutoDriveState.PATH_FOLLOWING;
-            } else if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && gamepad1.a) {
+                setAutoDriveState(AutoDriveState.DRIVING_TO_SHOOT);
+            } else if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && gamepad1.a && !gamepad1.b) {
                 drivetrain.startAutoDrive(drivetrain.FAR_RED_SHOOT_POSE);
-                autoDriveState = AutoDriveState.PATH_FOLLOWING;
+                setAutoDriveState(AutoDriveState.DRIVING_TO_SHOOT);
+            } else if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && !gamepad1.a && gamepad1.b) {
+                drivetrain.startAutoDrive(drivetrain.CLOSE_RED_SHOOT_POSE);
+                setAutoDriveState(AutoDriveState.DRIVING_TO_SHOOT);
+                loopWantedClose = true;
+            } else if (gamepad1.right_bumper && (autoDriveState == AutoDriveState.MANUAL) && gamepad1.a && gamepad1.b) {
+                drivetrain.startAutoDrive(drivetrain.FAR_RED_SHOOT_POSE);
+                setAutoDriveState(AutoDriveState.DRIVING_TO_SHOOT);
+                loopWantedFar = true;
             }
 
-            // Cancel auto drive if driver touches the joystick
+                // Cancel auto drive if driver touches the joystick
             if (drivetrain.autoDriving && (Math.abs(gamepad1.left_stick_y) > 0.1 ||
                     Math.abs(gamepad1.left_stick_x) > 0.1 ||
                     Math.abs(gamepad1.right_stick_x) > 0.1)) {
                 drivetrain.cancelAutoDrive();
-                autoDriveState = AutoDriveState.MANUAL;
+                setAutoDriveState(AutoDriveState.MANUAL);
+                loopWantedClose = false;
+                loopWantedFar = false;
             }
 
             double yaw = 0;
 
             switch (autoDriveState) {
                 case MANUAL:
+                    loopWantedClose = false;
+                    loopWantedFar = false;
                     double axial   = -gamepad1.left_stick_y;
                     double lateral =  gamepad1.left_stick_x;
                     yaw = vision.getYaw(gamepad1.right_stick_x, gamepad1.left_bumper, result);
                     drivetrain.drive(axial, lateral, yaw);
                     break;
 
-                case PATH_FOLLOWING:
+                case DRIVING_TO_SHOOT:
                     telemetry.addLine("Following Path");
                     if (!drivetrain.follower.isBusy()) {
                         telemetry.addLine("Arrived");
-                        autoDriveState = AutoDriveState.LOCKING_ON;
+                        setAutoDriveState(AutoDriveState.LOCKING_ON);
+                    }
+                    if (autoDriveTimer.seconds() > autoDriveTime) {
+                        telemetry.addLine("Auto Drive Timeout");
+                        setAutoDriveState(AutoDriveState.MANUAL);
+                        drivetrain.cancelAutoDrive();
                     }
                     break;
 
                 case LOCKING_ON:
-                    if (!vision.isLockedOn) {
+                    if (!vision.isLockedOn()) {
                         yaw = vision.getYaw(0.0, true, result);
                         drivetrain.drive(0, 0, yaw);
                         telemetry.addLine("Aligning");
                     } else {
                         telemetry.addLine("Locked On");
-                        drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
-                        autoDriveState = AutoDriveState.LOCKED;
+                        if (result != null && result.isValid()) {
+                            drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
+                        }
+                        launcher.tripleShotStarted = false;
+                        setAutoDriveState(AutoDriveState.SHOOTING);
+                    }
+                    if (autoDriveTimer.seconds() > lockOnTime) {
+                        telemetry.addLine("Auto Lock Timeout");
+                        setAutoDriveState(AutoDriveState.MANUAL);
+                        drivetrain.cancelAutoDrive();
                     }
                     break;
 
-                case LOCKED:
-                    drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
+                case SHOOTING:
+                    if (result != null && result.isValid()) {
+                        drivetrain.follower.holdPoint(vision.limelightToPedroPose(result.getBotpose()));
+                    }
                     launcher.update(0.0, true, vision.hasTarget(), distance, voltage);
                     telemetry.addLine("Shooting");
-                    if (!launcher.isTripleShotActive()) {
+                    if (launcher.tripleShotStarted && !launcher.isTripleShotActive()) {
                         telemetry.addLine("Done");
-                        drivetrain.cancelAutoDrive();
-                        autoDriveState = AutoDriveState.MANUAL;
+                        if (!loopWantedClose && !loopWantedFar) {
+                            drivetrain.cancelAutoDrive();
+                            setAutoDriveState(AutoDriveState.MANUAL);
+                        } else if (loopWantedClose){
+                            drivetrain.startAutoDrive(drivetrain.CLOSE_RED_INTAKE_POSE, drivetrain.CLOSE_RED_INTAKE_CONTROL_POSE);
+                            setAutoDriveState(AutoDriveState.DRIVING_TO_INTAKE);
+                        } else if (loopWantedFar) {
+                            drivetrain.startAutoDrive(drivetrain.FAR_RED_INTAKE_POSE);
+                            setAutoDriveState(AutoDriveState.DRIVING_TO_INTAKE);
+                        }
                     }
+                    if (autoDriveTimer.seconds() > shootTime) {
+                        telemetry.addLine("TripleShot Timeout");
+                        setAutoDriveState(AutoDriveState.MANUAL);
+                        drivetrain.cancelAutoDrive();
+                    }
+                    break;
+
+                case DRIVING_TO_INTAKE:
+                    telemetry.addLine("Following Path");
+                    if (!drivetrain.follower.isBusy()) {
+                        telemetry.addLine("Arrived");
+                        setAutoDriveState(AutoDriveState.INTAKING);
+                    }
+                    if (autoDriveTimer.seconds() > autoDriveTime) {
+                        telemetry.addLine("Auto Drive Timeout");
+                        setAutoDriveState(AutoDriveState.MANUAL);
+                        drivetrain.cancelAutoDrive();
+                    }
+                    break;
+
+                case INTAKING:
+                    intake.update(true, false, false, false, false);
+                    intake.setTransfer(false, true);
+                    if (autoDriveTimer.seconds() > intakeTime) {
+                        if (loopWantedClose) {
+                            drivetrain.startAutoDrive(drivetrain.CLOSE_RED_SHOOT_POSE);
+                        } else if (loopWantedFar) {
+                            drivetrain.startAutoDrive(drivetrain.FAR_RED_SHOOT_POSE);
+                        }
+                        setAutoDriveState(AutoDriveState.DRIVING_TO_SHOOT);
+                    }
+                    break;
+
+                default:
+                    telemetry.addLine("Unknown State/ No State Set");
+                    setAutoDriveState(AutoDriveState.MANUAL);
+                    drivetrain.cancelAutoDrive();
                     break;
             }
 
-            intake.update(gamepad2.a, gamepad2.b, gamepad1.y, gamepad2.x, launcher.isTripleShotActive());
-            intake.setTransfer(gamepad2.right_bumper, gamepad2.left_bumper);
+            if (!drivetrain.autoDriving) {
+                intake.update(gamepad2.a, gamepad2.b, gamepad1.y, gamepad2.x, launcher.isTripleShotActive());
+                intake.setTransfer(gamepad2.right_bumper, gamepad2.left_bumper);
+                launcher.update(gamepad2.right_trigger, gamepad2.y, vision.hasTarget(), distance, voltage);
+            }
 
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", robot.frontLeftDrive.getPower(), robot.frontRightDrive.getPower());
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", robot.backLeftDrive.getPower(), robot.backRightDrive.getPower());

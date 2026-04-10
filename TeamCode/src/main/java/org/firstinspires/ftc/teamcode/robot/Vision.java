@@ -24,8 +24,8 @@ public class Vision {
     private static final double TAG_LOCK_MAX_POWER = 0.4;
 
     // State
-    public boolean hasTarget   = false;
-    public boolean isLockedOn  = false;
+    private boolean targetVisible   = false;
+    private boolean lockedOn  = false;
     public Pose startPose = null;
     private double  distance    = 0.0;
 
@@ -44,9 +44,9 @@ public class Vision {
      */
     public LLResult update() {
         LLResult result = robot.limelight.getLatestResult();
-        hasTarget = result != null && result.isValid();
+        targetVisible = result != null && result.isValid();
 
-        if (hasTarget) {
+        if (targetVisible) {
             distance = distanceCalc(result.getTa());
         }
 
@@ -59,11 +59,11 @@ public class Vision {
      * Otherwise returns the manual yaw unchanged.
      */
     public double getYaw(double manualYaw, boolean lockOnButton, LLResult result) {
-        if (lockOnButton && hasTarget && result != null) {
+        if (lockOnButton && targetVisible && result != null) {
             double tx = result.getTx();
-            isLockedOn = Math.abs(tx) < TAG_LOCK_TOLERANCE;
+            lockedOn = Math.abs(tx) < TAG_LOCK_TOLERANCE;
 
-            if (isLockedOn) {
+            if (lockedOn) {
                 return 0.0;
             } else {
                 double correction = Range.clip(tx * TAG_LOCK_KP, -TAG_LOCK_MAX_POWER, TAG_LOCK_MAX_POWER);
@@ -73,7 +73,7 @@ public class Vision {
                 return correction;
             }
         } else {
-            isLockedOn = false;
+            lockedOn = false;
             return manualYaw;
 
         }
@@ -114,7 +114,10 @@ public class Vision {
         return 72.06169 * Math.pow(ta, -0.509117);
     }
 
-    public boolean hasTarget()  { return hasTarget; }
-    public boolean isLockedOn() { return isLockedOn; }
+    public boolean hasTarget()  { return targetVisible; }
+    public void setHasTarget(boolean val) {
+        targetVisible = val;
+    }
+    public boolean isLockedOn() { return lockedOn; }
     public double  getDistance(){ return distance; }
 }

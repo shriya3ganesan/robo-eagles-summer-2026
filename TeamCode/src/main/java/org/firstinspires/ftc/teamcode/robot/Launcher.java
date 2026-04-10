@@ -28,6 +28,7 @@ public class Launcher {
     public static double POWER_INCREASE_PER_SHOT  = 0.2;
     public static double TRIPLE_SHOT_DELAY        = 0.2;
     public static double TRIPLE_SHOT_START_DELAY  = 0.05;
+    public boolean tripleShotStarted = false;
 
     // State machines
     private enum LaunchState { IDLE, FIRING, RESETTING }
@@ -102,6 +103,7 @@ public class Launcher {
                     tripleShotBasePower = currentLaunchPower;
                     tripleShotTimer.reset();
                     robot.transferMotor.setPower(1.0);
+                    tripleShotStarted = true;
                 }
                 break;
 
