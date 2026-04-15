@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.team28420.module.shooter;
+package org.firstinspires.ftc.team28420.module;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,6 +21,9 @@ public class Pusher {
         this.pusher = hMap.get(Servo.class, "pusher");
     }
 
+    public void setup() {
+        setState(PusherState.NEUTRAL);
+    }
     public void setState(PusherState state) {
         this.state = state;
         updatePosition();

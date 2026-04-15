@@ -15,7 +15,6 @@ import org.firstinspires.ftc.team28420.config.CameraServoConf;
 import org.firstinspires.ftc.team28420.config.GyroConf;
 import org.firstinspires.ftc.team28420.config.ShooterConf;
 import org.firstinspires.ftc.team28420.config.WheelBaseConf;
-import org.firstinspires.ftc.team28420.module.shooter.Shooter;
 import org.firstinspires.ftc.team28420.processors.BallDetection;
 import org.firstinspires.ftc.team28420.types.AprilTag;
 import org.firstinspires.ftc.team28420.types.MovementParams;
@@ -23,10 +22,8 @@ import org.firstinspires.ftc.team28420.types.PolarVector;
 import org.firstinspires.ftc.team28420.types.Position;
 import org.firstinspires.ftc.team28420.types.WheelsRatio;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
-import java.nio.charset.CharacterCodingException;
 import java.util.List;
 
 public class Actions {

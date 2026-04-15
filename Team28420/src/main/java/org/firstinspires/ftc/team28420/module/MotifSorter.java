@@ -1,49 +1,63 @@
-package org.firstinspires.ftc.team28420.module.shooter;
+package org.firstinspires.ftc.team28420.module;
 
-import org.firstinspires.ftc.team28420.config.ShooterConf;
 import org.firstinspires.ftc.team28420.processors.BallDetection;
 
 import java.util.HashMap;
 
 public class MotifSorter {
     private String curMotif = "";
-    private boolean correctMotif = false;
+    private String targetMotif = null;
     private HashMap<String, Integer> sortSeqMap = null;
 
     public MotifSorter() {
         initSortSeq();
+        resetMotif();
     }
 
     // SETTERS
     public void resetMotif() {
-        correctMotif = false;
         curMotif = "";
     }
     public void appendBallToMotif(BallDetection.BallColor color) {
         curMotif += (color == BallDetection.BallColor.PURPLE) ? 'P' : 'G';
     }
 
+    /**
+     * Appending ball color as char
+     * @param color 'g' or 'p' value
+     */
     public void appendBallToMotif(char color) {
-        curMotif += color;
+        if(color == 'g' || color == 'p') curMotif += color;
     }
+
+    /**
+     * Deletes last ball in chamber
+     */
     public void dropLastBall() {
         curMotif = curMotif.substring(0, curMotif.length() - 1);
     }
 
+    /**
+     * Sets current motif manually
+     * @param motif
+     */
     public void setCurMotif(String motif) {
         curMotif = motif;
     }
 
-    public void setCorrectMotif(boolean b) {
-        correctMotif = b;
+    /**
+     * Sets target motif
+     * @param targetMotif
+     */
+    public void setTargetMotif(String targetMotif) {
+        this.targetMotif = targetMotif;
     }
-
 
     // GETTERS
     public int getMoveSlots() {
-        if(ShooterConf.TARGET_MOTIF == null) return 0;
+        if(targetMotif == null) return 0;
         int currentIndex = sortSeqMap.getOrDefault(curMotif, 0);
-        int targetIndex = sortSeqMap.getOrDefault(ShooterConf.TARGET_MOTIF, 0);
+        int targetIndex = sortSeqMap.getOrDefault(targetMotif, 0);
 
         int moveSlots = (targetIndex - currentIndex + 3) % 3;
 
@@ -53,7 +67,7 @@ public class MotifSorter {
         return curMotif;
     }
     public boolean isCorrectMotif() {
-        return correctMotif;
+        return curMotif.equals(targetMotif);
     }
     public boolean isMotifFull() {
         return curMotif.length() == 3;
