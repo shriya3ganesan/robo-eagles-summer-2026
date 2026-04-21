@@ -9,6 +9,11 @@ public class MovementParams {
         this.turnAbs = turnAbs;
     }
 
+    public MovementParams(float x, float y, double rx) {
+        this.moveVector = new PolarVector(x, y);
+        this.turnAbs = rx;
+    }
+
     public PolarVector getMoveVector() {
         return moveVector;
     }

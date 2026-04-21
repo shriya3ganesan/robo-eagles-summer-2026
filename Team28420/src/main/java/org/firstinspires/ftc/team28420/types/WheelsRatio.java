@@ -1,26 +1,12 @@
 package org.firstinspires.ftc.team28420.types;
 
+import androidx.annotation.NonNull;
+
 import java.lang.Number;
 
 public class WheelsRatio<T extends Number> {
 
-    private T leftTop, rightTop, leftBottom, rightBottom;
-
-    public void setLeftTop(T leftTop) {
-        this.leftTop = leftTop;
-    }
-
-    public void setRightTop(T rightTop) {
-        this.rightTop = rightTop;
-    }
-
-    public void setLeftBottom(T leftBottom) {
-        this.leftBottom = leftBottom;
-    }
-
-    public void setRightBottom(T rightBottom) {
-        this.rightBottom = rightBottom;
-    }
+    private final T leftTop, rightTop, leftBottom, rightBottom;
 
     public T getLeftTop() {
         return leftTop;
@@ -56,6 +42,7 @@ public class WheelsRatio<T extends Number> {
         );
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "WheelsRatio{" +
