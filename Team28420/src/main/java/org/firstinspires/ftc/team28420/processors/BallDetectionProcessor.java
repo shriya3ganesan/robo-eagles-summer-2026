@@ -3,9 +3,11 @@ package org.firstinspires.ftc.team28420.processors;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
-import org.firstinspires.ftc.team28420.config.BallDetectionConf;
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -13,7 +15,19 @@ import org.opencv.imgproc.Moments;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BallDetection implements VisionProcessor {
+// TODO refactor everything
+public class BallDetectionProcessor implements VisionProcessor {
+
+    @Config
+    public static class BallDetectionConf {
+        public static Scalar lowGreen = new Scalar(35, 50, 50);
+        public static Scalar highGreen = new Scalar(85, 255, 255);
+        public static Scalar lowPurple = new Scalar(125, 50, 50);
+        public static Scalar highPurple = new Scalar(160, 255, 255);
+        public static double MIN_AREA = 15000; // минимальный размер объекта
+        public static double kP = 0.0019;
+    }
+
     private final Mat hsv = new Mat();
     private final Mat mask = new Mat();
     private final Mat hierarchy = new Mat();

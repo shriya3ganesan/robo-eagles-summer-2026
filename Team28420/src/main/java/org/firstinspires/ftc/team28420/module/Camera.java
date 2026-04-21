@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.team28420.module;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -10,12 +11,11 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.Exposur
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.team28420.config.CameraConf;
-import org.firstinspires.ftc.team28420.processors.BallDetection;
 import org.firstinspires.ftc.team28420.types.AprilTag;
 import org.firstinspires.ftc.team28420.types.MovementParams;
 import org.firstinspires.ftc.team28420.types.PolarVector;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.VisionProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -26,13 +26,18 @@ import java.util.concurrent.TimeUnit;
 
 public class Camera {
 
+    @Config
+    public static class CameraConf {
+        public static double ANGLE_MAX_VELOCITY = Math.PI;
+    }
+
     private final AprilTagProcessor aprilTag;
     private final VisionPortal visionPortal;
 
     private List<AprilTagDetection> lastDetections = new ArrayList<>();
 
-    public Camera(HardwareMap hMap, BallDetection processor) {
-        WebcamName webcamName = hMap.get(WebcamName.class, CameraConf.WEBCAM);
+    public Camera(HardwareMap hMap) {
+        WebcamName webcamName = hMap.get(WebcamName.class, "Webcam 1");
 
         aprilTag = new AprilTagProcessor.Builder()
                 .setDrawAxes(true)
@@ -40,44 +45,37 @@ public class Camera {
                 .setDrawTagOutline(true)
                 .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
                 .build();
-        if(processor == null) {
-            visionPortal = new VisionPortal.Builder()
-                    .setCamera(webcamName)
-                    .addProcessor(aprilTag)
-                    .enableLiveView(true)
-                    .setAutoStopLiveView(true)
-                    .build();
-        }else {
-            visionPortal = new VisionPortal.Builder()
-                    .setCamera(webcamName)
-                    .addProcessor(aprilTag)
-                    .addProcessor(processor)
-                    .enableLiveView(true)
-                    .setAutoStopLiveView(true)
-                    .build();
-        }
+
+        VisionProcessor[] processors = {aprilTag, aprilTag};
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(webcamName)
+                .addProcessors(processors)
+                .enableLiveView(true)
+                .setAutoStopLiveView(true)
+                .build();
+
         ElapsedTime timer = new ElapsedTime();
         while (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING && timer.seconds() < 3) {
-            try { Thread.sleep(20); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            try { Thread.sleep(7); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         }
 
-        setManualExposure(4, 270);
+        setManualExposure();
 
         FtcDashboard.getInstance().startCameraStream(visionPortal, 30);
     }
 
-    private void setManualExposure(int exposureMS, int gain) {
+    private void setManualExposure() {
         if (visionPortal == null) return;
 
         ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
         if (exposureControl != null) {
             exposureControl.setMode(ExposureControl.Mode.Manual);
-            exposureControl.setExposure(exposureMS, TimeUnit.MILLISECONDS);
+            exposureControl.setExposure(4, TimeUnit.MILLISECONDS);
         }
 
         GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
         if (gainControl != null) {
-            gainControl.setGain(gain);
+            gainControl.setGain(270);
         }
     }
 
@@ -94,7 +92,7 @@ public class Camera {
 
     public MovementParams getMovementParamsToPoint(AprilTagDetection detection, double offsetX, double offsetY) {
         if (detection == null || detection.ftcPose == null) {
-            return new MovementParams(new PolarVector(0, 0), 0);
+            return null;
         }
         PolarVector vector = getVectorToPoint(detection.ftcPose.x, detection.ftcPose.y, offsetX, offsetY);
         double rotateForce = getRotateForce(Math.toRadians(-detection.ftcPose.yaw));
@@ -103,7 +101,7 @@ public class Camera {
 
     public MovementParams getMovementParamsToOffset(AprilTagDetection detection, double offsetX, double offsetY) {
         if (detection == null || detection.ftcPose == null) {
-            return new MovementParams(new PolarVector(0, 0), 0);
+            return null;
         }
         PolarVector vector = getVectorToPoint(detection.ftcPose.x, detection.ftcPose.y, offsetX, offsetY);
         double rotateForce = getRotateForce(Math.toRadians(-detection.ftcPose.bearing));

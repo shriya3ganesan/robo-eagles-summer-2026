@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.team28420.config.ShooterConf;
 import org.firstinspires.ftc.team28420.module.Pusher;
 import org.firstinspires.ftc.team28420.module.Revolver;
 import org.firstinspires.ftc.team28420.module.ScannerSorter;
@@ -17,19 +16,16 @@ import org.firstinspires.ftc.team28420.module.ScannerSorter;
 @Config
 public class IntakeHandler {
 
+    private static final double pusherReadyTime = 175;
     /*** HARDWARE ***/
     private final Pusher pusher;
-    private ScannerSorter scannerSorter = null;
-    private Revolver revolver = null;
-
-
     /*** TIMERS ***/
     private final ElapsedTime shooterTime = new ElapsedTime();
-
-    private static double pusherReadyTime = 175;
-
+    private ScannerSorter scannerSorter = null;
+    private Revolver revolver = null;
     private ShooterState state = ShooterState.IDLE;
-    public IntakeHandler(HardwareMap hMap, Telemetry telemetry) {
+
+    public IntakeHandler(HardwareMap hMap) {
         pusher = new Pusher(hMap);
         revolver = new Revolver(hMap);
         scannerSorter = new ScannerSorter(hMap, () -> revolver.rotateRevolver(120), this::alignRevolverToTarget);
@@ -45,13 +41,13 @@ public class IntakeHandler {
 
         switch (state) {
             case SHOOTING_PREPARE:
-                if(shooterTime.milliseconds() > pusherReadyTime) {
+                if (shooterTime.milliseconds() > pusherReadyTime) {
                     state = ShooterState.SHOOTING_SPIN;
                     revolver.rotateRevolver(scannerSorter.getMotif().length() * 120.0 + 60);
                 }
                 break;
             case SHOOTING_SPIN:
-                if(!revolver.isBusy()) {
+                if (!revolver.isBusy()) {
                     state = ShooterState.STOP_SHOOTING;
                     pushBall(false);
 
@@ -59,17 +55,18 @@ public class IntakeHandler {
                 }
                 break;
             case STOP_SHOOTING:
-                if(shooterTime.milliseconds() > pusherReadyTime) {
+                if (shooterTime.milliseconds() > pusherReadyTime) {
                     snapToNearestSlot();
                     state = ShooterState.IDLE;
                     shooterTime.reset();
                 }
                 break;
             case IDLE:
-                if(!isNearShootingSlot()) scannerSorter.scanBall();
+                if (!isNearShootingSlot()) scannerSorter.scanBall();
                 break;
         }
     }
+
     /**
      * @return True if revolver is in shooting position
      */
@@ -84,7 +81,7 @@ public class IntakeHandler {
         return (nearSlot1 || nearSlot2 || nearSlot3);
     }
 
-    private boolean alignRevolverToTarget() {
+    private void alignRevolverToTarget() {
         double finalRotationDeg = isNearShootingSlot() ? 0 : 60;
         int moveSlots = scannerSorter.getMoveSlots();
 
@@ -94,8 +91,15 @@ public class IntakeHandler {
 
         revolver.rotateRevolver(finalRotationDeg);
 
-        scannerSorter.setCurMotif(ShooterConf.TARGET_MOTIF);
-        return true;
+        scannerSorter.setCurMotif(getTargetMotif());
+    }
+
+    public String getTargetMotif() {
+        return scannerSorter.getTargetMotif();
+    }
+
+    public void setTargetMotif(String targetMotif) {
+        scannerSorter.setTargetMotif(targetMotif);
     }
 
     /**
@@ -138,14 +142,13 @@ public class IntakeHandler {
         }
     }
 
-    public boolean shoot() {
-        if (state == ShooterState.IDLE && !revolver.isBusy()) {
-            pushBall(true);
-            state = ShooterState.SHOOTING_PREPARE;
-            shooterTime.reset();
-            return true;
+    public void shoot() {
+        if (!(state == ShooterState.IDLE) && revolver.isBusy()) {
+            return;
         }
-        return false;
+        pushBall(true);
+        state = ShooterState.SHOOTING_PREPARE;
+        shooterTime.reset();
     }
 
     public enum ShooterState {IDLE, SHOOTING_PREPARE, SHOOTING_SPIN, STOP_SHOOTING}

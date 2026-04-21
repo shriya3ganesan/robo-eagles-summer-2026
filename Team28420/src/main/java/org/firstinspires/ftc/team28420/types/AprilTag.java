@@ -1,7 +1,20 @@
 package org.firstinspires.ftc.team28420.types;
 
 public enum AprilTag {
-    BLUE, GREEN, RED, UNKNOWN;
+    BLUE(new Position(-148.59, 148.59)),
+    GREEN(new Position(0.0, 182.88)),
+    RED(new Position(148.59, 148.59)),
+    UNKNOWN(new Position(0, 0));
+
+    AprilTag(Position position) {
+        this.position = position;
+    }
+
+    private final Position position;
+
+    public Position getPosition() {
+        return position;
+    }
 
     public static String getMotif(int id) {
         if (id == 21) {

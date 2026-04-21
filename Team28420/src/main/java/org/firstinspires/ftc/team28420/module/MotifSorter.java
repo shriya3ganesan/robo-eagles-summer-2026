@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.team28420.module;
 
-import org.firstinspires.ftc.team28420.processors.BallDetection;
+import org.firstinspires.ftc.team28420.processors.BallDetectionProcessor;
 
 import java.util.HashMap;
 
@@ -18,8 +18,8 @@ public class MotifSorter {
     public void resetMotif() {
         curMotif = "";
     }
-    public void appendBallToMotif(BallDetection.BallColor color) {
-        curMotif += (color == BallDetection.BallColor.PURPLE) ? 'P' : 'G';
+    public void appendBallToMotif(BallDetectionProcessor.BallColor color) {
+        curMotif += (color == BallDetectionProcessor.BallColor.PURPLE) ? 'P' : 'G';
     }
 
     /**
@@ -86,4 +86,7 @@ public class MotifSorter {
         return (g == 1 && p == 2);
     }
 
+    public String getTargetMotif() {
+        return targetMotif;
+    }
 }

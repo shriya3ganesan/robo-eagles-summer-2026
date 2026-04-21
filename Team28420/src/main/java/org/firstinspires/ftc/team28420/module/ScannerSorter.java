@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.team28420.processors.BallDetection;
+import org.firstinspires.ftc.team28420.processors.BallDetectionProcessor;
 
 public class ScannerSorter {
     /*** SCANNER CONSTANTS ***/
@@ -19,9 +19,6 @@ public class ScannerSorter {
     private boolean ballPresent = false;
     private boolean potentialBallDetected = false;
     private final MotifSorter sorter = new MotifSorter();
-
-    /*** SORTER CONSTANTS ***/
-    public static String TARGET_MOTIF = null;
 
     /*** HARDWARE ***/
     private final ColorSensor cs;
@@ -55,7 +52,7 @@ public class ScannerSorter {
     public void scanBall() {
         if (!scanAllowed || sorter.isMotifFull()) return;
 
-        BallDetection.BallColor detectedColor = getDetectedColor();
+        BallDetectionProcessor.BallColor detectedColor = getDetectedColor();
         boolean ballInRange = isBallInRange();
 
         boolean currentlySeeingBall = ballInRange && (detectedColor != null);
@@ -78,16 +75,16 @@ public class ScannerSorter {
         return sorter.getCurMotif();
     }
 
-    private BallDetection.BallColor getDetectedColor() {
+    private BallDetectionProcessor.BallColor getDetectedColor() {
         NormalizedRGBA colors = ((NormalizedColorSensor) cs).getNormalizedColors();
 
         // mostly green
         if (colors.green > colors.red * 1.5 && colors.green > colors.blue * 1.5) {
-            return BallDetection.BallColor.GREEN;
+            return BallDetectionProcessor.BallColor.GREEN;
         }
         // red + blue but not green
         if (colors.blue > colors.green * 1.2 && colors.red > colors.green) {
-            return BallDetection.BallColor.PURPLE;
+            return BallDetectionProcessor.BallColor.PURPLE;
         }
         return null;
     }
@@ -98,7 +95,7 @@ public class ScannerSorter {
         return distanceInCm <= BALL_DETECTION_THRESHOLD;
     }
 
-    private void processNewBall(BallDetection.BallColor color) {
+    private void processNewBall(BallDetectionProcessor.BallColor color) {
         sorter.appendBallToMotif(color);
 
         if (sorter.isMotifFull()) {
@@ -115,6 +112,7 @@ public class ScannerSorter {
     public void log(Telemetry telemetry) {
         telemetry.addData("MOTIF", sorter.getCurMotif());
         telemetry.addData("CORRECT MOTIF", sorter.isCorrectMotif());
+        telemetry.addData("SCANNED motif", sorter.getTargetMotif());
     }
 
     /**
@@ -123,5 +121,13 @@ public class ScannerSorter {
      */
     public void setCurMotif(String motif) {
         sorter.setCurMotif(motif);
+    }
+
+    public void setTargetMotif(String targetMotif) {
+        sorter.setTargetMotif(targetMotif);
+    }
+
+    public String getTargetMotif() {
+        return sorter.getTargetMotif();
     }
 }
