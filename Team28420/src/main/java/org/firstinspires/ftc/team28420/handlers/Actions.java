@@ -53,6 +53,7 @@ public class Actions {
         movement.setup();
         odometry.setup();
         imu.setup();
+        cameraHandler.setup();
         intakeHandler.setup();
         flywheel.setup();
     }

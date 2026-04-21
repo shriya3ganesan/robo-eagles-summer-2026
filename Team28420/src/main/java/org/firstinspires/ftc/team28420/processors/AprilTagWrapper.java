@@ -12,6 +12,7 @@ import org.firstinspires.ftc.vision.VisionProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,7 +24,7 @@ public class AprilTagWrapper {
     }
 
     private final AprilTagProcessor processor;
-    private List<AprilTagDetection> lastDetections;
+    private List<AprilTagDetection> lastDetections = new ArrayList<>();
 
     public AprilTagWrapper() {
         this.processor = new AprilTagProcessor.Builder()

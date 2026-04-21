@@ -13,7 +13,6 @@ import org.firstinspires.ftc.team28420.module.ScannerSorter;
  * Shooter class
  * is responsible for scanning balls, sorting motif with revolver and flywheel activation
  */
-@Config
 public class IntakeHandler {
 
     private static final double pusherReadyTime = 175;
@@ -143,7 +142,7 @@ public class IntakeHandler {
     }
 
     public void shoot() {
-        if (!(state == ShooterState.IDLE) && revolver.isBusy()) {
+        if (state != ShooterState.IDLE || revolver.isBusy()) {
             return;
         }
         pushBall(true);

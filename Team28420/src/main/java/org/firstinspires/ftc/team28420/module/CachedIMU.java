@@ -10,7 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class CachedIMU {
 
-    @Config
     public static class CachedIMUConfig {
         public final static RevHubOrientationOnRobot.LogoFacingDirection
                 logoFacingDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;

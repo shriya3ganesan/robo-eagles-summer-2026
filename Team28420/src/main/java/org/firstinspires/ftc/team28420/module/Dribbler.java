@@ -24,10 +24,13 @@ public class Dribbler {
         switch (state) {
             case INTAKE:
                 dribblerMotor.setVelocity(DribblerConf.INTAKE_VELOCITY);
+                break;
             case DROP:
                 dribblerMotor.setVelocity(DribblerConf.DROP_VELOCITY);
+                break;
             case IDLE:
                 dribblerMotor.setVelocity(0);
+                break;
         }
     }
 
