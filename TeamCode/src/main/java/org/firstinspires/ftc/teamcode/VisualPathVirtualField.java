@@ -14,24 +14,23 @@ import java.util.Hashtable;
 /**
  * VisualPathVirtualField
  *
- * A simple field virtualizer for VisualPath
+ * Virtualizes the robot's position on a 2D field. Supports tracking robot 
+ * coordinates, field boundaries, and stationary field elements imported 
+ * from configuration files.
  *
  * Usage:
- * Create a new field with the width, length, and initial position, to then
- * write/shift/read the position of the robot.
- *
- * Has support for field elements, which can be given their own dimensions and positions.
+ * Initialize with field dimensions and starting coordinates. Use 
+ * shiftRobotPosition() to update location and getRobotPosition() to 
+ * retrieve current coordinates.
  */
-
 public class VisualPathVirtualField {
 
-    // Field Dimensions
+    // -------------------------------------------------------------------------
+    // Fields
+    // -------------------------------------------------------------------------
+
     private double[] fieldSize;
-
-    // Robot Position
     private double[] robotPosition;
-
-    // Field Elements
     private Dictionary<double[], double[]> elements;
 
     // -------------------------------------------------------------------------
@@ -39,8 +38,8 @@ public class VisualPathVirtualField {
     // -------------------------------------------------------------------------
 
     /**
-     * @param fieldSize The size of the field as [length, width]
-     * @param robotPosition The initial position of the robot, as a list of [x, y]
+     * @param fieldSize The size of the field as [length, width].
+     * @param robotPosition The initial position of the robot as [x, y].
      */
     public VisualPathVirtualField(double[] fieldSize, double[] robotPosition) {
         this.fieldSize = fieldSize;
@@ -48,9 +47,10 @@ public class VisualPathVirtualField {
     }
 
     /**
-     * @param fieldSize The size of the field as [length, width]
-     * @param robotPosition The initial position of the robot, as a list of [x, y]
-     * @param elements A Dictionary<double[], double[]> with the positions (top-left corner) and dimensions of all elements as {[x, y], [length, width]}
+     * @param fieldSize The size of the field as [length, width].
+     * @param robotPosition The initial position of the robot as [x, y].
+     * @param elements Dictionary of elements where keys are positions [x, y] 
+     *                 and values are dimensions [length, width].
      */
     public VisualPathVirtualField(double[] fieldSize, double[] robotPosition, Dictionary<double[], double[]> elements) {
         this.fieldSize = fieldSize;
@@ -63,7 +63,9 @@ public class VisualPathVirtualField {
     // -------------------------------------------------------------------------
 
     /**
-     * Reads 'elements.json' stored in assets to quickly import elements
+     * Imports field element data from 'elements.json' in the assets folder.
+     *
+     * @throws IOException If the file cannot be read or is malformed.
      */
     public void readElementJSON() throws IOException {
         AssetManager assetManager = AppUtil.getInstance().getApplication().getAssets();
@@ -112,6 +114,58 @@ public class VisualPathVirtualField {
         this.elements = elements;
     }
 
+    /**
+     * Sets the robot's current position on the field.
+     *
+     * @param robotPosition The new position as [x, y].
+     */
+    public void setRobotPosition(double[] robotPosition) {
+        this.robotPosition = robotPosition;
+    }
+
+    /**
+     * Shifts the robot's current position by the specified X and Y deltas.
+     *
+     * @param xShift Displacement along the X axis.
+     * @param yShift Displacement along the Y axis.
+     */
+    public void shiftRobotPosition(double xShift, double yShift) {
+        this.robotPosition[0] += xShift;
+        this.robotPosition[1] += yShift;
+    }
+
+    // -------------------------------------------------------------------------
+    // Accessors
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return The current robot position as [x, y].
+     */
+    public double[] getRobotPosition() {
+        return this.robotPosition;
+    }
+
+    /**
+     * @return The field size as [length, width].
+     */
+    public double[] getFieldSize() {
+        return fieldSize;
+    }
+
+    /**
+     * @return All field elements as a Dictionary mapping positions to dimensions.
+     */
+    public Dictionary<double[], double[]> getElements() {
+        return elements;
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal Logic
+    // -------------------------------------------------------------------------
+
+    /**
+     * Helper to extract a double array from a JSON-like string object.
+     */
     private static double[] extractArray(String obj, String key) {
         String marker = "\"" + key + "\"";
         int keyIdx = obj.indexOf(marker);
@@ -131,42 +185,5 @@ public class VisualPathVirtualField {
             return null;
         }
         return result;
-    }
-
-    /**
-     * @param robotPosition The new robot position as [x, y]
-     */
-    public void setRobotPosition(double[] robotPosition) {
-        this.robotPosition = robotPosition;
-    }
-
-    public void shiftRobotPosition(double xShift, double yShift) {
-        this.robotPosition[0] += xShift;
-        this.robotPosition[1] += yShift;
-    }
-
-    // -------------------------------------------------------------------------
-    // Accessors
-    // -------------------------------------------------------------------------
-
-    /**
-     * @return The robot position as [x, y]
-     */
-    public double[] getRobotPosition() {
-        return this.robotPosition;
-    }
-
-    /**
-     * @return The field size as [length, width]
-     */
-    public double[] getFieldSize() {
-        return fieldSize;
-    }
-
-    /**
-     * @return A Dictionary<double[], double[]> with the positions (top-left corner) and dimensions of all elements as {[x, y], [length, width]}
-     */
-    public Dictionary<double[], double[]> getElements() {
-        return elements;
     }
 }

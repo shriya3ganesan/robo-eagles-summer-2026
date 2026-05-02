@@ -34,7 +34,7 @@ public class VisualPathMouseReader {
     private static final int TRANSFER_TIMEOUT_MS = 50;
     private static final int PACKET_SIZE = 8;
 
-    // Accumulated deltas — written by poll thread, reset by odometry thread after usage
+    // Accumulated deltas written by poll thread, reset by odometry thread after usage
     private volatile int accDeltaX = 0;
     private volatile int accDeltaY = 0;
 
