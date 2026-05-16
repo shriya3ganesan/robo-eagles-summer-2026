@@ -289,13 +289,13 @@ public class teleop_test1 extends LinearOpMode {
                 shooterBottom.setPower(0);
             }
 
-//            if (gamepad2.dpad_up){
-//                lift.setPower(1);
-//            }
+            if (gamepad1.dpad_up && gamepad1.right_bumper){
+                lift.setPower(1);
+            }
 //            else if (gamepad2.dpad_down){
 //                lift.setPower(-1);
 //            }
-//            else lift.setPower(0);
+            else lift.setPower(0);
 
             if (gamepad1.a){
                 if (detect1 && detect2 && detect3) intake.setPower(-1);

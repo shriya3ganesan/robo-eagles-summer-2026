@@ -74,12 +74,12 @@ public class nearRED2 extends CommandOpMode {
     private final Pose scorePose = new Pose (94,104,Math.toRadians(0));
     private final Pose go1Pose = new Pose(93, 90, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(123, 87, Math.toRadians(0));
-    private final Pose gatePose = new Pose(123.5 , 78.5, Math.toRadians(0));
+    private final Pose gatePose = new Pose(121 , 78.5, Math.toRadians(0));
     private final Pose go2Pose = new Pose(93, 61, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(131, 61, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(127, 61, Math.toRadians(0));
     private final Pose exit2Pose = new Pose (110, 61, Math.toRadians(0));
     private final Pose go3Pose = new Pose(93, 38.8, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(131, 38.8, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(127, 38.8, Math.toRadians(0));
     private final Pose score3Pose = new Pose(83,112,Math.toRadians(0));
     private final Pose leavePose = new Pose (113, 72, Math.toRadians(0));
     private PathChain scorePreload, gotoPickup1, grabPickup1, gotoPickup2, grabPickup2, gotoPickup3, grabPickup3, scorePickup1, scorePickup2, scorePickup3, leave, openGate1, openGate2;
@@ -669,18 +669,18 @@ public class nearRED2 extends CommandOpMode {
     public void run() {
         follower.update();
         super.run();
+
         SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("RobotPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-
         editor.putFloat("x", (float) follower.getPose().getX());
         editor.putFloat("y", (float) follower.getPose().getY());
         editor.putFloat("heading", (float) follower.getPose().getHeading());
         double turretDegrees =  (turretEncoder.getCurrentPosition() * 360.0) / (4.0 * 8192.0);
         editor.putFloat("turretPos", (float) turretDegrees);
-
         editor.apply();
         double test = prefs.getFloat("turretPos", -999);
         telemetry.addData("Read after save", test);
+
         telemetry.addData("green size", green.size());
         telemetry.addData("purple size", purple.size());
         telemetry.addData("shooterVel", shooterTop.getVelocity(AngleUnit.DEGREES));

@@ -1,0 +1,116 @@
+package org.firstinspires.ftc.teamcode.training;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.itd.nationals.CycleGamepad;
+import org.firstinspires.ftc.teamcode.itd.nationals.positions_and_variables;
+
+
+@TeleOp
+public class drivetrain_test1 extends LinearOpMode {
+
+    Boolean slowModeOn = false;
+    
+    DcMotor frontright;
+    DcMotor backright;
+    DcMotor frontleft;
+    DcMotor backleft;
+    IMU imu;
+//
+
+    private final FtcDashboard dashboard = FtcDashboard.getInstance();
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+        TelemetryPacket packet = new TelemetryPacket();
+        dashboard.setTelemetryTransmissionInterval(25);
+
+        positions_and_variables pos = new positions_and_variables();
+        CycleGamepad cycle_gamepad1 = new CycleGamepad(gamepad1);
+        CycleGamepad cycle_gamepad2 = new CycleGamepad(gamepad2);
+
+
+        // drivetrain motors
+        frontright = hardwareMap.dcMotor.get("frontright");
+        backright = hardwareMap.dcMotor.get("backright");
+        frontleft = hardwareMap.dcMotor.get("frontleft");
+        backleft = hardwareMap.dcMotor.get("backleft");
+
+        // Retrieve the IMU from the hardware map
+        imu = hardwareMap.get(IMU.class, "imu");
+        // Adjust the orientation parameters to match your robot
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+        imu.initialize(parameters);
+        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
+        waitForStart();
+        if (isStopRequested()) return;
+        while (!isStopRequested() && opModeIsActive()) {
+            cycle_gamepad1.updateLB(2);
+
+            slowModeOn = cycle_gamepad1.lbPressCount!= 0;
+
+            //drivetrain
+            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double x = gamepad1.left_stick_x;
+            double rx = gamepad1.right_stick_x * 0.7;
+
+            // This button choice was made so that it is hard to hit on accident,
+            // it can be freely changed based on preference.
+            // The equivalent button is start on Xbox-style controllers.
+            if (gamepad1.start) {
+                imu.resetYaw();
+            }
+
+            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            // Rotate the movement direction counter to the bot's rotation
+            double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+            double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+            rotX = rotX * 1.1;  // Counteract imperfect strafing
+
+            // Denominator is the largest motor power (absolute value) or 1
+            // This ensures all the powers maintain the same ratio,
+            // but only if at least one is out of the range [-1, 1]
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+            double frontLeftPower = (rotY + rotX + rx) / denominator;
+            double backLeftPower = (rotY - rotX + rx) / denominator;
+            double frontRightPower = (rotY - rotX - rx) / denominator;
+            double backRightPower = (rotY + rotX - rx) / denominator;
+
+            if (slowModeOn){
+                frontright.setPower(frontLeftPower * 0.3);
+                backright.setPower(backLeftPower * 0.3);
+                frontleft.setPower(frontRightPower * 0.3);
+                backleft.setPower(backRightPower * 0.3);
+            }
+            else{
+                frontright.setPower(frontLeftPower * 1);
+                backright.setPower(backLeftPower * 1);
+                frontleft.setPower(frontRightPower * 1);
+                backleft.setPower(backRightPower * 1);
+            }
+
+            dashboard.sendTelemetryPacket(packet);
+
+        }
+    }
+}

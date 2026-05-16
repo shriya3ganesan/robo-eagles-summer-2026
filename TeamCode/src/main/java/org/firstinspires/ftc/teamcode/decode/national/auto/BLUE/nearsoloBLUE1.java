@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.decode.national.auto.BLUE; // make sure this aligns with class location
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -648,6 +651,18 @@ public class nearsoloBLUE1 extends CommandOpMode {
     public void run() {
         follower.update();
         super.run();
+
+        SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("RobotPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putFloat("x", (float) follower.getPose().getX());
+        editor.putFloat("y", (float) follower.getPose().getY());
+        editor.putFloat("heading", (float) follower.getPose().getHeading());
+        double turretDegrees =  (turretEncoder.getCurrentPosition() * 360.0) / (4.0 * 8192.0);
+        editor.putFloat("turretPos", (float) turretDegrees);
+        editor.apply();
+        double test = prefs.getFloat("turretPos", -999);
+        telemetry.addData("Read after save", test);
+
         telemetry.addData("green size", green.size());
         telemetry.addData("purple size", purple.size());
         telemetry.addData("shooterVel", shooterTop.getVelocity(AngleUnit.DEGREES));

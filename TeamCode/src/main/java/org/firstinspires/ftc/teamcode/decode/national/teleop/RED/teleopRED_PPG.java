@@ -34,12 +34,10 @@ public class teleopRED_PPG extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("RobotPrefs", Context.MODE_PRIVATE);
-
         double x = prefs.getFloat("x", 0);
         double y = prefs.getFloat("y", 0);
         double heading = prefs.getFloat("heading", 0);
         double turretEndPos = prefs.getFloat("turretPos", 0);
-
         Pose endPose = new Pose(x, y, heading);
         Pose2D endPoseInFTC = PoseConverter.poseToPose2D(endPose, InvertedFTCCoordinates.INSTANCE);
 

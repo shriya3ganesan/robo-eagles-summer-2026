@@ -1,8 +1,16 @@
 package org.firstinspires.ftc.teamcode.decode.national.teleop.RED;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -25,6 +33,14 @@ public class teleopRED_GPP extends LinearOpMode {
     lift_hardware lift = new lift_hardware(this);
     @Override
     public void runOpMode() throws InterruptedException {
+        SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("RobotPrefs", Context.MODE_PRIVATE);
+        double x = prefs.getFloat("x", 0);
+        double y = prefs.getFloat("y", 0);
+        double heading = prefs.getFloat("heading", 0);
+        double turretEndPos = prefs.getFloat("turretPos", 0);
+        Pose endPose = new Pose(x, y, heading);
+        Pose2D endPoseInFTC = PoseConverter.poseToPose2D(endPose, InvertedFTCCoordinates.INSTANCE);
+
         shooter.init(hardwareMap, 0);
         transferAndIntake.init(hardwareMap);
         encoders.init(hardwareMap);
@@ -32,7 +48,16 @@ public class teleopRED_GPP extends LinearOpMode {
         lift.init(hardwareMap);
         CycleGamepad cyclegamepad1 = new CycleGamepad(gamepad1);
         CycleGamepad cyclegamepad2 = new CycleGamepad(gamepad2);
+
         waitForStart();
+
+        //new test
+        DcMotorEx turretEncoder = hardwareMap.get(DcMotorEx.class, "BL");
+        turretEncoder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        sleep(100);
+        //new test ends
+
         while (!isStopRequested() && opModeIsActive()){
             cyclegamepad1.updateLB(2);
             cyclegamepad2.updateRB(2);
