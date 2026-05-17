@@ -29,12 +29,11 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 
 /*
@@ -51,84 +50,65 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
-public class BasicOpMode_Linear extends LinearOpMode {
-
-    // Declare OpMode members.
+public class BasicOpMode_Linear extends OpMode {
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-
+    private DcMotor frontRight, frontLeft, backRight, backLeft;
     @Override
-    public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-        double drive, turn, strafe;
-        double fLeftP, fRightPower, bleftPower, bRightP;
-
+    public void init() {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        DcMotor frontRight = hardwareMap.get(DcMotor.class, "rightFront");
-        DcMotor frontLeft = hardwareMap.get(DcMotor.class, "leftFront");
-        DcMotor backRight = hardwareMap.get(DcMotor.class, "rightBack");
-        DcMotor backLeft = hardwareMap.get(DcMotor.class, "leftBack");
+        frontRight = hardwareMap.get(DcMotor.class, "rightFront");
+        frontLeft = hardwareMap.get(DcMotor.class, "leftFront");
+        backRight = hardwareMap.get(DcMotor.class, "rightBack");
+        backLeft = hardwareMap.get(DcMotor.class, "leftBack");
 
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
-        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
+    }
 
-        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    @Override
+    public void loop() {
+        // Mecanum drive is controlled with three axes: drive (front-and-back),
+        // strafe (left-and-right), and twist (rotating the whole chassis).
+        double drive = -gamepad1.left_stick_y;
+        double strafe = gamepad1.left_stick_x;
+        double turn  =  gamepad1.right_stick_x;
 
+        double[] speeds = {
+                (drive + strafe + turn),
+                (drive - strafe - turn),
+                (drive - strafe + turn),
+                (drive + strafe - turn)
+        };
 
-
-        // Wait for the game to start (driver presses START)
-        waitForStart();
-        runtime.reset();
-
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-             drive = -gamepad1.left_stick_y* -1;
-             turn  =  gamepad1.right_stick_x;
-             strafe = gamepad1.left_stick_x;
-
-                                fLeftP=     drive+turn     +strafe;
-             fRightPower=drive -      turn -strafe;
-                bleftPower    = drive+turn-strafe;
-             bRightP=drive-turn+strafe;
-
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
-
-            // Send calculated power to wheels
-//            leftDrive.setPower(leftPower);
-//            rightDrive.setPower(rightPower);
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.update();
+        // Loop through all values in the speeds[] array and find the greatest
+        // *magnitude*.  Not the greatest velocity.
+        double max = Math.abs(speeds[0]);
+        for (double speed : speeds) {
+            if (max < Math.abs(speed)) max = Math.abs(speed);
         }
+
+        // If and only if the maximum is outside the range we want it to be,
+        // normalize all the other speeds based on the given speed value.
+        if (max > 1) {
+            for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
+        }
+
+        // apply the calculated values to the motors.
+        frontLeft.setPower(speeds[0]);
+        frontRight.setPower(speeds[1]);
+        backLeft.setPower(speeds[2]);
+        backRight.setPower(speeds[3]);
+
+        // Show the elapsed game time and wheel power.
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("Motors", "frontLeft (%.2f), frontRight (%.2f), backLeft (%.2f), backRight (%.2f)",
+                speeds[0], speeds[1], speeds[2], speeds[3]);
+        telemetry.update();
+
     }
 }
