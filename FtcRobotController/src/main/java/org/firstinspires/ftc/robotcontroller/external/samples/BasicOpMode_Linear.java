@@ -1,115 +1,100 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-
-/*
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
+/**
+ * This is an example minimal implementation of the mecanum drivetrain
+ * for demonstration purposes.  Not tested and not guaranteed to be bug free.
  *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * @author Brandon Gong
  */
+@TeleOp(name="Mecanum Drive Example", group="Iterative Opmode")
+public class BasicOpMode_Linear extends OpMode {
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
-@Disabled
-public class BasicOpMode_Linear extends LinearOpMode {
+    /*
+     * The mecanum drivetrain involves four separate motors that spin in
+     * different directions and different speeds to produce the desired
+     * movement at the desired speed.
+     */
 
-    // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    // declare and initialize four DcMotors.
+    private DcMotor front_left  = null;
+    private DcMotor front_right = null;
+    private DcMotor back_left   = null;
+    private DcMotor back_right  = null;
 
     @Override
-    public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+    public void init() {
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        // Name strings must match up with the config on the Robot Controller
+        // app.
+        front_left   = hardwareMap.get(DcMotor.class, "front_left");
+        front_right  = hardwareMap.get(DcMotor.class, "front_right");
+        back_left    = hardwareMap.get(DcMotor.class, "back_left");
+        back_right   = hardwareMap.get(DcMotor.class, "back_right");
+    }
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+    @Override
+    public void loop() {
 
-        // Wait for the game to start (driver presses START)
-        waitForStart();
-        runtime.reset();
+        // Mecanum drive is controlled with three axes: drive (front-and-back),
+        // strafe (left-and-right), and twist (rotating the whole chassis).
+        double drive  = gamepad1.left_stick_y;
+        double strafe = gamepad1.left_stick_x;
+        double twist  = gamepad1.right_stick_x;
 
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        /*
+         * If we had a gyro and wanted to do field-oriented control, here
+         * is where we would implement it.
+         *
+         * The idea is fairly simple; we have a robot-oriented Cartesian (x,y)
+         * coordinate (strafe, drive), and we just rotate it by the gyro
+         * reading minus the offset that we read in the init() method.
+         * Some rough pseudocode demonstrating:
+         *
+         * if Field Oriented Control:
+         *     get gyro heading
+         *     subtract initial offset from heading
+         *     convert heading to radians (if necessary)
+         *     new strafe = strafe * cos(heading) - drive * sin(heading)
+         *     new drive  = strafe * sin(heading) + drive * cos(heading)
+         *
+         * If you want more understanding on where these rotation formulas come
+         * from, refer to
+         * https://en.wikipedia.org/wiki/Rotation_(mathematics)#Two_dimensions
+         */
 
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
+        // You may need to multiply some of these by -1 to invert direction of
+        // the motor.  This is not an issue with the calculations themselves.
+        double[] speeds = {
+                (drive + strafe + twist),
+                (drive - strafe - twist),
+                (drive - strafe + twist),
+                (drive + strafe - twist)
+        };
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
+        // Because we are adding vectors and motors only take values between
+        // [-1,1] we may need to normalize them.
 
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-            double drive = -gamepad1.left_stick_y;
-            double turn  =  gamepad1.right_stick_x;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
-
-            // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
-
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.update();
+        // Loop through all values in the speeds[] array and find the greatest
+        // *magnitude*.  Not the greatest velocity.
+        double max = Math.abs(speeds[0]);
+        for(int i = 0; i < speeds.length; i++) {
+            if ( max < Math.abs(speeds[i]) ) max = Math.abs(speeds[i]);
         }
+
+        // If and only if the maximum is outside of the range we want it to be,
+        // normalize all the other speeds based on the given speed value.
+        if (max > 1) {
+            for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
+        }
+
+        // apply the calculated values to the motors.
+        front_left.setPower(speeds[0]);
+        front_right.setPower(speeds[1]);
+        back_left.setPower(speeds[2]);
+        back_right.setPower(speeds[3]);
     }
 }
