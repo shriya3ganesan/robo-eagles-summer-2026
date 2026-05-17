@@ -56,6 +56,7 @@ public class BasicOpMode_Linear extends OpMode {
     private DcMotor frontRight, frontLeft, backRight, backLeft;
 
     public CRServo leftServo, rightServo;
+    private boolean servoIsRunning;
 
     @Override
     public void init() {
@@ -70,6 +71,7 @@ public class BasicOpMode_Linear extends OpMode {
         leftServo = hardwareMap.get(CRServo.class, "leftServo");
         rightServo = hardwareMap.get(CRServo.class, "rightServo");
         backRight.setDirection(DcMotor.Direction.REVERSE);
+        servoIsRunning = false;
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -109,19 +111,26 @@ public class BasicOpMode_Linear extends OpMode {
         backLeft.setPower(speeds[2]);
         backRight.setPower(speeds[3]);
 
-        if(gamepad1.a){
+        if (gamepad1.a) {
+            servoIsRunning = true;
+        }
+        else {
+            servoIsRunning = false;
+        }
+
+        if (servoIsRunning) {
             leftServo.setPower(1);
             rightServo.setPower(-1);
-        }
-        if(gamepad1.b){
+        } else {
             leftServo.setPower(0);
             rightServo.setPower(0);
         }
+
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "frontLeft (%.2f), frontRight (%.2f), backLeft (%.2f), backRight (%.2f)",
                 speeds[0], speeds[1], speeds[2], speeds[3]);
+        telemetry.addData("ServoIsRunning", servoIsRunning);
         telemetry.update();
-
     }
 }
