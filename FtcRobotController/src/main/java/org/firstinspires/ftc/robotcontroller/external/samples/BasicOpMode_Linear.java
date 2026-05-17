@@ -20,20 +20,23 @@ public class BasicOpMode_Linear extends OpMode {
      */
 
     // declare and initialize four DcMotors.
-    private DcMotor front_left  = null;
-    private DcMotor front_right = null;
-    private DcMotor back_left   = null;
-    private DcMotor back_right  = null;
+    private DcMotor frontLeft = null;
+    private DcMotor frontRight = null;
+    private DcMotor backLeft = null;
+    private DcMotor backRight = null;
 
     @Override
     public void init() {
 
         // Name strings must match up with the config on the Robot Controller
         // app.
-        front_left   = hardwareMap.get(DcMotor.class, "front_left");
-        front_right  = hardwareMap.get(DcMotor.class, "front_right");
-        back_left    = hardwareMap.get(DcMotor.class, "back_left");
-        back_right   = hardwareMap.get(DcMotor.class, "back_right");
+        frontLeft = hardwareMap.get(DcMotor.class, "leftFront");
+        frontRight = hardwareMap.get(DcMotor.class, "rightFront");
+        backLeft = hardwareMap.get(DcMotor.class, "leftBack");
+        backRight = hardwareMap.get(DcMotor.class, "rightBack");
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
     }
 
     @Override
@@ -43,7 +46,7 @@ public class BasicOpMode_Linear extends OpMode {
         // strafe (left-and-right), and twist (rotating the whole chassis).
         double drive  = gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
-        double twist  = gamepad1.right_stick_x;
+        double turn  = gamepad1.right_stick_x;
 
         /*
          * If we had a gyro and wanted to do field-oriented control, here
@@ -69,10 +72,10 @@ public class BasicOpMode_Linear extends OpMode {
         // You may need to multiply some of these by -1 to invert direction of
         // the motor.  This is not an issue with the calculations themselves.
         double[] speeds = {
-                (drive + strafe + twist),
-                (drive - strafe - twist),
-                (drive - strafe + twist),
-                (drive + strafe - twist)
+                (drive + strafe + turn),
+                (drive - strafe - turn),
+                (drive - strafe + turn),
+                (drive + strafe - turn)
         };
 
         // Because we are adding vectors and motors only take values between
@@ -92,9 +95,9 @@ public class BasicOpMode_Linear extends OpMode {
         }
 
         // apply the calculated values to the motors.
-        front_left.setPower(speeds[0]);
-        front_right.setPower(speeds[1]);
-        back_left.setPower(speeds[2]);
-        back_right.setPower(speeds[3]);
+        frontLeft.setPower(speeds[0]);
+        frontRight.setPower(speeds[1]);
+        backLeft.setPower(speeds[2]);
+        backRight.setPower(speeds[3]);
     }
 }
