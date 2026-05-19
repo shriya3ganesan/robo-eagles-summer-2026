@@ -12,16 +12,19 @@ public class Flywheel {
 
     private double encoderCPM = 20;
 
-     private double kV ,kS ,kP;
+     private double kV = 0.017 ,kS = 0.056,kP = 0.0005;
 
      public void init(HardwareMap hwMap) {
-         m1 = hwMap.get(DcMotorEx.class,"anas");
+         m1 = hwMap.get(DcMotorEx.class,"LiftR");
          m1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
          m1.setDirection(DcMotorSimple.Direction.REVERSE);
      }
 
      public void setMotorPower(double power) {
          m1.setPower(power);
+     }
+     public void stopMotorPOwer() {
+         m1.setPower(0);
      }
      public void setMotorRPM(double targetRPM) {
          //call this evry loop
