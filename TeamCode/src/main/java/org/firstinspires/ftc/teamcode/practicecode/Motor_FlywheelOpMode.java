@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.practicecode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name = "Practice: Motor Controller", group = "Practice")
-public class MotorControllerOpMode extends LinearOpMode {
+@TeleOp(name = "Practice: Flywheel", group = "Practice")
+public class Motor_FlywheelOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        // "practiceMotor" must match the port name in your robot configuration
-        MotorController motor = new MotorController(hardwareMap, "practiceMotor");
+        // motor name must match the port name in your robot configuration
+        Motor_FlywheelController motor = new Motor_FlywheelController(hardwareMap, "practiceMotor");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
