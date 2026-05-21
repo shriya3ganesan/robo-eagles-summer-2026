@@ -32,8 +32,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -81,7 +81,7 @@ public class BasicOpMode_Linear extends OpMode {
         servoIsRunning = false;
         odo.setOffsets(-84.0, -168.0, DistanceUnit.MM); //these are tuned for 3110-0002-0001 Product Insight #1
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
         odo.resetPosAndIMU();
         telemetry.addData("Status", "Initialized");
         telemetry.addData("X offset", odo.getXOffset(DistanceUnit.MM));
@@ -97,13 +97,13 @@ public class BasicOpMode_Linear extends OpMode {
         // strafe (left-and-right), and twist (rotating the whole chassis).
         double drive = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
-        double turn  =  gamepad1.right_stick_x;
+        double turn = gamepad1.right_stick_x;
 
         double[] speeds = {
-                (drive + strafe + turn),
-                (drive - strafe - turn),
-                (drive - strafe + turn),
-                (drive + strafe - turn)
+            (drive + strafe + turn),
+            (drive - strafe - turn),
+            (drive - strafe + turn),
+            (drive + strafe - turn)
         };
 
         // Loop through all values in the speeds[] array and find the greatest
@@ -141,19 +141,26 @@ public class BasicOpMode_Linear extends OpMode {
             rightServo.setPower(0);
         }
 
+        odo.update();
         Pose2D pos = odo.getPosition();
         String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
         telemetry.addData("Position", data);
 
         String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", odo.getVelX(DistanceUnit.MM), odo.getVelY(DistanceUnit.MM), odo.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
         telemetry.addData("Velocity", velocity);
-        telemetry.addData("Status", odo.getDeviceStatus());
+        telemetry.addData("ODOStatus", odo.getDeviceStatus());
         telemetry.addData("Pinpoint Frequency", odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
 
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime);
-        telemetry.addData("Motors", "frontLeft (%.2f), frontRight (%.2f), backLeft (%.2f), backRight (%.2f)",
-                speeds[0], speeds[1], speeds[2], speeds[3]);
+        // Show the elapsed game time and wheel power
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData(
+                "Motors",
+                "frontLeft (%.2f), frontRight (%.2f), backLeft (%.2f), backRight (%.2f)",
+                speeds[0],
+                speeds[1],
+                speeds[2],
+                speeds[3]);
+
         telemetry.addData("ServoIsRunning", servoIsRunning);
         telemetry.update();
     }
