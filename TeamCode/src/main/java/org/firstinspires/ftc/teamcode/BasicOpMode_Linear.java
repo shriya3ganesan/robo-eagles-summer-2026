@@ -152,7 +152,7 @@ public class BasicOpMode_Linear extends OpMode {
 
         String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", odo.getVelX(DistanceUnit.MM), odo.getVelY(DistanceUnit.MM), odo.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
         telemetry.addData("Velocity", velocity);
-        telemetry.addData("ODOStatus", odo.getDeviceStatus());
+        telemetry.addData("Pinpoint Status", odo.getDeviceStatus());
         telemetry.addData("Pinpoint Frequency", odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
 
         // Show the elapsed game time and wheel power
