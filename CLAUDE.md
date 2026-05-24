@@ -38,6 +38,38 @@ OpModes are the unit of robot behavior. An OpMode is a Java class annotated with
 
 Hardware is accessed via `hardwareMap.get(DcMotor.class, "name")` where `"name"` must match a port name configured in the FTC Robot Controller app's robot configuration on the device — these strings are a contract with on-device configuration, not the codebase, so renaming them in code without updating the robot's config will break runtime hardware lookup.
 
+## ChargedCreeper robot — hardware config and conventions
+
+The team's current robot (as wired in `BasicOpMode_Linear` and `AutoSquare_Linear`) uses these `hardwareMap` names — keep them stable across new OpModes so they line up with the on-device config:
+
+- **Drive motors** (4-wheel mecanum): `"leftFront"`, `"rightFront"`, `"leftBack"`, `"rightBack"`
+  - `rightBack` must be set to `DcMotor.Direction.REVERSE` after lookup; the other three stay default. This compensates for how the motor is physically mounted — don't "fix" it by removing the reverse, and don't reverse the others.
+- **Shooter**: `"flywheel"` (DcMotor)
+- **Intake servos** (continuous-rotation): `"leftServo"`, `"rightServo"` (CRServo). They run as a pair — `leftServo` at `-1`, `rightServo` at `+1` together — because they're mirrored physically.
+- **Odometry**: `"odo"` (`GoBildaPinpointDriver`). Tuned constants — copy these verbatim into any new OpMode that uses odometry rather than re-deriving them:
+  - `setOffsets(-84.0, -168.0, DistanceUnit.MM)`
+  - `setEncoderResolution(GoBildaOdometryPods.goBILDA_4_BAR_POD)`
+  - `setEncoderDirections(REVERSED, FORWARD)` (X reversed, Y forward)
+  - Call `resetPosAndIMU()` in init; call `odo.update()` once per loop iteration before reading position/heading.
+
+### Mecanum kinematics
+Use the same formula in both teleop and auto so behavior matches between modes. Inputs are `drive` (forward), `strafe` (right), `turn` (rotate):
+
+```
+frontLeft  = drive + strafe + turn
+frontRight = drive - strafe - turn
+backLeft   = drive - strafe + turn
+backRight  = drive + strafe - turn
+```
+
+Then normalize by the max absolute value if any wheel exceeds 1.0. The `rightBack` `REVERSE` direction is what makes a positive `turn` value rotate the robot consistently with the other wheels — don't try to also flip the sign in the formula.
+
+### OpMode naming
+Driver-Station names end with `ChargedCreeper` (e.g. `"Basic: Linear OpMode ChargedCreeper"`, `"Auto: Square Loop ChargedCreeper"`) so the team's OpModes are easy to spot in the menu. Use `group="Linear OpMode"` for both teleop and the team's autos.
+
+### Style note
+`BasicOpMode_Linear` actually extends iterative `OpMode` (not `LinearOpMode`) despite its name — the file was forked from the SDK sample and renamed but kept the iterative structure. New autonomous code should extend `LinearOpMode` and use `runOpMode()` with `waitForStart()` + a `while (opModeIsActive())` loop; this is the style used by `AutoSquare_Linear`.
+
 ## Editing conventions specific to this SDK
 
 - **Don't edit `FtcRobotController/external/samples/`** — they're reference material that gets updated when the SDK is rev'd. All team work happens in `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/`.
