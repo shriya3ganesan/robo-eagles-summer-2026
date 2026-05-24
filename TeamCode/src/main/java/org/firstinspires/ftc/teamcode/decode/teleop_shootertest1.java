@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.decode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -10,7 +11,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+@Disabled
+
 @Config
+
 @TeleOp(name="shooter Test1")
 public class teleop_shootertest1 extends LinearOpMode {
     DecodeRobotHardware robot = new DecodeRobotHardware(this);

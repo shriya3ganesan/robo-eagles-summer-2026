@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.decode.national;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.decode.DecodeRobotHardware;
 import org.firstinspires.ftc.teamcode.decode.national.hardware.color_sensor_hardware;
 
 import java.util.ArrayList;
-
+@Disabled
 @Config
 @TeleOp(name="teleoptest1")
 public class teleop_test1 extends LinearOpMode {

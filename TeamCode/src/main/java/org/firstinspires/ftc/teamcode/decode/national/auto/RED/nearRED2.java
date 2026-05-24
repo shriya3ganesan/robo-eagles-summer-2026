@@ -564,7 +564,7 @@ public class nearRED2 extends CommandOpMode {
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        moveTurret(-90).withTimeout(1500),
+                                        moveTurret(-80).withTimeout(1500),
                                         checkMotif().withTimeout(1500)
                                 ),
                                 moveTurret(0).interruptOn(()-> shootingFinished)

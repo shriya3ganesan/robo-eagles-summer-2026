@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntSupplier;
 
-@Autonomous(name = "AUTO FAR BLUE", group = "AAA BLUE")
+@Autonomous(name = "AAA FAR BLUE", group = "AAA BLUE")
 public class farBLUE1 extends CommandOpMode {
     private Follower follower;
 

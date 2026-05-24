@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.decode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
+@Disabled
 @TeleOp(name="MC Drive To AprilTag + TeleOp", group = "Concept")
 public class DriveToApril_Teleop2 extends LinearOpMode
 {

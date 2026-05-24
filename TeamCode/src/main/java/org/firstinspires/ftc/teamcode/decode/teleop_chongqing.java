@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.decode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
+@Disabled
 @TeleOp(name="Teleop Chongqing")
 public class teleop_chongqing extends LinearOpMode {
     DecodeRobotHardware robot = new DecodeRobotHardware(this);

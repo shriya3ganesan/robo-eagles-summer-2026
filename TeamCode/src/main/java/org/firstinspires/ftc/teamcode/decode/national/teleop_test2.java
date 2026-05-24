@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriver;
 import com.acmerobotics.roadrunner.ftc.GoBildaPinpointDriverRR;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -25,7 +26,7 @@ import org.firstinspires.ftc.teamcode.decode.DecodeRobotHardware;
 import org.firstinspires.ftc.teamcode.decode.national.hardware.color_sensor_hardware;
 
 import java.util.ArrayList;
-
+@Disabled
 @Config
 @TeleOp(name="teleoptest2")
 public class teleop_test2 extends LinearOpMode {

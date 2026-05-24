@@ -75,12 +75,12 @@ public class nearBLUE2 extends CommandOpMode {
     private final Pose scorePose = new Pose (94,104,Math.toRadians(0)).mirror();
     private final Pose go1Pose = new Pose(93, 90, Math.toRadians(0)).mirror();
     private final Pose pickup1Pose = new Pose(123, 87, Math.toRadians(0)).mirror();
-    private final Pose gatePose = new Pose(123.5 , 78.5, Math.toRadians(0)).mirror();
+    private final Pose gatePose = new Pose(121 , 78.5, Math.toRadians(0)).mirror();
     private final Pose go2Pose = new Pose(93, 61, Math.toRadians(0)).mirror();
-    private final Pose pickup2Pose = new Pose(131, 61, Math.toRadians(0)).mirror();
+    private final Pose pickup2Pose = new Pose(127, 61, Math.toRadians(0)).mirror();
     private final Pose exit2Pose = new Pose (110, 61, Math.toRadians(0)).mirror();
     private final Pose go3Pose = new Pose(93, 38.8, Math.toRadians(0)).mirror();
-    private final Pose pickup3Pose = new Pose(131, 38.8, Math.toRadians(0)).mirror();
+    private final Pose pickup3Pose = new Pose(127, 38.8, Math.toRadians(0)).mirror();
     private final Pose score3Pose = new Pose(83,112,Math.toRadians(0)).mirror();
     private final Pose leavePose = new Pose (113, 72, Math.toRadians(0)).mirror();
     private PathChain scorePreload, gotoPickup1, grabPickup1, gotoPickup2, grabPickup2, gotoPickup3, grabPickup3, scorePickup1, scorePickup2, scorePickup3, leave, openGate1, openGate2;
@@ -561,7 +561,7 @@ public class nearBLUE2 extends CommandOpMode {
         follower.setStartingPose(startPose);
 
         SequentialCommandGroup autonomousSequence = new SequentialCommandGroup(
-                moveHood(0.45),
+                moveHood(0.7),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(

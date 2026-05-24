@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.decode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -61,7 +62,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *  In OnBot Java, add a new OpMode, select this sample, and select TeleOp.
  *  Also add another new file named DecodeRobotHardware.java, select the sample with that name, and select Not an OpMode.
  */
-
+@Disabled
 @TeleOp(name="Robot Hardware Class Drive")
 public class teleop_hardwareclassdrive extends LinearOpMode {
 

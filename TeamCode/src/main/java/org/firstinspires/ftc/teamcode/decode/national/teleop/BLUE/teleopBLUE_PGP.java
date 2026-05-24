@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.decode.national.hardware.shooter_hardware;
 import org.firstinspires.ftc.teamcode.decode.national.hardware.transferintake_hardware;
 
 @Config
-@TeleOp (name = "A NEAR TELEOP BLUE PGP", group = "AAA BLUE")
+@TeleOp (name = "A TELEOP BLUE PGP", group = "AAA BLUE")
 public class teleopBLUE_PGP extends LinearOpMode {
     int motif = 2;
     shooter_hardware shooter = new shooter_hardware(this);
@@ -61,7 +61,7 @@ public class teleopBLUE_PGP extends LinearOpMode {
         while (!isStopRequested() && opModeIsActive()){
             cyclegamepad1.updateLB(2);
             cyclegamepad2.updateRB(2);
-            shooter.controlOuttake(gamepad1.start,cyclegamepad2.rbPressCount == 1,false, new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS,0),0);
+            shooter.controlOuttake(gamepad1.start,cyclegamepad2.rbPressCount == 1,false, endPoseInFTC, turretEndPos);
             transferAndIntake.sortTransferAndIntake(gamepad2.x || gamepad2.y, motif);
             dt.driveRobot(-gamepad1.left_stick_y, gamepad1.left_stick_x,gamepad1.right_stick_x * 0.7, cyclegamepad1.lbPressCount == 1, gamepad1.start);
             lift.liftRobot();

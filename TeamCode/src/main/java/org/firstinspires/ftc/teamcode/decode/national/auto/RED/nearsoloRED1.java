@@ -69,17 +69,18 @@ public class nearsoloRED1 extends CommandOpMode {
     ArrayList<Flicker> green = new ArrayList<>();
     color_sensor_hardware cSensors = new color_sensor_hardware();
 
-    private final Pose startPose = new Pose(119.6, 127.8, Math.toRadians(36.5)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(118.2, 130, Math.toRadians(36.5)); // Start Pose of our robot.
     private final Pose scorePreloadPose = new Pose(94, 104, Math.toRadians(36.5));// Scoring Pose of our robot.
     private final Pose scorePose = new Pose (94,104,Math.toRadians(0));
-    private final Pose go1Pose = new Pose(93, 86, Math.toRadians(0));
-    private final Pose pickup1Pose = new Pose(120, 77, Math.toRadians(0));
+    private final Pose go1Pose = new Pose(93, 90, Math.toRadians(0));
+    private final Pose pickup1Pose = new Pose(123, 87, Math.toRadians(0));
     private final Pose go2Pose = new Pose(93, 61, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(131, 61, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(127, 61, Math.toRadians(0));
     private final Pose exit2Pose = new Pose (110, 61, Math.toRadians(0));
-    private final Pose go3Pose = new Pose(93, 35.8, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(131, 35.8, Math.toRadians(0));
-    private final Pose leavePose = new Pose (113, 72, Math.toRadians(0));
+    private final Pose go3Pose = new Pose(93, 38.8, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(127, 38.8, Math.toRadians(0));
+    private final Pose score3Pose = new Pose(83,112,Math.toRadians(0));
+    private final Pose leavePose = new Pose (83, 112, Math.toRadians(0));
     private PathChain scorePreload, gotoPickup1, grabPickup1, gotoPickup2, grabPickup2, gotoPickup3, grabPickup3, scorePickup1, scorePickup2, scorePickup3, leave, exit2;
 
     public void buildPaths() {
@@ -137,8 +138,8 @@ public class nearsoloRED1 extends CommandOpMode {
                 .setLinearHeadingInterpolation(go3Pose.getHeading(), pickup3Pose.getHeading())
                 .build();
         scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(pickup3Pose, score3Pose))
+                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), score3Pose.getHeading())
                 .build();
         leave = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, leavePose))
@@ -554,15 +555,15 @@ public class nearsoloRED1 extends CommandOpMode {
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
                                 new ParallelCommandGroup(
-                                        moveTurret(-90).withTimeout(1500),
+                                        moveTurret(-80).withTimeout(1500),
                                         checkMotif().withTimeout(1500)
                                 ),
                                 moveTurret(0).interruptOn(()-> shootingFinished)
                         ),
                         new FollowPathCommand(follower, scorePreload),
-                        spinShooter(135).interruptOn(() -> shootingFinished),
+                        spinShooter(140).interruptOn(() -> shootingFinished),
                         new SequentialCommandGroup(
-                                new WaitCommand(1500),
+                                new WaitCommand(2250),
                                 scoreArtifacts(0.5, ()->tagID).interruptOn(() -> shootingFinished)
                         )
                 ),
@@ -573,7 +574,7 @@ public class nearsoloRED1 extends CommandOpMode {
                                 new FollowPathCommand(follower, gotoPickup1),
                                 spinIntake(),
                                 new FollowPathCommand(follower, grabPickup1).setGlobalMaxPower(0.1),
-                                new WaitCommand(1500),
+                                new WaitCommand(750),
                                 stopIntake(),
                                 new ParallelCommandGroup(
                                         new FollowPathCommand(follower, scorePickup1).setGlobalMaxPower(1),
@@ -583,11 +584,11 @@ public class nearsoloRED1 extends CommandOpMode {
                                                 stopIntake()
                                         ),
                                         new SequentialCommandGroup(
-                                                new WaitCommand(1000),
-                                                spinShooter(135).interruptOn(() -> shootingFinished)
+                                                new WaitCommand(500),
+                                                spinShooter(140).interruptOn(() -> shootingFinished)
                                         ),
                                         new SequentialCommandGroup(
-                                                new WaitCommand(2500),
+                                                new WaitCommand(1500),
                                                 scoreArtifacts(0.5, ()-> tagID).interruptOn(() -> shootingFinished)
                                         )
                                 ),
@@ -606,11 +607,11 @@ public class nearsoloRED1 extends CommandOpMode {
                                                 stopIntake()
                                         ),
                                         new SequentialCommandGroup(
-                                                new WaitCommand(1500),
-                                                spinShooter(135).interruptOn(() -> shootingFinished)
+                                                new WaitCommand(500),
+                                                spinShooter(140).interruptOn(() -> shootingFinished)
                                         ),
                                         new SequentialCommandGroup(
-                                                new WaitCommand(3000),
+                                                new WaitCommand(1750),
                                                 scoreArtifacts(0.5, ()-> tagID).interruptOn(() -> shootingFinished)
                                         )
                                 ),
@@ -621,7 +622,14 @@ public class nearsoloRED1 extends CommandOpMode {
                                 new FollowPathCommand(follower, grabPickup3).setGlobalMaxPower(0.3),
                                 new WaitCommand(750),
                                 stopIntake(),
+                                activateLeave()
+                        ),
+                        moveTurret(-36).interruptOn(()-> leaveActivated)
+                ),
+
+
                                 new ParallelCommandGroup(
+                                        moveTurret(-20.7).interruptOn(()->shootingFinished),
                                         new FollowPathCommand(follower, scorePickup3).setGlobalMaxPower(1),
                                         new SequentialCommandGroup(
                                                 reverseIntake(),
@@ -629,8 +637,8 @@ public class nearsoloRED1 extends CommandOpMode {
                                                 stopIntake()
                                         ),
                                         new SequentialCommandGroup(
-                                                new WaitCommand(2000),
-                                                spinShooter(135).interruptOn(() -> shootingFinished)
+                                                new WaitCommand(1500),
+                                                spinShooter(140).interruptOn(() -> shootingFinished)
                                         ),
                                         new SequentialCommandGroup(
                                                 new WaitCommand(3500),
@@ -638,11 +646,10 @@ public class nearsoloRED1 extends CommandOpMode {
                                         )
                                 ),
                                 resetFlickers(),
-                                stopShooter()
-                        ),
-                        moveTurret(-36).interruptOn(()-> leaveActivated)
-                ),
-                new FollowPathCommand(follower, leave),
+                                stopShooter(),
+
+
+//                new FollowPathCommand(follower, leave),
                 moveTurret(0).withTimeout(10000)
         );
         schedule(autonomousSequence);

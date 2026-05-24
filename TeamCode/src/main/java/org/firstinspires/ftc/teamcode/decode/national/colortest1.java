@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.decode.national;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.decode.national.hardware.color_sensor_hardware;
 
 import java.util.ArrayList;
-
+@Disabled
 @TeleOp
 public class colortest1 extends LinearOpMode {
     color_sensor_hardware cSensors = new color_sensor_hardware();

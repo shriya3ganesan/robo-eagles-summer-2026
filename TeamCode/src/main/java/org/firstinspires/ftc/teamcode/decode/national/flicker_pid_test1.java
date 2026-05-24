@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.decode.national;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.decode.CycleGamepad;
 import org.firstinspires.ftc.teamcode.decode.DecodeRobotHardware;
-
+@Disabled
 @Config
 @TeleOp(name="flicker + PID Test1")
 public class flicker_pid_test1 extends LinearOpMode {
