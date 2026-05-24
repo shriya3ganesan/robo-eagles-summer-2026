@@ -64,22 +64,6 @@ backRight  = drive + strafe - turn
 
 Then normalize by the max absolute value if any wheel exceeds 1.0. The `rightBack` `REVERSE` direction is what makes a positive `turn` value rotate the robot consistently with the other wheels — don't try to also flip the sign in the formula.
 
-### Closed-loop turns with absolute heading targets
-For multi-corner autonomous routines, accumulate target headings from a single reference captured once after `waitForStart()` — don't measure each turn relative to wherever the previous turn ended. The pattern in `AutoSquare_Linear.turnToHeading`:
-
-```java
-odo.update();
-double reference = odo.getPosition().getHeading(AngleUnit.DEGREES);
-double target = reference;
-// per corner:
-target += TURN_STEP_DEG;  // e.g. -90 for right turns
-turnToHeading(target);
-```
-
-Inside `turnToHeading`, compute `error = normalizeAngle(target - current)` (wrap into `[-180, 180]`), then drive `turn = HEADING_GAIN_SIGN * signum(error) * magnitude`. `Math.signum(error)` picks rotation direction automatically — the only manual knob is `HEADING_GAIN_SIGN` (`+1` or `-1`) which maps positive mecanum `turn` input to heading direction; flip it if the robot rotates *away* from the target. This eliminates per-corner error accumulation: an overshoot on corner N is corrected on corner N+1 because N+1's target is still anchored to the original reference.
-
-Use a magnitude floor (`TURN_MIN_POWER`) so the robot doesn't stall near the target, and a tolerance band (`TURN_TOLERANCE_DEG ≈ 1–2°`) so the loop exits cleanly.
-
 ### OpMode naming
 Driver-Station names end with `ChargedCreeper` (e.g. `"Basic: Linear OpMode ChargedCreeper"`, `"Auto: Square Loop ChargedCreeper"`) so the team's OpModes are easy to spot in the menu. Use `group="Linear OpMode"` for both teleop and the team's autos.
 
