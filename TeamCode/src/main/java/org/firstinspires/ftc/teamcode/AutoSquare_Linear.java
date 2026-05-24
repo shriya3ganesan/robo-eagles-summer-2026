@@ -19,13 +19,7 @@ public class AutoSquare_Linear extends LinearOpMode {
     private static final double TURN_POWER = 0.4;
     private static final double TURN_MIN_POWER = 0.15;
     private static final double SIDE_SECONDS = 1.5;
-    // Per-corner heading change. -90 = right turn (CW); +90 = left turn (CCW).
-    // Flip sign if you want the robot to trace the square the other way.
-    private static final double TURN_STEP_DEG = -90.0;
-    // Sign of (heading change) / (positive `turn` input). +1 if positive turn
-    // input increases heading (CCW), -1 if it decreases heading. Flip if the
-    // robot rotates away from the target instead of toward it.
-    private static final double HEADING_GAIN_SIGN = +1.0;
+    private static final double TURN_TARGET_DEG = 90.0;
     private static final double TURN_TOLERANCE_DEG = 1.5;
 
     @Override
@@ -50,10 +44,6 @@ public class AutoSquare_Linear extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        odo.update();
-        double referenceHeading = odo.getPosition().getHeading(AngleUnit.DEGREES);
-        double targetHeading = referenceHeading;
-
         int lap = 0;
         while (opModeIsActive()) {
             lap++;
@@ -64,8 +54,7 @@ public class AutoSquare_Linear extends LinearOpMode {
 
                 driveForward(SIDE_SECONDS);
                 if (!opModeIsActive()) break;
-                targetHeading += TURN_STEP_DEG;
-                turnToHeading(targetHeading);
+                turnByHeading(TURN_TARGET_DEG);
             }
         }
     }
@@ -80,24 +69,27 @@ public class AutoSquare_Linear extends LinearOpMode {
         stopMotors();
     }
 
-    // Closed-loop turn to an absolute heading. Targets accumulate from a single
-    // reference heading captured at the start, so per-turn errors don't compound
-    // across laps (corner N+1 still aims at the original reference + N*step).
-    private void turnToHeading(double targetHeading) {
+    // Turn until the heading has changed by `targetDegrees` (absolute), using
+    // odometry IMU heading. Direction follows the sign convention of the mecanum
+    // turn input — flip TURN_POWER's sign if the robot rotates the wrong way.
+    private void turnByHeading(double targetDegrees) {
+        odo.update();
+        double startHeading = odo.getPosition().getHeading(AngleUnit.DEGREES);
+
         while (opModeIsActive()) {
             odo.update();
             double current = odo.getPosition().getHeading(AngleUnit.DEGREES);
-            double error = normalizeAngle(targetHeading - current);
+            double turned = Math.abs(normalizeAngle(current - startHeading));
+            double remaining = targetDegrees - turned;
 
-            if (Math.abs(error) <= TURN_TOLERANCE_DEG) break;
+            if (remaining <= TURN_TOLERANCE_DEG) break;
 
-            double mag = Math.max(TURN_MIN_POWER, Math.min(TURN_POWER, Math.abs(error) * 0.02));
-            double power = HEADING_GAIN_SIGN * Math.signum(error) * mag;
+            double power = Math.max(TURN_MIN_POWER, Math.min(TURN_POWER, remaining * 0.02));
             setMecanum(0, 0, power);
 
-            telemetry.addData("Target", "%.2f", targetHeading);
             telemetry.addData("Heading", "%.2f", current);
-            telemetry.addData("Error", "%.2f", error);
+            telemetry.addData("Turned", "%.2f", turned);
+            telemetry.addData("Remaining", "%.2f", remaining);
             telemetry.update();
         }
         stopMotors();
