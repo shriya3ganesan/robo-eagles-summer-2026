@@ -157,9 +157,12 @@ public class BasicOpMode_Linear extends OpMode {
         odo.update();
         Pose2D pos = odo.getPosition();
         if(servoIsRunning) {
-            if (Math.abs(turn) > 0.05) {
+            if (Math.abs(turn) > 0.1) {
+                // Got turn input. The robot is turning. Update the target heading.
                 targetHeading = pos.getHeading(AngleUnit.DEGREES);
             } else {
+                // the robot is deviating from its targeted direction.
+                // Try to ensure it continues the targeted direction.
                 driveStraight(pos);
             }
         }
