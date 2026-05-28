@@ -65,6 +65,8 @@ public class BasicOpMode_Linear extends OpMode {
     private boolean servoIsRunning;
     private boolean lastX = false;
     private GoBildaPinpointDriver odo;
+    private double targetHeading = 0;
+    private Pose2D previousPos;
 
     @Override
     public void init() {
@@ -154,6 +156,22 @@ public class BasicOpMode_Linear extends OpMode {
 
         odo.update();
         Pose2D pos = odo.getPosition();
+        if(servoIsRunning) {
+            if (Math.abs(turn) > 0.1) {
+                // Got turn input. The robot is turning. Update the target heading.
+                targetHeading = pos.getHeading(AngleUnit.DEGREES);
+            } else {
+                // the robot is deviating from its targeted direction.
+                // Try to ensure it continues the targeted direction.
+                driveStraight(pos);
+            }
+        }
+
+        telemetry.addData("ODO Status", odo.getDeviceStatus());
+        telemetry.addData(
+                "ODO Frequency",
+                odo.getFrequency()); // prints/gets the current refresh rate of the Pinpoint
+
         String data =
                 String.format(
                         Locale.US,
@@ -171,10 +189,6 @@ public class BasicOpMode_Linear extends OpMode {
                         odo.getVelY(DistanceUnit.MM),
                         odo.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES));
         telemetry.addData("Velocity", velocity);
-        telemetry.addData("ODOStatus", odo.getDeviceStatus());
-        telemetry.addData(
-                "Pinpoint Frequency",
-                odo.getFrequency()); // prints/gets the current refresh rate of the Pinpoint
 
         // Show the elapsed game time and wheel power
         telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -189,5 +203,24 @@ public class BasicOpMode_Linear extends OpMode {
         telemetry.addData("ServoIsRunning", servoIsRunning);
         telemetry.addData("Flywheel Velocity", flywheel.getVelocity());
         telemetry.update();
+    }
+
+    private void driveStraight(Pose2D pos)
+    {
+        if (previousPos != null) {
+            double distanceDriven = pos.getY(DistanceUnit.MM) - previousPos.getY(DistanceUnit.MM);
+            if(distanceDriven > 10) {
+                double headingError = targetHeading - pos.getHeading(AngleUnit.DEGREES);
+                double kP = 0.02;
+                double correction = headingError * kP;
+                double drivePower = 0.5;
+                double leftPower = drivePower + correction;
+                double rightPower = drivePower - correction;
+                leftServo.setPower(leftPower);
+                rightServo.setPower(rightPower);
+            }
+        }
+
+        previousPos = pos;
     }
 }
