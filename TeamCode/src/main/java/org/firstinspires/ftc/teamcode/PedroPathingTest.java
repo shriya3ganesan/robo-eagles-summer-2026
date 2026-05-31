@@ -18,7 +18,7 @@ public class PedroPathingTest extends OpMode {
     }
     PathState pathState;
     private final Pose startPos = new Pose(0, 0, Math.toRadians(0));
-    private final Pose shootPos = new Pose(49.8469823789,0, Math.toRadians(136));
+    private final Pose shootPos = new Pose(9.8469823789,0, Math.toRadians(136));
     private PathChain driveStartPosShootPos;
     public void buildPaths() {
         driveStartPosShootPos = follower.pathBuilder()
