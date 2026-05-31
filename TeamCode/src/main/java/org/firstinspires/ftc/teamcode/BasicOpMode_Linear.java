@@ -29,13 +29,13 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -45,7 +45,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -73,10 +73,14 @@ public class BasicOpMode_Linear extends OpMode {
     private DcMotorEx flywheel;
     public CRServo leftServo, rightServo;
     private boolean servoIsRunning;
-    private boolean lastX = false;
     private GoBildaPinpointDriver odo;
     private double targetHeading = 0;
     private Pose2D previousPos;
+
+    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+    private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+
 
     @Override
     public void init() {
@@ -110,6 +114,8 @@ public class BasicOpMode_Linear extends OpMode {
         telemetry.addData("Device Version Number:", odo.getDeviceVersion());
         telemetry.addData("Heading Scalar", odo.getYawScalar());
         telemetry.update();
+
+        initAprilTag();
     }
 
     private void initAprilTag() {
