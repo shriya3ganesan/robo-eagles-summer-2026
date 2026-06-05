@@ -229,7 +229,7 @@ public class BasicOpMode_Linear extends OpMode {
         if (servoIsRunning) {
             leftServo.setPower(-1);
             rightServo.setPower(1);
-            flywheel.setVelocity(1500);
+            flywheel.setVelocity(2600);
         } else {
             leftServo.setPower(0);
             rightServo.setPower(0);
