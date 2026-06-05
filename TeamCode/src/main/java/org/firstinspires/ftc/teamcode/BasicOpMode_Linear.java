@@ -252,7 +252,7 @@ public class BasicOpMode_Linear extends OpMode {
         telemetry.addData("ODO Status", odo.getDeviceStatus());
         telemetry.addData(
                 "ODO Frequency",
-                odo.getFrequency()); // prints/gets the current refresh rate of the Pinpoint
+                odo.getFrequency()); // prints/gets the current refresh rate of the PinpointS
 
         String data =
                 String.format(
