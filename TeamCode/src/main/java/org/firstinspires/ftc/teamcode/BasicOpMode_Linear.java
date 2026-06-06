@@ -37,22 +37,18 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.List;
+import java.util.Locale;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-
-
-
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-import java.util.List;
-import java.util.Locale;
 /*
  * This file contains a minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -77,10 +73,9 @@ public class BasicOpMode_Linear extends OpMode {
     private double targetHeading = 0;
     private Pose2D previousPos;
 
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+    private static final boolean USE_WEBCAM = true; // true for webcam, false for phone camera
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
-
 
     @Override
     public void init() {
@@ -121,23 +116,26 @@ public class BasicOpMode_Linear extends OpMode {
     private void initAprilTag() {
 
         // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder()
+        aprilTag =
+                new AprilTagProcessor.Builder()
 
-                // The following default settings are available to un-comment and edit as needed.
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                //.setDrawTagOutline(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+                        // The following default settings are available to un-comment and edit as
+                        // needed.
+                        // .setDrawAxes(false)
+                        // .setDrawCubeProjection(false)
+                        // .setDrawTagOutline(true)
+                        // .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                        // .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                        // .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
 
-                // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
-                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
-                // ... these parameters are fx, fy, cx, cy.
+                        // == CAMERA CALIBRATION ==
+                        // If you do not manually specify calibration parameters, the SDK will
+                        // attempt
+                        // to load a predefined calibration for your camera.
+                        // .setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                        // ... these parameters are fx, fy, cx, cy.
 
-                .build();
+                        .build();
 
         // Adjust Image Decimation to trade-off detection-range for detection-rate.
         // eg: Some typical detection data using a Logitech C920 WebCam
@@ -146,7 +144,7 @@ public class BasicOpMode_Linear extends OpMode {
         // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
         // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
         // Note: Decimation can be changed on-the-fly to adapt during a match.
-        //aprilTag.setDecimation(3);
+        // aprilTag.setDecimation(3);
 
         // Create the vision portal by using a builder.
         VisionPortal.Builder builder = new VisionPortal.Builder();
@@ -180,10 +178,8 @@ public class BasicOpMode_Linear extends OpMode {
 
         // Disable or re-enable the aprilTag processor at any time.
         visionPortal.setProcessorEnabled(aprilTag, true);
+    } // end method initAprilTag()
 
-    }   // end method initAprilTag()
-
-    
     @Override
     public void loop() {
         // Mecanum drive is controlled with three axes: drive (front-and-back),
@@ -238,7 +234,7 @@ public class BasicOpMode_Linear extends OpMode {
 
         odo.update();
         Pose2D pos = odo.getPosition();
-        if(servoIsRunning) {
+        if (servoIsRunning) {
             if (Math.abs(turn) > 0.1) {
                 // Got turn input. The robot is turning. Update the target heading.
                 targetHeading = pos.getHeading(AngleUnit.DEGREES);
@@ -286,7 +282,7 @@ public class BasicOpMode_Linear extends OpMode {
         telemetry.addData("Flywheel Velocity", flywheel.getVelocity());
 
         telemetryAprilTag();
-        
+
         telemetry.update();
     }
 
@@ -298,29 +294,43 @@ public class BasicOpMode_Linear extends OpMode {
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                telemetry.addLine(
+                        String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(
+                        String.format(
+                                "XYZ %6.1f %6.1f %6.1f  (inch)",
+                                detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                telemetry.addLine(
+                        String.format(
+                                "PRY %6.1f %6.1f %6.1f  (deg)",
+                                detection.ftcPose.pitch,
+                                detection.ftcPose.roll,
+                                detection.ftcPose.yaw));
+                telemetry.addLine(
+                        String.format(
+                                "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
+                                detection.ftcPose.range,
+                                detection.ftcPose.bearing,
+                                detection.ftcPose.elevation));
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+                telemetry.addLine(
+                        String.format(
+                                "Center %6.0f %6.0f   (pixels)",
+                                detection.center.x, detection.center.y));
             }
-        }   // end for() loop
+        } // end for() loop
 
         // Add "key" information to telemetry
         telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
         telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
         telemetry.addLine("RBE = Range, Bearing & Elevation");
+    } // end method telemetryAprilTag()
 
-    }   // end method telemetryAprilTag()
-
-    
-    private void driveStraight(Pose2D pos)
-    {
+    private void driveStraight(Pose2D pos) {
         if (previousPos != null) {
             double distanceDriven = pos.getY(DistanceUnit.MM) - previousPos.getY(DistanceUnit.MM);
-            if(distanceDriven > 10) {
+            if (distanceDriven > 10) {
                 double headingError = targetHeading - pos.getHeading(AngleUnit.DEGREES);
                 double kP = 0.02;
                 double correction = headingError * kP;
