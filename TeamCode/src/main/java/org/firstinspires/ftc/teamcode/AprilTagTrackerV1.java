@@ -34,9 +34,7 @@ import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -92,11 +90,11 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Autonomous
-
-public class AprilTag extends LinearOpMode
+@Disabled
+public class AprilTagTrackerV1 extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
-    final double DESIRED_DISTANCE = 120; //  this is how close the camera should get to the target (inches)
+    final double DESIRED_DISTANCE = 150; //  this is how close the camera should get to the target (inches)
 
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
@@ -115,7 +113,7 @@ public class AprilTag extends LinearOpMode
     private DcMotor backRightDrive = null;  //  Used to control the right back drive wheel
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 6;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -147,7 +145,7 @@ public class AprilTag extends LinearOpMode
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         if (USE_WEBCAM)
-            setManualExposure(6, 150);  // Use low exposure time to reduce motion blur
+            setManualExposure(6, 50);  // Use low exposure time to reduce motion blur
 
         // Wait for driver to press start
         telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
@@ -184,10 +182,10 @@ public class AprilTag extends LinearOpMode
             // Tell the driver what we see, and what to do.
             if (targetFound
                     && (DESIRED_DISTANCE-3) < desiredTag.ftcPose.range && desiredTag.ftcPose.range < (DESIRED_DISTANCE+3)
-                    && (-3) < desiredTag.ftcPose.bearing && desiredTag.ftcPose.bearing < (+3)
-                    && (-3) < desiredTag.ftcPose.yaw && desiredTag.ftcPose.yaw < (+3)) {
+                    && (-5) < desiredTag.ftcPose.bearing && desiredTag.ftcPose.bearing < (+5)
+                    && (-10) < desiredTag.ftcPose.yaw && desiredTag.ftcPose.yaw < (+10)) {
 
-                telemetry.addData("\n>","Target is within acceptable error, halting robot\n");
+                telemetry.addData("\n>","Target is within acceptable error, robot has been stopped\n");
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
@@ -216,7 +214,11 @@ public class AprilTag extends LinearOpMode
 
                 telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             } else {
-                telemetry.addData("\n>","Target not found\n");
+                telemetry.addData("\n>","Target not found, turning and looking for target\n");
+
+                drive  = 0;
+                turn   = Math.toRadians(10);
+                strafe = 0;
             }
             telemetry.update();
 
@@ -268,8 +270,10 @@ public class AprilTag extends LinearOpMode
      * Initialize the AprilTag processor.
      */
     private void initAprilTag() {
-        AprilTagLibrary myCustomLibrary = new AprilTagLibrary.Builder()
-                .addTag(6, "FIHH", 6.8125, DistanceUnit.INCH)
+        AprilTagLibrary testLibrary = new AprilTagLibrary.Builder()
+                .addTag(6, "FIH", 6.8125, DistanceUnit.INCH)
+                .addTag(24, "RED", 6.5, DistanceUnit.INCH)
+                .addTag(20, "BLUE", 6.5, DistanceUnit.INCH)
                 .build();
 
         aprilTag = new AprilTagProcessor.Builder()
@@ -279,7 +283,7 @@ public class AprilTag extends LinearOpMode
                 //.setDrawCubeProjection(false)
                 .setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                .setTagLibrary(myCustomLibrary) // Forces the code to look for your custom desk tag
+                .setTagLibrary(testLibrary) // Forces the code to look for your custom desk tag
                 // .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
 
                 // == CAMERA CALIBRATION ==
@@ -297,7 +301,7 @@ public class AprilTag extends LinearOpMode
         // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
         // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
         // Note: Decimation can be changed on-the-fly to adapt during a match.
-        //aprilTag.setDecimation(3);
+        aprilTag.setDecimation(3);
 
         // Create the vision portal by using a builder.
         VisionPortal.Builder builder = new VisionPortal.Builder();
