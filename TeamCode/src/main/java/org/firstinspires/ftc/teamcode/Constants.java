@@ -35,7 +35,7 @@ public class Constants {
                     .distanceUnit(DistanceUnit.MM)
                     .hardwareMapName("pinpoint")
                     .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-                    .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+                    .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
                     .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     // HEHSUTF THE HELL UP PEDRO YOU ARE NOT FUNNY STOP MAKING FUN OF ME I AM A HUMAN BEING WITH
