@@ -12,8 +12,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
-    public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(8.3);
+    public static FollowerConstants followerConstants = new FollowerConstants().mass(8.3);
     public static MecanumConstants driveConstants =
             new MecanumConstants()
                     .maxPower(1)
@@ -22,8 +21,8 @@ public class Constants {
                     .leftRearMotorName("leftBack")
                     .leftFrontMotorName("leftFront")
                     .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-                    .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                    .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+                    .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+                    .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
                     .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE);
     // need velocity data from gamepad
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
@@ -35,9 +34,8 @@ public class Constants {
                     .distanceUnit(DistanceUnit.INCH)
                     .hardwareMapName("odo")
                     .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-                    .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD
-                    )
-                    .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                    .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+                    .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     // HEHSUTF THE HELL UP PEDRO YOU ARE NOT FUNNY STOP MAKING FUN OF ME I AM A HUMAN BEING WITH
     // FEELINGS AND YOU ARE A ROBOT WHO CAN'T FEEL ANYTHING SO STOP MAKING FUN OF ME PLEASE I AM
