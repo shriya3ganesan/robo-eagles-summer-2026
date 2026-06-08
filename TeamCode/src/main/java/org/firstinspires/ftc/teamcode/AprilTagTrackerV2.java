@@ -22,25 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.firstinspires.ftc.teamcode.Tuning.*;
-import static org.firstinspires.ftc.teamcode.Tuning.changes;
 import static org.firstinspires.ftc.teamcode.Tuning.stopRobot;
-import static org.firstinspires.ftc.teamcode.Tuning.telemetryM;
+
 
 @Autonomous(name = "AprilTag Tracker V2")
 public class AprilTagTrackerV2 extends OpMode {
 
-    // Adjust these numbers to suit your robot.
-    final double DESIRED_DISTANCE = 15.0; // Keep in inches! (Usually 10-15 inches for backdrops)
-
-    final double SPEED_GAIN  =  0.02;
-    final double STRAFE_GAIN =  0.015;
-    final double TURN_GAIN   =  0.01;
-
-    final double MAX_AUTO_SPEED  = 0.5;
-    final double MAX_AUTO_STRAFE = 0.5;
-    final double MAX_AUTO_TURN   = 0.3;
-
+    private Follower follower;
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor backLeftDrive = null;
@@ -52,13 +40,20 @@ public class AprilTagTrackerV2 extends OpMode {
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
     private final ArrayList<Double> velocities = new ArrayList<>();
-    public static double DISTANCE = 48;
-    public static double RECORD_NUMBER = 10;
-
     private boolean end;
 
     // Variable to ensure exposure optimization only attempts setup once
     private boolean exposureConfigured = false;
+
+    private Path forwards;
+
+    // Global variables to lock down coordinates
+    private double finalFieldX = 0;
+    private double finalFieldY = 0;
+    private double finalRobotHeading = 0;
+    private boolean tagFoundInInit = false;
+
+    private int centeringFramesCount = 0; // Ensures it holds center for a moment
 
 
     @Override
@@ -87,94 +82,129 @@ public class AprilTagTrackerV2 extends OpMode {
 
     @Override
     public void init_loop() {
-        // Safe Check: Attempt exposure adjustments only when the video pipeline begins streaming frames
+        // Handle camera exposure warmup
         if (USE_WEBCAM && !exposureConfigured) {
             if (visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
-                setManualExposure(6, 50); // Safe to call directly; loops no longer required
+                setManualExposure(6, 50);
                 exposureConfigured = true;
             } else {
                 telemetry.addLine("Camera Status: Warming up stream pipeline...");
+                telemetry.update();
+                return;
             }
         }
 
         boolean targetFound = false;
-        double  drive       = 0;
-        double  strafe      = 0;
-        double  turn        = 0;
-
         desiredTag = null;
 
+        // Fetch current visibility frame
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
-                    targetFound = true;
-                    desiredTag = detection;
-                    break;
-                } else {
-                    telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
-                }
-            } else {
-                telemetry.addData("Unknown", "Tag ID %d has empty metadata context", detection.id);
+            if (detection.metadata != null && ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID))) {
+                targetFound = true;
+                desiredTag = detection;
+                break;
             }
         }
 
+        // CRITICAL BUG FIX: Only track layout configurations if a target physically exists
         if (targetFound) {
-            telemetry.addData("\n>", "Target Found and Locked. Press START to Begin Approaching.\n");
-            telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
-            telemetry.addData("AprilTag Relative x", "%5.1f inches", desiredTag.ftcPose.x);
-            telemetry.addData("AprilTag Relative y", "%3.0f inches", desiredTag.ftcPose.y);
-            telemetry.addData("AprilTag Range", "%3.0f inches", desiredTag.ftcPose.range);
+            double currentXOffset = desiredTag.ftcPose.x;
 
-            double FieldX   = (desiredTag.ftcPose.x + 129.1227) ;
-            double FieldY = (-desiredTag.ftcPose.y + 126.3925);
-            follower.setStartingPose(new Pose(FieldX, FieldY));
+            if (Math.abs(currentXOffset) > 1) {
+                telemetry.addLine("Target Found. Attempting to Center in Frame...");
+                telemetry.addData("Current Frame Offset", "%3.2f inches", currentXOffset);
 
-            telemetry.addData("FieldX", "%3.0f inches", FieldX);
-            telemetry.addData("FieldY", "%3.0f inches", FieldY);
+                // Safe tuning loop layout adjusted for the upside-down webcam placement
+                double turnGain = 0.03;
+                centeringFramesCount = 0; // Reset the stability counter
 
+                double turnPower = currentXOffset * turnGain;
+
+                // Clip power to keep movements predictable and slow
+                turnPower = Math.max(-0.25, Math.min(0.25, turnPower));
+
+                // Pivot on the spot toward the tag
+                moveRobot(0, 0, turnPower);
+
+            } else {
+                // The tag is centered! Stop the wheels and let it stabilize over a few frames
+                moveRobot(0, 0, 0);
+                centeringFramesCount++;
+
+                if (centeringFramesCount > 10) { // Stable for 10 frames straight
+                    telemetry.addLine("\n> Target Found and Locked");
+
+                    // Corrects the yaw measurement to account for the upside-down camera orientation
+                    double cameraYawRadians = Math.toRadians(-desiredTag.ftcPose.yaw);
+                    double tagGlobalAngle = Math.toRadians(225.0);
+
+                    finalRobotHeading = Math.toRadians(45.0) - cameraYawRadians;
+
+                    double relX = desiredTag.ftcPose.x;
+                    double relY = desiredTag.ftcPose.y;
+                    double tagFieldX = 129.1227;
+                    double tagFieldY = 126.3925;
+
+                    double rotatedX = relY * Math.cos(tagGlobalAngle) - relX * Math.sin(tagGlobalAngle);
+                    double rotatedY = relY * Math.sin(tagGlobalAngle) + relX * Math.cos(tagGlobalAngle);
+
+                    finalFieldX = tagFieldX + rotatedX;
+                    finalFieldY = tagFieldY + rotatedY;
+                    tagFoundInInit = true;
+
+                    telemetry.addData("Calculated FieldX", "%3.2f", finalFieldX);
+                    telemetry.addData("Calculated FieldY", "%3.2f", finalFieldY);
+                    telemetry.addData("Calculated Heading", "%3.2f°", Math.toDegrees(finalRobotHeading));
+                }
+            }
         } else {
-            telemetry.addLine("\n> Scanning For Target...");
-            drive  = 0;
-            turn   = 0.2; // Pivot at 20% power while searching to limit hardware shake
-            strafe = 0;
+            // Target lost out of frame
+            moveRobot(0, 0, 0.2);
+            centeringFramesCount = 0;
+            telemetry.addLine("\n> Scanning...");
         }
 
         telemetry.update();
-        moveRobot(drive, strafe, turn);
     }
 
     public void start() {
-        for (int i = 0; i < RECORD_NUMBER; i++) {
-            velocities.add(0.0);
+        follower.activateAllPIDFs();
+
+        if (tagFoundInInit) {
+            follower.setStartingPose(new Pose(finalFieldX, finalFieldY, finalRobotHeading));
+            forwards = new Path(new BezierLine(new Pose(finalFieldX, finalFieldY), new Pose(70.75, 80)));
+            forwards.setLinearHeadingInterpolation(finalRobotHeading, 0);
         }
-        follower.startTeleopDrive(true);
-        follower.update();
-        end = false;
+
+        if (forwards != null) {
+            follower.followPath(forwards);
+        } else {
+            telemetry.addLine("No AprilTag was found before START was pressed");
+        }
+
     }
 
     public void loop() {
-        // Keep Pedro Pathing's internal coordinate math updating
+        // Keep Pedro Pathing's internal localizer and follower algorithms running
         follower.update();
 
-        if (!end) {
-            // Check if the robot has driven past the target distance threshold
-            if (Math.abs(follower.getPose().getX()) > (DISTANCE + 72)) {
-                end = true;
-                stopRobot(); // Safe hard stop function from Tuning
-            } else {
-                // Keep driving straight ahead at full speed
-                follower.setTeleOpDrive(1, 0, 0, true);
-            }
+        // Check if the robot is currently busy driving the Bezier path
+        if (follower.isBusy()) {
+            telemetry.addLine("Robot is currently following the path to target...");
         } else {
-            // Extra safety guard: ensure the drivetrain holds zero power once finished
-            stopRobot();
+            // The path has finished executing naturally!
+            if (!end) {
+                end = true;
+                 moveRobot(0,0,0);
+            }
+            telemetry.addLine("Path Execution Complete");
         }
 
-        // Output basic, clean status information directly to your Driver Station screen
+        // Print real-time status updates directly to your Driver Station
         telemetry.addData("Current X Position", follower.getPose().getX());
-        telemetry.addData("Target X Distance", (DISTANCE + 72));
-        telemetry.addData("Is Finished", end);
+        telemetry.addData("Current Y Position", follower.getPose().getY());
+        //telemetry.addData("AprilTag Range", desiredTag.ftcPose.range);
         telemetry.update();
     }
     public void moveRobot(double drive, double strafe, double turn) {
