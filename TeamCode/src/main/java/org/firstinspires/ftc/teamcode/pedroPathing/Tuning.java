@@ -49,7 +49,7 @@ public class Tuning extends SelectableOpMode {
     static PoseHistory poseHistory;
 
     @IgnoreConfigurable
-    static TelemetryManager telemetryM;
+    public static TelemetryManager telemetryM;
 
     @IgnoreConfigurable
     static ArrayList<String> changes = new ArrayList<>();
@@ -144,7 +144,7 @@ class LocalizationTest extends OpMode {
 
     @Override
     public void init() {
-        follower.setStartingPose(new Pose(72,72));
+        follower.setStartingPose(new Pose(0,0));
     }
 
     /** This initializes the PoseUpdater, the drive motors, and the Panels telemetry. */

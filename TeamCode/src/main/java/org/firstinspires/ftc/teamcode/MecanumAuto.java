@@ -138,7 +138,7 @@ public class MecanumAuto extends OpMode {
             // Change this Pose to wherever you want the robot to snap to
             Path autoPath = new Path(new BezierLine(
                     follower.getPose(),
-                    new Pose(45, 98, 0)
+                    new Pose(20, 0, 0)
             ));
             autoPath.setConstantHeadingInterpolation(0);
             follower.followPath(autoPath);

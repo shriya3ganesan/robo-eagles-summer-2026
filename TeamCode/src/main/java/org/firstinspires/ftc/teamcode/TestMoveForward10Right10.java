@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.pedropathing.follower.Follower;
@@ -17,7 +19,7 @@ public class TestMoveForward10Right10 extends OpMode {
     private int pathState = 0;
     private long pauseStartTime = 0;
 
-    private static final long PAUSE_MS = 2000; // 2 second pause
+    private static final long PAUSE_MS = 5000; // 2 second pause
 
     // =========================================================================
     // INIT
@@ -31,13 +33,13 @@ public class TestMoveForward10Right10 extends OpMode {
         // X = forward, Y = right in Pedro's coordinate system
         forwardPath = new Path(new BezierLine(
                 new Pose(0, 0, 0),
-                new Pose(10, 0, 0)   // forward 10 inches
+                new Pose(30, 0, 0)
         ));
         forwardPath.setConstantHeadingInterpolation(0);
 
         rightPath = new Path(new BezierLine(
-                new Pose(10, 0, 0),
-                new Pose(10, 10, 0)  // right 10 inches
+                new Pose(30, 0, 0),
+                new Pose(30, 30, 0)
         ));
         rightPath.setConstantHeadingInterpolation(0);
 
@@ -64,26 +66,42 @@ public class TestMoveForward10Right10 extends OpMode {
         switch (pathState) {
 
             case 1: // moving forward
+                telemetry.addData("Time1 ", System.currentTimeMillis());
+                telemetry.addData("X ", follower.getPose().getX());
+                telemetry.addData("Y ", follower.getPose().getY());
+
                 if (!follower.isBusy()) {
                     pauseStartTime = System.currentTimeMillis();
                     pathState = 2;
+
                 }
                 break;
 
             case 2: // pausing for 2 seconds
+                follower.breakFollowing();
+                telemetry.addData("Time2 ", System.currentTimeMillis());
+                telemetry.addData("X2 ", follower.getPose().getX());
+                telemetry.addData("Y2 ", follower.getPose().getY());
+
                 if (System.currentTimeMillis() - pauseStartTime >= PAUSE_MS) {
                     follower.followPath(rightPath, true);
                     pathState = 3;
+
                 }
+                telemetry.addData("Time3 ", System.currentTimeMillis());
+                telemetry.addData("X3 ", follower.getPose().getX());
+                telemetry.addData("Y3 ", follower.getPose().getY());
                 break;
 
             case 3: // moving right
                 if (!follower.isBusy()) {
+                    follower.breakFollowing();
                     pathState = 4;
                 }
                 break;
 
             case 4: // done
+                follower.breakFollowing();
                 break;
         }
 

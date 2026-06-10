@@ -18,7 +18,7 @@ public class Constants {
             .mass(5); // change this to your robot's mass in kg
 
     public static MecanumConstants driveConstants = new MecanumConstants()
-            .maxPower(1)
+            .maxPower(0.1)
             .rightFrontMotorName("right_front_motor")
             .rightRearMotorName("right_back_motor")
             .leftRearMotorName("left_back_motor")
@@ -36,7 +36,8 @@ public class Constants {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-    public static PathConstraints pathConstraints = new PathConstraints(0.3, 100, 1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(0.01, 100, 1, 1);
+
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
