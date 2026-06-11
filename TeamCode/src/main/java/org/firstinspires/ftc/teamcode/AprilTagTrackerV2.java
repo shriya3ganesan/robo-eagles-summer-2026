@@ -35,7 +35,7 @@ public class AprilTagTrackerV2 extends OpMode {
     private DcMotor backRightDrive = null;
 
     private static final boolean USE_WEBCAM = true;
-    private static final int DESIRED_TAG_ID = 6;
+    private static final int DESIRED_TAG_ID = 24;
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
     private AprilTagDetection desiredTag = null;
