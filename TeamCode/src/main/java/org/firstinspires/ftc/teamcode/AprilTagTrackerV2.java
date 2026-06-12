@@ -111,7 +111,7 @@ public class AprilTagTrackerV2 extends OpMode {
         if (targetFound) {
             double currentXOffset = desiredTag.ftcPose.x;
 
-            if (Math.abs(currentXOffset) > 1) {
+            if (Math.abs(currentXOffset) > 2) {
                 telemetry.addLine("Target Found. Attempting to Center in Frame...");
                 telemetry.addData("Current Frame Offset", "%3.2f inches", currentXOffset);
 
@@ -174,7 +174,7 @@ public class AprilTagTrackerV2 extends OpMode {
         if (tagFoundInInit) {
             follower.setStartingPose(new Pose(finalFieldX, finalFieldY, finalRobotHeading));
             forwards = new Path(new BezierLine(new Pose(finalFieldX, finalFieldY), new Pose(70.75, 80)));
-            forwards.setLinearHeadingInterpolation(finalRobotHeading, 0);
+            forwards.setLinearHeadingInterpolation(finalRobotHeading, Math.toRadians(55));
         }
 
         if (forwards != null) {
