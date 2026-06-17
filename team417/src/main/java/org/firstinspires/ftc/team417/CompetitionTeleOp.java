@@ -118,7 +118,7 @@ public class CompetitionTeleOp extends BaseOpMode {
                     detector.lastWithinRange ? "✅" : "❌", detector.lastXDistance, detector.lastYDistance));
             telemetry.addLine(String.format("Last manual reset (%.2f\", %.2f\", %.2f°)",
                     lastError.line.x, lastError.line.y,
-                    AngleUnit.normalizeDegrees(Math.toDegrees(lastError.angle))))
+                    AngleUnit.normalizeDegrees(Math.toDegrees(lastError.angle))));
             // 'packet' is the object used to send data to FTC Dashboard:
             TelemetryPacket packet = MecanumDrive.getTelemetryPacket();
 
