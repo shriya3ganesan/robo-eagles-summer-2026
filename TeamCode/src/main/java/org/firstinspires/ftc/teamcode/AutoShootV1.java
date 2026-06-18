@@ -247,9 +247,12 @@ public class AutoShootV1 extends OpMode {
 
                 if (!follower.isBusy()) {
                     stopDrive();
+
                     fieldX = follower.getPose().getX();
                     fieldY = follower.getPose().getY();
                     robotHeading = Math.toRadians(90);
+
+                    state = State.BUILD_PATH;
                 }
 
                 break;
