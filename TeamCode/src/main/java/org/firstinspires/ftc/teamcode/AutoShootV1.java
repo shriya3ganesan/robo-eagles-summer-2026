@@ -68,7 +68,7 @@ public class AutoShootV1 extends OpMode {
     private double robotHeading;
 
     private double currentFlywheelVel;
-    private double desiredFlywheelVel = 1200;
+    private double desiredFlywheelVel = 1300;
 
     private double framesAfterShot;
     private Path path;
