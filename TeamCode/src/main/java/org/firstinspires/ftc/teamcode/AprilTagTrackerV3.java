@@ -146,7 +146,7 @@ public class AprilTagTrackerV3 extends OpMode {
 
                 path.setLinearHeadingInterpolation(
                         robotHeading,
-                        Math.toRadians(37));
+                        Math.toRadians(40));
 
                 follower.followPath(path);
 

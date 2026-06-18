@@ -68,7 +68,7 @@ public class AutoShootV1 extends OpMode {
     private double robotHeading;
 
     private double currentFlywheelVel;
-    private double desiredFlywheelVel = 1400;
+    private double desiredFlywheelVel = 1200;
 
     private double framesAfterShot;
     private Path path;
@@ -143,6 +143,8 @@ public class AutoShootV1 extends OpMode {
                         centeringFrames++;
                         if (centeringFrames > 10) {
                             calculateRobotPose();
+                            follower.setStartingPose(
+                                    new Pose(fieldX, fieldY, robotHeading));
                             state = State.BUILD_PATH;
                         }
                     }
@@ -153,9 +155,6 @@ public class AutoShootV1 extends OpMode {
                 break;
             case BUILD_PATH:
 
-                follower.setStartingPose(
-                        new Pose(fieldX, fieldY, robotHeading));
-
                 path = new Path(
                         new BezierLine(
                                 new Pose(fieldX, fieldY),
@@ -164,7 +163,7 @@ public class AutoShootV1 extends OpMode {
 
                 path.setLinearHeadingInterpolation(
                         robotHeading,
-                        Math.toRadians(37));
+                        Math.toRadians(40));
 
                 follower.followPath(path);
 
@@ -206,7 +205,7 @@ public class AutoShootV1 extends OpMode {
                 rightServo.setPower(1);
 
 
-                if (framesAfterShot > 25) {
+                if (framesAfterShot > 100) {
                     flywheel.setVelocity(0);
                     leftServo.setPower(0);
                     rightServo.setPower(0);
@@ -248,7 +247,9 @@ public class AutoShootV1 extends OpMode {
 
                 if (!follower.isBusy()) {
                     stopDrive();
-                    state = State.FLYWHEEL_ACCELERATING;
+                    fieldX = follower.getPose().getX();
+                    fieldY = follower.getPose().getY();
+                    robotHeading = Math.toRadians(90);
                 }
 
                 break;

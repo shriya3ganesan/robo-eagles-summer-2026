@@ -175,7 +175,7 @@ public class AprilTagTrackerV2 extends OpMode {
         if (tagFoundInInit) {
             follower.setStartingPose(new Pose(fieldX, fieldY, robotHeading));
             forwards = new Path(new BezierLine(new Pose(fieldX, fieldY), new Pose(70.75, 80)));
-            forwards.setLinearHeadingInterpolation(robotHeading, Math.toRadians(38));
+            forwards.setLinearHeadingInterpolation(robotHeading, Math.toRadians(40));
         }
 
         if (forwards != null) {
