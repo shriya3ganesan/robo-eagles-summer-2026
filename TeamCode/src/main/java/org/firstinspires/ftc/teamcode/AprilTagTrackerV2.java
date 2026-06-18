@@ -6,6 +6,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -26,6 +27,7 @@ import static org.firstinspires.ftc.teamcode.Tuning.stopRobot;
 
 
 @Autonomous(name = "AprilTag Tracker V2")
+
 public class AprilTagTrackerV2 extends OpMode {
 
     private Follower follower;
@@ -48,9 +50,9 @@ public class AprilTagTrackerV2 extends OpMode {
     private Path forwards;
 
     // Global variables to lock down coordinates
-    private double finalFieldX = 0;
-    private double finalFieldY = 0;
-    private double finalRobotHeading = 0;
+    private double fieldX = 0;
+    private double fieldY = 0;
+    private double robotHeading = 0;
     private boolean tagFoundInInit = false;
 
     private int centeringFramesCount = 0; // Ensures it holds center for a moment
@@ -124,6 +126,8 @@ public class AprilTagTrackerV2 extends OpMode {
                 // Clip power to keep movements predictable and slow
                 turnPower = Math.max(-0.25, Math.min(0.25, turnPower));
 
+                //follower.turn();
+
                 // Pivot on the spot toward the tag
                 moveRobot(0, 0, turnPower);
 
@@ -136,26 +140,23 @@ public class AprilTagTrackerV2 extends OpMode {
                     telemetry.addLine("\n> Target Found and Locked");
 
                     // Corrects the yaw measurement to account for the upside-down camera orientation
-                    double cameraYawRadians = Math.toRadians(-desiredTag.ftcPose.yaw);
-                    double tagGlobalAngle = Math.toRadians(225.0);
+                    double yaw = Math.toRadians(-desiredTag.ftcPose.yaw);
 
-                    finalRobotHeading = Math.toRadians(45.0) - cameraYawRadians;
+                    robotHeading = Math.toRadians(35) - yaw;
 
-                    double relX = desiredTag.ftcPose.x;
-                    double relY = desiredTag.ftcPose.y;
+                    double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(55)));
+                    double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(55)));
                     double tagFieldX = 129.1227;
                     double tagFieldY = 126.3925;
 
-                    double rotatedX = relY * Math.cos(tagGlobalAngle) - relX * Math.sin(tagGlobalAngle);
-                    double rotatedY = relY * Math.sin(tagGlobalAngle) + relX * Math.cos(tagGlobalAngle);
+                    fieldX = tagFieldX - horizontal;
+                    fieldY = tagFieldY - vertical;
 
-                    finalFieldX = tagFieldX + rotatedX;
-                    finalFieldY = tagFieldY + rotatedY;
                     tagFoundInInit = true;
 
-                    telemetry.addData("Calculated FieldX", "%3.2f", finalFieldX);
-                    telemetry.addData("Calculated FieldY", "%3.2f", finalFieldY);
-                    telemetry.addData("Calculated Heading", "%3.2f°", Math.toDegrees(finalRobotHeading));
+                    telemetry.addData("Calculated X", "%3.2f", fieldX);
+                    telemetry.addData("Calculated Y", "%3.2f", fieldY);
+                    telemetry.addData("Calculated Heading", "%3.2f°", Math.toDegrees(robotHeading));
                 }
             }
         } else {
@@ -172,9 +173,9 @@ public class AprilTagTrackerV2 extends OpMode {
         follower.activateAllPIDFs();
 
         if (tagFoundInInit) {
-            follower.setStartingPose(new Pose(finalFieldX, finalFieldY, finalRobotHeading));
-            forwards = new Path(new BezierLine(new Pose(finalFieldX, finalFieldY), new Pose(70.75, 80)));
-            forwards.setLinearHeadingInterpolation(finalRobotHeading, Math.toRadians(55));
+            follower.setStartingPose(new Pose(fieldX, fieldY, robotHeading));
+            forwards = new Path(new BezierLine(new Pose(fieldX, fieldY), new Pose(70.75, 80)));
+            forwards.setLinearHeadingInterpolation(robotHeading, Math.toRadians(55));
         }
 
         if (forwards != null) {

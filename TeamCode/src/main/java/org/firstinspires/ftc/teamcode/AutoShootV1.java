@@ -7,10 +7,11 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
@@ -21,21 +22,22 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
-@Autonomous(name = "AprilTag Tracker V3")
-
-public class AprilTagTrackerV3 extends OpMode {
+@Autonomous(name = "AutoShootV1")
+public class AutoShootV1 extends OpMode {
 
     private enum State {
         FIND_TAG,
         CENTER_TAG,
         BUILD_PATH,
         FOLLOW_PATH,
-        DONE
+        FLYWHEEL_ACCELERATING,
+        SHOOTING,
+        BUILD_RETURN_PATH,
+        FOLLOW_RETURN_PATH
     }
 
     private State state = State.FIND_TAG;
@@ -46,6 +48,10 @@ public class AprilTagTrackerV3 extends OpMode {
     private DcMotor frontRightDrive;
     private DcMotor backLeftDrive;
     private DcMotor backRightDrive;
+
+    private DcMotorEx flywheel;
+
+    public CRServo leftServo, rightServo;
 
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTag;
@@ -61,6 +67,10 @@ public class AprilTagTrackerV3 extends OpMode {
     private double fieldY;
     private double robotHeading;
 
+    private double flywheelVel;
+    private double desiredFlywheelVel = 1400;
+
+    private double framesAfterShot;
     private Path path;
 
     @Override
@@ -73,6 +83,13 @@ public class AprilTagTrackerV3 extends OpMode {
         frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
         backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");
         backRightDrive = hardwareMap.get(DcMotor.class, "rightBack");
+
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftServo = hardwareMap.get(CRServo.class, "leftServo");
+        rightServo = hardwareMap.get(CRServo.class, "rightServo");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
@@ -130,7 +147,7 @@ public class AprilTagTrackerV3 extends OpMode {
                         }
                     }
                 }else {
-                    stopDrive();
+                        stopDrive();
                 }
 
                 break;
@@ -159,12 +176,48 @@ public class AprilTagTrackerV3 extends OpMode {
 
                 if (!follower.isBusy()) {
                     stopDrive();
-                    state = State.DONE;
+                    state = State.FLYWHEEL_ACCELERATING;
                 }
 
                 break;
 
-            case DONE:
+            case FLYWHEEL_ACCELERATING:
+                stopDrive();
+
+                flywheel.setVelocity(desiredFlywheelVel);
+                flywheelVel = flywheel.getVelocity();
+
+                if (flywheelVel > (desiredFlywheelVel - 100)) {
+                    framesAfterShot = 0;
+                    state = State.SHOOTING;
+                }
+                break;
+
+            case SHOOTING:
+                stopDrive();
+
+                flywheel.setVelocity(desiredFlywheelVel);
+                flywheelVel = flywheel.getVelocity();
+
+                framesAfterShot++;
+
+                if (flywheelVel > (desiredFlywheelVel - 100)) {
+                    leftServo.setPower(-1);
+                    rightServo.setPower(1);
+                }
+
+                if (framesAfterShot > 25) {
+                    flywheel.setVelocity(0);
+                    state = State.BUILD_RETURN_PATH;
+                }
+
+                break;
+
+            case BUILD_RETURN_PATH:
+                stopDrive();
+                break;
+
+            case FOLLOW_RETURN_PATH:
                 stopDrive();
                 break;
         }
@@ -172,6 +225,7 @@ public class AprilTagTrackerV3 extends OpMode {
         telemetry.addData("State", state);
         telemetry.addData("X", follower.getPose().getX());
         telemetry.addData("Y", follower.getPose().getY());
+        telemetry.addData("Flywheel Velocity", flywheel.getVelocity());
         telemetry.update();
     }
 
