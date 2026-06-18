@@ -67,7 +67,7 @@ public class AutoShootV1 extends OpMode {
     private double fieldY;
     private double robotHeading;
 
-    private double flywheelVel;
+    private double currentFlywheelVel;
     private double desiredFlywheelVel = 1400;
 
     private double framesAfterShot;
@@ -185,9 +185,9 @@ public class AutoShootV1 extends OpMode {
                 stopDrive();
 
                 flywheel.setVelocity(desiredFlywheelVel);
-                flywheelVel = flywheel.getVelocity();
+                currentFlywheelVel = flywheel.getVelocity();
 
-                if (flywheelVel > (desiredFlywheelVel - 100)) {
+                if (currentFlywheelVel > (desiredFlywheelVel - 100)) {
                     framesAfterShot = 0;
                     state = State.SHOOTING;
                 }
@@ -197,17 +197,18 @@ public class AutoShootV1 extends OpMode {
                 stopDrive();
 
                 flywheel.setVelocity(desiredFlywheelVel);
-                flywheelVel = flywheel.getVelocity();
+                currentFlywheelVel = flywheel.getVelocity();
 
                 framesAfterShot++;
 
-                if (flywheelVel > (desiredFlywheelVel - 100)) {
-                    leftServo.setPower(-1);
-                    rightServo.setPower(1);
-                }
+                leftServo.setPower(-1);
+                rightServo.setPower(1);
+
 
                 if (framesAfterShot > 25) {
                     flywheel.setVelocity(0);
+                    leftServo.setPower(0);
+                    rightServo.setPower(0);
                     state = State.BUILD_RETURN_PATH;
                 }
 
