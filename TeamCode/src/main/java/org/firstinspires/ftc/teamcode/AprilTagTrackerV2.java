@@ -142,10 +142,10 @@ public class AprilTagTrackerV2 extends OpMode {
                     // Corrects the yaw measurement to account for the upside-down camera orientation
                     double yaw = Math.toRadians(-desiredTag.ftcPose.yaw);
 
-                    robotHeading = Math.toRadians(35) - yaw;
+                    robotHeading = Math.toRadians(37) - yaw;
 
-                    double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(55)));
-                    double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(55)));
+                    double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(53)));
+                    double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(53)));
                     double tagFieldX = 129.1227;
                     double tagFieldY = 126.3925;
 
@@ -175,7 +175,7 @@ public class AprilTagTrackerV2 extends OpMode {
         if (tagFoundInInit) {
             follower.setStartingPose(new Pose(fieldX, fieldY, robotHeading));
             forwards = new Path(new BezierLine(new Pose(fieldX, fieldY), new Pose(70.75, 80)));
-            forwards.setLinearHeadingInterpolation(robotHeading, Math.toRadians(55));
+            forwards.setLinearHeadingInterpolation(robotHeading, Math.toRadians(38));
         }
 
         if (forwards != null) {

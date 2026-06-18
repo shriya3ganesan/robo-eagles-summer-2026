@@ -152,6 +152,7 @@ public class AutoShootV1 extends OpMode {
 
                 break;
             case BUILD_PATH:
+
                 follower.setStartingPose(
                         new Pose(fieldX, fieldY, robotHeading));
 
@@ -163,7 +164,7 @@ public class AutoShootV1 extends OpMode {
 
                 path.setLinearHeadingInterpolation(
                         robotHeading,
-                        Math.toRadians(55));
+                        Math.toRadians(37));
 
                 follower.followPath(path);
 
@@ -215,11 +216,41 @@ public class AutoShootV1 extends OpMode {
                 break;
 
             case BUILD_RETURN_PATH:
-                stopDrive();
+
+                desiredTag = findDesiredTag();
+
+                if (desiredTag != null) {
+                    calculateRobotPose();
+
+                    path = new Path(
+                            new BezierLine(
+                                    new Pose(fieldX, fieldY),
+                                    new Pose(140, 20)
+                            ));
+
+                    path.setLinearHeadingInterpolation(
+                            Math.toRadians(37),
+                            Math.toRadians(90));
+
+                    follower.followPath(path);
+
+                    state = State.FOLLOW_RETURN_PATH;
+
+                }else {
+                    stopDrive();
+                }
+
                 break;
 
             case FOLLOW_RETURN_PATH:
-                stopDrive();
+
+                follower.update();
+
+                if (!follower.isBusy()) {
+                    stopDrive();
+                    state = State.FLYWHEEL_ACCELERATING;
+                }
+
                 break;
         }
 
@@ -328,10 +359,10 @@ public class AutoShootV1 extends OpMode {
 
         double yaw = Math.toRadians(-desiredTag.ftcPose.yaw);
 
-        robotHeading = Math.toRadians(35) - yaw;
+        robotHeading = Math.toRadians(37) - yaw;
 
-        double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(55)));
-        double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(55)));
+        double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(53)));
+        double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(53)));
         double tagFieldX = 129.1227;
         double tagFieldY = 126.3925;
 

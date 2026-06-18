@@ -146,7 +146,7 @@ public class AprilTagTrackerV3 extends OpMode {
 
                 path.setLinearHeadingInterpolation(
                         robotHeading,
-                        Math.toRadians(55));
+                        Math.toRadians(37));
 
                 follower.followPath(path);
 
@@ -273,10 +273,10 @@ public class AprilTagTrackerV3 extends OpMode {
 
         double yaw = Math.toRadians(-desiredTag.ftcPose.yaw);
 
-        robotHeading = Math.toRadians(35) - yaw;
+        robotHeading = Math.toRadians(37) - yaw;
 
-        double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(55)));
-        double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(55)));
+        double horizontal = desiredTag.ftcPose.range * (Math.sin(yaw + Math.toRadians(53)));
+        double vertical = desiredTag.ftcPose.range * (Math.cos(yaw + Math.toRadians(53)));
         double tagFieldX = 129.1227;
         double tagFieldY = 126.3925;
 
