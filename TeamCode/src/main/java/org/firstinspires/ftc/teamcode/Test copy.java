@@ -5,10 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp
-public class Test extends OpMode {
-    private static final int HEX_TARGET_POSITION = 100; // Example target position for the hex motors
-    private static final double HEX_POWER = 0.5;
+@TeleOp(name = "Separate Expand Test", group = "TeleOp")
+class TestCopy extends OpMode {
+    private static final double DRIVE_BUTTON_POWER = 0.5;
+    private static final double EXPAND_POWER = 0.5;
     private static final double INTAKE_POWER = 1.0;
 
     private DcMotor backLeft;
@@ -35,33 +35,36 @@ public class Test extends OpMode {
         expandRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        expandLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        expandRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        expandLeft.setTargetPosition(0);
-        expandRight.setTargetPosition(0);
-        expandLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        expandRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        expandLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        expandRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         telemetry.addData("Status", "Initialized");
     }
 
     @Override
     public void loop() {
-        double y = gamepad2.left_stick_y;
+        double y = -gamepad2.left_stick_y;
         double x = gamepad2.left_stick_x;
 
-        double backLeftPower = y + x;
-        double backRightPower = y - x;
+        double backLeftPower;
+        double backRightPower;
 
+        if (gamepad2.dpad_up) {
+            backLeftPower = DRIVE_BUTTON_POWER;
+            backRightPower = DRIVE_BUTTON_POWER;
+        } else if (gamepad2.dpad_down) {
+            backLeftPower = -DRIVE_BUTTON_POWER;
+            backRightPower = -DRIVE_BUTTON_POWER;
+        } else {
+            backLeftPower = y + x;
+            backRightPower = y - x;
+        }
 
         backLeft.setPower(backLeftPower);
         backRight.setPower(backRightPower);
 
-        if (gamepad1.triangle) {
-            moveHexMotorsTo(HEX_TARGET_POSITION);
-        } else if (gamepad1.circle) {
-            moveHexMotorsTo(0);
-        }
+        expandLeft.setPower(getMotorPower(gamepad1.dpad_up, gamepad1.dpad_down));
+        expandRight.setPower(getMotorPower(gamepad1.triangle, gamepad1.circle));
 
         if (gamepad1.cross) {
             intakeOn = true;
@@ -71,18 +74,22 @@ public class Test extends OpMode {
         intake.setPower(intakeOn ? INTAKE_POWER : 0);
 
         telemetry.addData("Status", "Running");
-        telemetry.addData("Left Stick X", x);
-        telemetry.addData("Left Stick Y", y);
-        telemetry.addData("Hex Left Position", expandLeft.getCurrentPosition());
-        telemetry.addData("Hex Right Position", expandRight.getCurrentPosition());
-        telemetry.addData("Hex Target", expandLeft.getTargetPosition());
+        telemetry.addData("Drive Left Power", backLeftPower);
+        telemetry.addData("Drive Right Power", backRightPower);
+        telemetry.addData("Left Expand Power", expandLeft.getPower());
+        telemetry.addData("Right Expand Power", expandRight.getPower());
+        telemetry.addData("Left Expand Position", expandLeft.getCurrentPosition());
+        telemetry.addData("Right Expand Position", expandRight.getCurrentPosition());
         telemetry.addData("Intake On", intakeOn);
     }
 
-    private void moveHexMotorsTo(int targetPosition) {
-        expandLeft.setTargetPosition(targetPosition);
-        expandRight.setTargetPosition(targetPosition);
-        expandLeft.setPower(HEX_POWER);
-        expandRight.setPower(HEX_POWER);
+    private double getMotorPower(boolean forwardButton, boolean backwardButton) {
+        if (forwardButton) {
+            return EXPAND_POWER;
+        } else if (backwardButton) {
+            return -EXPAND_POWER;
+        }
+
+        return 0;
     }
 }
