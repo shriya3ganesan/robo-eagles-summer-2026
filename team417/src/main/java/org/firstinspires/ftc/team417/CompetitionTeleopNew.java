@@ -23,7 +23,8 @@ import org.firstinspires.ftc.team417.roadrunner.MecanumDrive;
  */
 @TeleOp(name="TeleOp", group="Competition")
 public class CompetitionTeleopNew extends BaseOpMode {
-
+    // TODO: update deadzone  and use in intake if statement.
+    public static double JOYSTICK_DEADZONE = 0.1;
     @Override
     public void runOpMode() {
         Pose2d beginPose = new Pose2d(0, 0, 0);
@@ -61,7 +62,9 @@ public class CompetitionTeleopNew extends BaseOpMode {
             MecanumDrive.sendTelemetryPacket(packet);
 
             // Controls Below
+            if(gamepad2.left_stick_y != 0){
 
+            }
 
         }
     }
