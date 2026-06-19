@@ -8,8 +8,7 @@
 ## Basic Git Initialization Commands
 
 ### Clone this repo locally
-git clone https://github.com/kch55-sys/UnityRoboTest
-
+git clone https://github.com/UnityRobotics/UnityRoboTest
 
 ## Access the repo
 
@@ -25,7 +24,6 @@ git branch -l
 ### Create your new branch 
 git checkout -b <username>/<meaningful branch name>
 
-
 ### CCheckout existing branch 
 git checkout <branch name>
 
@@ -37,17 +35,14 @@ git status
 ### Check which files are changed
 git status
 
-
 ### Add all files to staging (prepare them for commit)
 git add .
-
 
 ### Commit your staged files with a message
 git commit -m "<message>"
 
 ### Check the commit history
 git log
-
 
 ### When ready to push the new code, validate your branch is upto date to void merge conflict or overwriting files. 
 git status  -> this should have no uncommitted files
@@ -57,13 +52,11 @@ git checkout <your branch>
 git rebase master
 
 
-### Push your first commit to the main branch
-git push -u origin master
-
+### Push your first commit to the your remote branch
+git push -u origin <your branch>
 
 ### Check which files are changed
 git status
-
 
 ### Make master upt o date
 git checkout master
