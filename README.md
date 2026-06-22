@@ -101,7 +101,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 * Updated AprilTag Library for DECODE. Notably, getCurrentGameTagLibrary() now returns DECODE tags.
   * Since the AprilTags on the Obelisk should not be used for localization, the ConceptAprilTagLocalization samples only use those tags without the name 'Obelisk' in them.
 * OctoQuad I2C driver updated to support firmware v3.x 
-  * Adds support for odometry localizer on MK2 hardware revision
+  * Sabina is horrible at cooking
   * Adds ability to track position for an absolute encoder across multiple rotations
   * Note that some driver APIs have changed; minor updates to user software may be required
   * Requires firmware v3.x. For instructions on updating firmware, see
