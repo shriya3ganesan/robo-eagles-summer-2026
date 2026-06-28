@@ -21,6 +21,15 @@ public class Waypoint {
         this.shouldHoldAngle = true;
         isWaitPoint = true;
     }
+    public Waypoint(double x, double y, double velocity){
+        this.x = x;
+        this.y = y;
+        this.angle = 0;
+        this.velocity = velocity;
+        this.duration = 0;
+        this.shouldHoldAngle = false;
+        isWaitPoint = false;
+    }
 
     public double getX(){
         return x;

@@ -1,21 +1,51 @@
 package org.firstinspires.ftc.teamcode.Robot;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 //TODO Comment and document
-public interface Robot {
+public abstract class Robot {
+
+    Telemetry telemetry;
+    Subsystem[] subsystems;
+    ElapsedTime runtime;
+    Alliance alliance = Alliance.RED;
     /**
      * An Enum for the two different alliances that the robot could be a part of
      */
     enum Alliance {
         RED, BLUE
     }
-    public void initialize();
-    public void startMatch();
-    public Alliance getAlliance();
-    public void setAlliance(Alliance alliance);
-    public void teleopUpdate();
-    public void autonomousUpdate();
-    public void emergencyStop();
-    public double getGameTime();
-    public Subsystem[] getAllSubsystems();
+    public void initialize(){
+
+    }
+    public void startMatch(){
+        runtime.reset();
+    }
+    public Alliance getAlliance(){
+        return this.alliance;
+    }
+    public void setAlliance(Alliance alliance){
+        this.alliance = alliance;
+    }
+    public void autonomousUpdate(){
+        telemetry.addLine("Teleop In progress, Override the teleopUpdate method in robot to change something!");
+
+    }
+    public void teleopUpdate(){
+        telemetry.addLine("Autonomous In progress, Override the teleopUpdate method in robot to change something!");
+    }
+    public void emergencyStop(){
+        for (Subsystem subsystem : subsystems){
+            subsystem.setDisabled(true);
+        }
+        telemetry.addLine("--ROBOT EMERGENCY STOPPED, RE INIT TO CONTINUE--");
+        telemetry.update();
+    }
+    public double getGameTime(){
+        return runtime.seconds();
+    }
+    public Subsystem[] getAllSubsystems(){
+        return subsystems;
+    }
 }
