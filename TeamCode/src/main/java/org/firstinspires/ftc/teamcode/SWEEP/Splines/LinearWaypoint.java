@@ -18,6 +18,7 @@ public class LinearWaypoint implements Waypoint {
         this.speed = speed;
     }
     public LinearWaypoint(Coordinate coordinate, double speed){
+        if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
         this.coordinate = coordinate;
         this.speed = speed;
     }
@@ -25,7 +26,9 @@ public class LinearWaypoint implements Waypoint {
     @Override public double getY()          { return coordinate.getY(); }
     @Override public double getAngle()      { return coordinate.getAngle(); }
     @Override public double getSpeed()      { return speed; }
-    @Override public double getDuration()   { return 0; }
+    @Override public double getDuration(){
+        return 0;
+    }
     @Override public WaypointType getType() {
         return WaypointType.LINEAR;
     }

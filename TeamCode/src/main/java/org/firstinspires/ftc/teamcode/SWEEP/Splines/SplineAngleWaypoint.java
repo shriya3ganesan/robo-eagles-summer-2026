@@ -31,6 +31,12 @@ public class SplineAngleWaypoint implements Waypoint {
         this.speed = speed;
     }
 
+    public SplineAngleWaypoint(Coordinate coordinate, double speed){
+        if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
+        this.coordinate = coordinate;
+        this.speed = speed;
+    }
+
     /**
      * @return target x position in inches
      */

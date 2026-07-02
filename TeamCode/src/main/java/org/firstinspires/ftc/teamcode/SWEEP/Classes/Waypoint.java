@@ -7,7 +7,9 @@ public interface Waypoint {
         LINEAR,
         LINEAR_ANGLE,
         HOOK,
-        WAIT
+        WAIT,
+        START,
+        END
     }
     double getX();
     double getY();

@@ -16,6 +16,7 @@ public class SplineWaypoint implements Waypoint{
         this.speed = speed;
     }
     public SplineWaypoint(Coordinate coordinate, double speed){
+        if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
         this.coordinate = coordinate;
         this.speed = speed;
     }
