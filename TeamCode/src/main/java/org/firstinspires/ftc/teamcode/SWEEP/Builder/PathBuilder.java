@@ -96,7 +96,7 @@ public class PathBuilder {
     }
 
     public Path build(){
-
+        if (waypoints.size() < 2) return new S
     }
     private double clipCoordinateToField(double coordinate){
         coordinate = Math.min(coordinate, fieldLength/2);

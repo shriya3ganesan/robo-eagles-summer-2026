@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.SWEEP.Builder;
 
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Action;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Waypoint;
-import org.firstinspires.ftc.teamcode.SWEEP.Splines.CubicSplineSegment;
+import org.firstinspires.ftc.teamcode.SWEEP.Splines.Segments.CubicSplineSegment;
 
 import java.util.ArrayList;
 

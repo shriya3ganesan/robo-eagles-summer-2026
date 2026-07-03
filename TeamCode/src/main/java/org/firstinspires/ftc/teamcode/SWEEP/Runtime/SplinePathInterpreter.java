@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Action;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Waypoint;
-import org.firstinspires.ftc.teamcode.SWEEP.Splines.CubicSplineSegment;
+import org.firstinspires.ftc.teamcode.SWEEP.Splines.Segments.CubicSplineSegment;
 
 /**
  * Handle spline segment switching and interpolation to get the robot's target position at any given time.
