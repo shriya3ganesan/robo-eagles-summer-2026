@@ -5,6 +5,7 @@ import org.firstinspires.ftc.teamcode.SWEEP.Classes.Waypoint;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.HookWaypoint;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.LinearAngleWaypoint;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.LinearWaypoint;
+import org.firstinspires.ftc.teamcode.SWEEP.Splines.Segment;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.SplineAngleWaypoint;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.SplineWaypoint;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.WaitWaypoint;
@@ -93,7 +94,10 @@ public class PathBuilder {
         waypoints.add(new WaitWaypoint(previousCoordinate, duration));
         return this;
     }
-    public
+
+    public Path build(){
+
+    }
     private double clipCoordinateToField(double coordinate){
         coordinate = Math.min(coordinate, fieldLength/2);
         coordinate = Math.max(coordinate, -fieldLength/2);

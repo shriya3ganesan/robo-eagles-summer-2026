@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 
 public interface Waypoint {
-    enum WaypointType {
+    public enum WaypointType {
         SPLINE,
         SPLINE_ANGLE,
         LINEAR,
@@ -11,10 +11,14 @@ public interface Waypoint {
         START,
         END
     }
-    double getX();
-    double getY();
-    double getAngle();
-    double getSpeed();
-    double getDuration();
-    WaypointType getType();
+    public double getX();
+    public double getY();
+    public double getAngle();
+    default public double getSpeed(){
+        return 0; // If waypoint does not need speed, don't bother overriding it!
+    }
+    default public double getDuration(){
+        return 0; // Segment with no waiting at a single point
+    }
+    public WaypointType getType();
 }

@@ -70,14 +70,6 @@ public class SplineAngleWaypoint implements Waypoint {
     }
 
     /**
-     * @return duration in seconds; spline waypoints are not timed waits so this is always zero
-     */
-    @Override
-    public double getDuration() {
-        return 0;
-    }
-
-    /**
      * @return waypoint classification used by path generation dispatch
      */
     @Override

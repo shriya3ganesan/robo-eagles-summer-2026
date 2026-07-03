@@ -32,10 +32,6 @@ public class SplineWaypoint implements Waypoint{
     @Override public double getSpeed(){
         return this.speed;
     }
-    @Override public double getDuration()
-    {
-        return 0;
-    }
     @Override public WaypointType getType(){
         return WaypointType.SPLINE;
     }

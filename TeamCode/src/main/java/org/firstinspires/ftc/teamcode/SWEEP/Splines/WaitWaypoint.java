@@ -36,7 +36,6 @@ public class WaitWaypoint implements Waypoint {
     @Override public double getX()          { return coordinate.getX(); }
     @Override public double getY()          { return coordinate.getY(); }
     @Override public double getAngle()      { return coordinate.getAngle(); }
-    @Override public double getSpeed()      { return 0; }
     @Override public double getDuration()   { return duration; }
     @Override public WaypointType getType() { return WaypointType.WAIT; }
 }

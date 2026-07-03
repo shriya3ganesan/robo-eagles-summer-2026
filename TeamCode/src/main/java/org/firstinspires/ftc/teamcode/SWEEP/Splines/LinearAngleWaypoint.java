@@ -22,13 +22,14 @@ public class LinearAngleWaypoint implements Waypoint {
         this.coordinate = coordinate;
         this.speed = speed;
     }
-    @Override public double getX()          { return coordinate.getX(); }
-    @Override public double getY()          { return coordinate.getY(); }
-    @Override public double getAngle()      { return coordinate.getAngle(); }
-    @Override public double getSpeed()      { return speed; }
-    @Override public double getDuration(){
-        return 0;
-    }
+    @Override public double getX(){
+        return coordinate.getX(); }
+    @Override public double getY(){
+        return coordinate.getY(); }
+    @Override public double getAngle(){
+        return coordinate.getAngle(); }
+    @Override public double getSpeed(){
+        return speed; }
     @Override public WaypointType getType() {
         return WaypointType.LINEAR_ANGLE;
     }
