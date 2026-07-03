@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.vision;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -22,7 +22,7 @@ public class AprilTagTest extends LinearOpMode {
 
     // Measure the black AprilTag square on your printed tag and update this value if needed.
     // The FTC SDK needs the real tag size to calculate distance and angle values.
-    private static final double CUSTOM_TAG_SIZE_INCHES = 2.0;
+    private static final double CUSTOM_TAG_SIZE_CM = 5.0;
 
     // The code below creates pose data for custom tag IDs in this range.
     // Raise LAST_CUSTOM_TAG_ID if your printed tag has a larger ID number.
@@ -42,7 +42,7 @@ public class AprilTagTest extends LinearOpMode {
                 .setDrawCubeProjection(true)
                 .setDrawTagOutline(true)
                 .setTagLibrary(createTagLibrary())
-                .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+                .setOutputUnits(DistanceUnit.CM, AngleUnit.DEGREES)
                 .build();
 
         // Lower decimation can detect tags farther away, but it may run slower.
@@ -56,7 +56,7 @@ public class AprilTagTest extends LinearOpMode {
                 .build();
 
         telemetry.addLine("Camera ready");
-        telemetry.addData("Tag size", "%.1f inches", CUSTOM_TAG_SIZE_INCHES);
+        telemetry.addData("Tag size", "%.1f cm", CUSTOM_TAG_SIZE_CM);
         telemetry.update();
 
         waitForStart();
@@ -79,9 +79,9 @@ public class AprilTagTest extends LinearOpMode {
                 .setAllowOverwrite(true);
 
         // Add simple metadata for custom printed tags.
-        // These tags will all use CUSTOM_TAG_SIZE_INCHES.
+        // These tags will all use CUSTOM_TAG_SIZE_CM.
         for (int id = FIRST_CUSTOM_TAG_ID; id <= LAST_CUSTOM_TAG_ID; id++) {
-            tagLibraryBuilder.addTag(id, "Custom Tag " + id, CUSTOM_TAG_SIZE_INCHES, DistanceUnit.INCH);
+            tagLibraryBuilder.addTag(id, "Custom Tag " + id, CUSTOM_TAG_SIZE_CM, DistanceUnit.CM);
         }
 
         // Also include the official FTC game tags and sample tags.
@@ -101,11 +101,11 @@ public class AprilTagTest extends LinearOpMode {
             // X/Y/Z distance, pitch/roll/yaw, range, bearing, and elevation.
             if (detection.metadata != null && detection.ftcPose != null) {
                 telemetry.addLine(String.format("\n==== ID %d: %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f in",
+                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f cm",
                         detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
                 telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f deg",
                         detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f",
+                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f cm/deg/deg",
                         detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
             } else {
                 telemetry.addLine(String.format("\n==== ID %d: no pose", detection.id));

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp
-public class Test extends OpMode {
+public class M2_TankDrive extends OpMode {
     private static final int HEX_TARGET_POSITION = 100; // Example target position for the hex motors
     private static final double HEX_POWER = 0.5;
     private static final double INTAKE_POWER = 1.0;
