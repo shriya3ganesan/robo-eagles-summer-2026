@@ -6,7 +6,7 @@ public interface Waypoint {
         SPLINE_ANGLE,
         LINEAR,
         LINEAR_ANGLE,
-        HOOK,
+        BREAK,
         WAIT,
         START,
         END
@@ -14,6 +14,7 @@ public interface Waypoint {
     public double getX();
     public double getY();
     public double getAngle();
+    public Coordinate getCoordinate();
     default public double getSpeed(){
         return 0; // If waypoint does not need speed, don't bother overriding it!
     }

@@ -1,18 +1,41 @@
 package org.firstinspires.ftc.teamcode.SWEEP.Builder;
 
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Coordinate;
+import org.firstinspires.ftc.teamcode.SWEEP.Classes.LocalizationPacket;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.SWEEPAction;
 import org.firstinspires.ftc.teamcode.SWEEP.Splines.Segment;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class Path {
-    private Segment[] segments;
-    private SWEEPAction[] actions;
+    private final Segment[] segments;
+    private final ArrayList<SWEEPAction> actions;
     private int currentSegmentIndex = 0;
+    private SWEEPAction activeAction;
 
 
-    public Path(Segment[] segments){
+    public Path(Segment[] segments, SWEEPAction[] actions){
         if (segments == null) throw new IllegalArgumentException("null path given");
+        if (actions == null) throw new IllegalArgumentException("null action array given");
         this.segments = segments;
+        this.actions = new ArrayList<>();
+        Collections.addAll(this.actions, actions);
+    }
+    public void updateActions(LocalizationPacket packet){
+        if (actions.isEmpty()) return;
+        if (activeAction != null){
+            if (activeAction.completion()) {
+                activeAction.end();
+                activeAction = null;
+            }else{
+                activeAction.process();
+            }
+        } else if (actions.get(0).checkTrigger(packet)){
+            activeAction = actions.get(0);
+            actions.remove(0);
+            activeAction.execute();
+        }
     }
     public double getTotalTime(){
         return getEndTime() - getStartTime();

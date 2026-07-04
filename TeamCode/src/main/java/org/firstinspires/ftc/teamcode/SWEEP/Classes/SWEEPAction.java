@@ -1,41 +1,53 @@
 package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 
+import android.graphics.SweepGradient;
+
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.Robot.Action;
+import org.firstinspires.ftc.teamcode.Robot.Robot;
+
 /**
  * A class used to safely manage a robot's mechanisms with season specific code to the
  * generalized SWEEP Library, where the actions can be called autonomously
  *
  * //TODO: explain how to implement this system and write example code for using it
  */
-public interface SWEEPAction {
+public abstract class SWEEPAction extends Action {
     /**
-     * Start the action - any initial logic
+     * Allowed trigger distance from the target position in inches.
      */
-    void execute();
+    double triggerTolerance = 6; //default tolerance of 6 inches, can be changed in the constructor
+    /**
+     * Target position in inches that triggers this action.
+     */
+    Coordinate triggerPosition;
+    /**
+     * Action runtime in seconds.
+     */
 
-    /**
-     * Update loop for the action, runs every master iteration
-     */
-    void process();
-
-    /**
-     * If another action is queued that conflicts with this action, stop this action safely
-     * Returns true if the action is complete, will return false if there is a reason to block the change
-     *
-     */
-    default boolean interrupt(){
-        end();
-        return true; // Action can be interrupted safely
+    public SWEEPAction(Robot robot, Coordinate triggerPosition, double holdTime, double triggerTolerance){
+        super(robot);
+        this.triggerPosition = triggerPosition;
+        setHoldTime(holdTime);
+        this.triggerTolerance = triggerTolerance;
     }
-
+    public SWEEPAction(Robot robot){
+        super(robot);
+    }
+    public boolean isPositionSet(){
+        return triggerPosition != null;
+    }
+    public void setPosition(Coordinate position){
+        if (position == null) throw new NullPointerException("Position cannot be null");
+        this.triggerPosition = position;
+    }
     /**
-     * Used by the action manager to check if the action is naturally complete by specific conditions
-     * @return True if action is complete, False if it is still running
+     * Check if the action is ready to trigger yet
+     * @param packet Check proximity to the stored point
+     * @return true if the action is ready to trigger, false otherwise
      */
-    boolean completion();
-
-    /**
-     * The last bit of code that will run once the action is completed naturally
-     */
-    void end();
-
+    public boolean checkTrigger(LocalizationPacket packet){
+        return Coordinate.getDistanceBetweenCoordinates(packet.getCoordinate(), triggerPosition) <= triggerTolerance;
+    }
 }

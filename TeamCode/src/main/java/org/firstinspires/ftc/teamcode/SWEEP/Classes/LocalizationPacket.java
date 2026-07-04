@@ -69,4 +69,7 @@ public class LocalizationPacket {
     public double getVelY() {
         return velY;
     }
+    public Coordinate getCoordinate(){
+        return new Coordinate(x,y,yaw);
+    }
 }

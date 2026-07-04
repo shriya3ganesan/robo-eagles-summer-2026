@@ -8,7 +8,9 @@ public interface Segment {
     }
     public double getStartTime();
     public double getEndTime();
-    public boolean activeAt(double time);
+    default public boolean activeAt(double time){
+        return time >= getStartTime() && time < getEndTime();
+    }
     public Coordinate getPosition(double overallTime);
     default public Coordinate getPositionIndependentTime(double independentTime){
         return getPosition(getStartTime()+independentTime);

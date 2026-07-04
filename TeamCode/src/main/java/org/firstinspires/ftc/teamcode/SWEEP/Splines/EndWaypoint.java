@@ -20,6 +20,9 @@ public class EndWaypoint implements Waypoint {
     @Override public double getY(){
         return coordinate.getY();
     }
+    @Override public Coordinate getCoordinate(){
+        return coordinate;
+    }
     @Override public double getAngle(){
         return coordinate.getAngle();
     }

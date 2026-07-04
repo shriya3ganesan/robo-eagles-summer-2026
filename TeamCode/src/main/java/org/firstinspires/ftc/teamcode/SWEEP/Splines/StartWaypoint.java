@@ -5,27 +5,23 @@ import org.firstinspires.ftc.teamcode.SWEEP.Classes.Waypoint;
 
 public class StartWaypoint implements Waypoint {
     /**
-     * A hook-style movement waypoint. The robot approaches this point with a hooked
-     * (curved overshoot-and-snap) trajectory while holding a fixed heading.
-    */
+     * The starting position and heading of the robot at the beginning of the path.
+     */
 
         private final Coordinate coordinate;
-        private final double speed;
 
-        /** Hook waypoint with no fixed heading (defaults to 0). */
-        public StartWaypoint(double x, double y, double speed) {
-            this.coordinate = new Coordinate(x,y,0);
-            this.speed = speed;
+        /** Starting waypoint with a defined x, y position and heading angle. */
+        public StartWaypoint(double x, double y, double angle) {
+            this.coordinate = new Coordinate(x,y,angle);
         }
-        public StartWaypoint(Coordinate coordinate, double speed){
+        public StartWaypoint(Coordinate coordinate){
             if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
             this.coordinate = coordinate;
-            this.speed = speed;
         }
+        @Override public Coordinate getCoordinate() { return coordinate; }
         @Override public double getX()          { return coordinate.getX(); }
         @Override public double getY()          { return coordinate.getY(); }
         @Override public double getAngle()      { return coordinate.getAngle(); }
-        @Override public double getSpeed()      { return speed; }
         @Override public WaypointType getType() {
             return WaypointType.START;
         }

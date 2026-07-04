@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.ArrayList;
+
 //TODO Comment and document
 public abstract class Robot {
 
@@ -10,6 +13,7 @@ public abstract class Robot {
     Subsystem[] subsystems;
     ElapsedTime runtime;
     Alliance alliance = Alliance.RED;
+    ArrayList<Action> activeActions = new ArrayList<>();
     /**
      * An Enum for the two different alliances that the robot could be a part of
      */
@@ -30,10 +34,13 @@ public abstract class Robot {
     }
     public void autonomousUpdate(){
         telemetry.addLine("Teleop In progress, Override the teleopUpdate method in robot to change something!");
-
+        updateActions();
+        telemetry.update();
     }
     public void teleopUpdate(){
         telemetry.addLine("Autonomous In progress, Override the teleopUpdate method in robot to change something!");
+        updateActions();
+        telemetry.update();
     }
     public void emergencyStop(){
         for (Subsystem subsystem : subsystems){
@@ -47,5 +54,19 @@ public abstract class Robot {
     }
     public Subsystem[] getAllSubsystems(){
         return subsystems;
+    }
+    public void updateActions(){
+        for (Action action : activeActions){
+            action.process();
+            if (action.completion()){
+                action.end();
+                activeActions.remove(action);
+            }
+        }
+    }
+    public void runAction(Action action){
+        if (action == null) return;
+        action.execute();
+        activeActions.add(action);
     }
 }

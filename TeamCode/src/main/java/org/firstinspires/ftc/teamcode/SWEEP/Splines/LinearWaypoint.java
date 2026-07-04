@@ -22,6 +22,7 @@ public class LinearWaypoint implements Waypoint {
         this.coordinate = coordinate;
         this.speed = speed;
     }
+    @Override public Coordinate getCoordinate() { return coordinate; }
     @Override public double getX()          { return coordinate.getX(); }
     @Override public double getY()          { return coordinate.getY(); }
     @Override public double getAngle()      { return coordinate.getAngle(); }

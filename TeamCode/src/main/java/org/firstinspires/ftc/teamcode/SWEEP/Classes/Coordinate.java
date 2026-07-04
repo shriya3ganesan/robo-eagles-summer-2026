@@ -20,6 +20,17 @@ public class Coordinate {
         this.angle = angle;
     }
 
+    /**
+     * Simplified version of Coordinate that only requires unique values for x and y
+     * @param x
+     * @param y
+     */
+    public Coordinate(double x, double y){
+        this.x = x;
+        this.y = y;
+        this.angle = 0;
+    }
+
     /** @return X position, in inches. */
     public double getX() {
         return x;

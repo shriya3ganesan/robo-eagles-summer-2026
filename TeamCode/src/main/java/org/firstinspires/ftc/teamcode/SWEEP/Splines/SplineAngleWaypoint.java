@@ -38,6 +38,14 @@ public class SplineAngleWaypoint implements Waypoint {
     }
 
     /**
+     * @return the coordinate (position and heading) for this waypoint
+     */
+    @Override
+    public Coordinate getCoordinate() {
+        return coordinate;
+    }
+
+    /**
      * @return target x position in inches
      */
     @Override

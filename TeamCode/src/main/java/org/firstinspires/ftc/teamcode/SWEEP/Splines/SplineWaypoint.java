@@ -20,6 +20,7 @@ public class SplineWaypoint implements Waypoint{
         this.coordinate = coordinate;
         this.speed = speed;
     }
+    @Override public Coordinate getCoordinate() { return coordinate; }
     @Override public double getX()          {
         return this.coordinate.getX();
     }
