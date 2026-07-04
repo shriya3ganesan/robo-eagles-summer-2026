@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.Robot;
-
-import org.firstinspires.ftc.teamcode.SWEEP.Classes.LocalizationPacket;
+package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 
 public interface Localization {
     public void update();

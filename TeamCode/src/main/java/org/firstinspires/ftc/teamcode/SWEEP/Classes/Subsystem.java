@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Robot;
+package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 
 public interface Subsystem {
     public void update();

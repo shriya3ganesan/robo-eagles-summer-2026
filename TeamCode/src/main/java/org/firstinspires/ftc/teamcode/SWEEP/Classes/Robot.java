@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Robot;
+package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -9,9 +9,9 @@ import java.util.ArrayList;
 //TODO Comment and document
 public abstract class Robot {
 
-    Telemetry telemetry;
-    Subsystem[] subsystems;
-    ElapsedTime runtime;
+    public Telemetry telemetry;
+    public Subsystem[] subsystems;
+    public ElapsedTime runtime;
     Alliance alliance = Alliance.RED;
     ArrayList<Action> activeActions = new ArrayList<>();
     /**

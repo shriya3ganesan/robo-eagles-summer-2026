@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.Robot.Localization;
+import org.firstinspires.ftc.teamcode.SWEEP.Classes.Localization;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.LocalizationPacket;
 
 public class GobildaLocalization implements Localization {
