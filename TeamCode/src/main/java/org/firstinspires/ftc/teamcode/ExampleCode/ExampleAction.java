@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.ExampleCode;
 import org.firstinspires.ftc.teamcode.Robot.SoftwareTestingBot;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Coordinate;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.SWEEPAction;
-
+/**
+ * Example action that can be triggered around a coordinate and run for a set amount of time.
+ */
 public class ExampleAction extends SWEEPAction {
     /**
      * Creates an example action that triggers around a coordinate and can run for a set amount of time.

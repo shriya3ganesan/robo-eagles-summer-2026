@@ -10,8 +10,8 @@ package org.firstinspires.ftc.teamcode.SWEEP.Classes;
  */
 @SuppressWarnings("unused") // prevent method unused warnings from cramping my style :)
 public class LocalizationPacket {
+    // The robot pose and velocity in field coordinates.
     private final double x,y,yaw,velX,velY;
-
     /**
      * Construct a new LocalizationPacket.
      *
@@ -29,7 +29,6 @@ public class LocalizationPacket {
        this.velY = velocityY;
    
     }
-
     /**
      * Returns the X position in field coordinates.
      * @return the field X position
@@ -37,7 +36,6 @@ public class LocalizationPacket {
     public double getX() {
         return x;
     }
-
     /**
      * Returns the Y position in field coordinates.
      * @return the field Y position
@@ -45,7 +43,6 @@ public class LocalizationPacket {
     public double getY() {
         return y;
     }
-
     /**
      * Returns the robot heading (yaw).
      * @return the yaw/heading (in degrees)
@@ -53,7 +50,6 @@ public class LocalizationPacket {
     public double getYaw() {
         return yaw;
     }
-
     /**
      * Returns the velocity along the field X axis.
      * @return velocity in the X direction
@@ -61,7 +57,6 @@ public class LocalizationPacket {
     public double getVelX() {
         return velX;
     }
-
     /**
      * Returns the velocity along the field Y axis.
      * @return velocity in the Y direction

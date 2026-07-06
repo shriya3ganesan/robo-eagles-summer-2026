@@ -1,12 +1,15 @@
 package org.firstinspires.ftc.teamcode.SWEEP.Movement;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.ejml.simple.SimpleMatrix;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.LocalizationPacket;
+@Disabled
 
-
+//TODO Refactor this class and work on bringing up to date.
+//NOTE THIS CLASS SHOULD NOT BE REVIEWED OR USED FOR ANYTHING OTHER THAN REFERENCE. IT IS NOT CURRENTLY FUNCTIONAL AND IS IN THE PROCESS OF BEING REWRITTEN.
 /**
  * Gets the current spline we are following and the time, infers the target point and outputs how to move the drivetrain to get there
  */

@@ -4,40 +4,90 @@ import org.firstinspires.ftc.teamcode.SWEEP.Classes.Coordinate;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Waypoint;
 
 /**
- * A hold/wait waypoint. The robot stops at this position and holds its heading
- * for the specified duration before continuing the path.
+ * A path anchor waypoint that defines a target pose and movement mode for path generation.
+ * This variant pauses execution at the target pose for a configured duration.
  */
 public class WaitWaypoint implements Waypoint {
+	/**
+	 * Target pose for this waypoint (x/y in inches, heading in degrees).
+	 */
+	private final Coordinate coordinate;
 
-    private final Coordinate coordinate;
-    private final double duration;
+	/**
+	 * Time to hold at this waypoint in seconds.
+	 */
+	private final double duration;
 
-    /**
-     * @param x        hold position x (inches)
-     * @param y        hold position y (inches)
-     * @param angle    heading to hold (degrees)
-     * @param duration time to hold at this point (seconds)
-     */
-    public WaitWaypoint(double x, double y, double angle, double duration) {
-        this(new Coordinate(x, y, angle), duration);
-    }
+	/**
+	 * Creates a wait waypoint from primitive pose values.
+	 *
+	 * @param x target x position in inches
+	 * @param y target y position in inches
+	 * @param angle target heading in degrees
+	 * @param duration hold duration in seconds
+	 */
+	public WaitWaypoint(double x, double y, double angle, double duration) {
+		this(new Coordinate(x, y, angle), duration);
+	}
 
-    /**
-     * @param coordinate hold position and heading
-     * @param duration   time to hold at this point (seconds)
-     */
-    public WaitWaypoint(Coordinate coordinate, double duration) {
-        if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
+	/**
+	 * Creates a wait waypoint from an existing coordinate.
+	 *
+	 * @param coordinate target pose for this waypoint
+	 * @param duration hold duration in seconds
+	 */
+	public WaitWaypoint(Coordinate coordinate, double duration) {
+		if (coordinate == null) throw new IllegalArgumentException("coordinate cannot be null");
 
-        this.coordinate = coordinate;
-        this.duration = duration;
-    }
+		this.coordinate = coordinate;
+		this.duration = duration;
+	}
 
-    @Override public Coordinate getCoordinate() { return coordinate; }
-    @Override public double getX()          { return coordinate.getX(); }
-    @Override public double getY()          { return coordinate.getY(); }
-    @Override public double getAngle()      { return coordinate.getAngle(); }
-    @Override public double getDuration()   { return duration; }
-    @Override public WaypointType getType() { return WaypointType.WAIT; }
+	/**
+	 * @return target pose for this waypoint
+	 */
+	@Override
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+
+	/**
+	 * @return target x position in inches
+	 */
+	@Override
+	public double getX() {
+		return coordinate.getX();
+	}
+
+	/**
+	 * @return target y position in inches
+	 */
+	@Override
+	public double getY() {
+		return coordinate.getY();
+	}
+
+	/**
+	 * @return target heading in degrees
+	 */
+	@Override
+	public double getAngle() {
+		return coordinate.getAngle();
+	}
+
+	/**
+	 * @return hold duration in seconds
+	 */
+	@Override
+	public double getDuration() {
+		return duration;
+	}
+
+	/**
+	 * @return waypoint type token for path generation dispatch
+	 */
+	@Override
+	public WaypointType getType() {
+		return WaypointType.WAIT;
+	}
 }
-

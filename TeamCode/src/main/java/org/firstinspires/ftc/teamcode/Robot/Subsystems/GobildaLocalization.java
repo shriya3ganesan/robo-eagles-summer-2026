@@ -10,7 +10,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.Localization;
 import org.firstinspires.ftc.teamcode.SWEEP.Classes.LocalizationPacket;
-
+/**
+ * This class implements the Localization interface to provide localization functionality using the GoBilda Pinpoint Driver.
+ * It handles the retrieval of the robot's position and orientation, as well as calculating velocities based on position changes over time.
+ */
 public class GobildaLocalization implements Localization {
     // variable location for stored pinpoint from hardware map
     private final GoBildaPinpointDriver pinpoint;
@@ -52,6 +55,9 @@ public class GobildaLocalization implements Localization {
         runtime = new ElapsedTime();
     }
 
+    /**
+     * Updates the robot's position, orientation, and velocities based on the current readings from the GoBilda Pinpoint Driver.
+     */
     @Override
     public void update() {
         // store the last iterations values so we can calculate the velocities!
@@ -66,25 +72,38 @@ public class GobildaLocalization implements Localization {
             robotAngle = pinpoint.getHeading(UnnormalizedAngleUnit.DEGREES);
             updateVelocity();
     }
+    /**
+     * Returns a LocalizationPacket containing the current position, orientation, and velocities of the robot.
+     * @return LocalizationPacket with current robot state
+     */
     @Override
     public LocalizationPacket getLocalizationPacket() {
         return new LocalizationPacket(robotX, robotY, robotAngle, velocityX, velocityY);
     }
-
+    /**
+     * Overrides the current localization values with the provided x, y, and angle.
+     * @param x The new x position in inches
+     * @param y The new y position in inches
+     * @param angle The new orientation angle in degrees
+     */
     @Override
     public void overrideLocalization(double x, double y, double angle) {
         robotX = x;
         robotY = y;
         robotAngle = angle;
     }
-
-    // returns the time between loop iterations - resets between calls!
+    /**
+     * Returns the time between loop iterations - resets between calls!
+     * @return The time in seconds since the last call
+     */
     private double getDeltaTime(){
         time = runtime.seconds();
         runtime.reset();
         return time;
     }
-    // Updates the velocityX and velocityY variables based new robot variables. MUST CALL WITHIN updateOdometry()!
+    /**
+     * Updates the velocityX and velocityY variables based new robot variables. MUST CALL WITHIN updateOdometry()!
+     */
     private void updateVelocity(){
         double dt = getDeltaTime();
         velocityX = (robotX - lastRobotX)/dt;

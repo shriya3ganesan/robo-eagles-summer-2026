@@ -15,22 +15,40 @@ public abstract class SWEEPAction extends Action {
      * Target position in inches that triggers this action.
      */
     Coordinate triggerPosition;
-    /**
-     * Action runtime in seconds.
-     */
 
+    /**
+     * Creates a new SWEEPAction, which extends an Action and adds the ability to be autonomously triggered with a route
+     * @param robot the robot instance
+     * @param triggerPosition the position that triggers this action
+     * @param holdTime the time to hold the action
+     * @param triggerTolerance the allowed trigger distance from the target position
+     */
     public SWEEPAction(Robot robot, Coordinate triggerPosition, double holdTime, double triggerTolerance){
         super(robot);
         this.triggerPosition = triggerPosition;
         setHoldTime(holdTime);
         this.triggerTolerance = triggerTolerance;
     }
+
+    /**
+     * A simple sweep action that will use default triggers based on the PathBuilder or triggered immediately in teleop
+     * @param robot the robot instance
+     */
     public SWEEPAction(Robot robot){
         super(robot);
     }
+
+    /**
+     * Check if the trigger position has been set, used by the PathBuilder to know if it should override it with the previous position the user programmed in
+     * @return true if the trigger position has been set, false otherwise
+     */
     public boolean isPositionSet(){
         return triggerPosition != null;
     }
+    /**
+     * Set the trigger position for this action
+     * @param position the position that triggers this action
+     */
     public void setPosition(Coordinate position){
         if (position == null) throw new NullPointerException("Position cannot be null");
         this.triggerPosition = position;

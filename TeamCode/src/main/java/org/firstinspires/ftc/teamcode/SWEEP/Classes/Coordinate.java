@@ -7,7 +7,6 @@ package org.firstinspires.ftc.teamcode.SWEEP.Classes;
 public class Coordinate {
     /** X and Y positions in inches, and heading angle in degrees. */
     private final double x, y, angle;
-
     /**
      * Constructs a new Coordinate with the given position and heading.
      * @param x     X position, in inches
@@ -19,7 +18,6 @@ public class Coordinate {
         this.y = y;
         this.angle = angle;
     }
-
     /**
      * Simplified version of Coordinate that only requires unique values for x and y
      * @param x
@@ -30,7 +28,6 @@ public class Coordinate {
         this.y = y;
         this.angle = 0;
     }
-
     /** @return X position, in inches. */
     public double getX() {
         return x;
@@ -45,7 +42,6 @@ public class Coordinate {
     public double getAngle() {
         return angle;
     }
-
     /**
      * Computes the Euclidean distance between two coordinates, ignoring heading.
      * @param c1 First coordinate
