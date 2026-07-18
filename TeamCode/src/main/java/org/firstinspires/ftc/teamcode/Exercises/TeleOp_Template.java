@@ -14,12 +14,12 @@ import com.qualcomm.robotcore.util.Range;
 @Disabled
 public class TeleOp_Template extends OpMode
 {
+
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor fl = null;
     private DcMotor fr = null;
     private DcMotor bl = null;
     private DcMotor br = null;
-
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -28,10 +28,10 @@ public class TeleOp_Template extends OpMode
     public void init() {
         telemetry.addData("Status", "Initialized");
 
-        fl = hardwareMap.get(DcMotor.class, "Fl");
-        fr = hardwareMap.get(DcMotor.class, "Fr");
-        bl = hardwareMap.get(DcMotor.class, "br");
-        br = hardwareMap.get(DcMotor.class, "bl");
+        fl = hardwareMap.get(DcMotor.class, "fl");
+        fr = hardwareMap.get(DcMotor.class, "fr");
+        bl = hardwareMap.get(DcMotor.class, "bl");
+        br = hardwareMap.get(DcMotor.class, "br");
 
         fr.setDirection(DcMotorSimple.Direction.REVERSE);
         br.setDirection(DcMotorSimple.Direction.REVERSE);
