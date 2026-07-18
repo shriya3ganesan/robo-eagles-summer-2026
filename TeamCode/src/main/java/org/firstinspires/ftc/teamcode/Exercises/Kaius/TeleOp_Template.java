@@ -12,13 +12,21 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TeleOp_Template extends OpMode
 {
     private ElapsedTime runtime = new ElapsedTime();
-
+private DcMotor fl = null;
+private DcMotor fr = null;
+private DcMotor bl = null;
+private DcMotor br = null;
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
+        fl = hardwareMap.get(DcMotor.class, "fl");
+        fr = hardwareMap.get(DcMotor.class, "fr");
+        bl = hardwareMap.get(DrMotor.class, "bl");
+        br = hardwareMap.get(DrMotor.class, "br");
         telemetry.addData("Status", "Initialized");
+
 
 
         // Tell the driver that initialization is complete.
