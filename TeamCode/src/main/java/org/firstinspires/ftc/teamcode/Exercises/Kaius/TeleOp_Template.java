@@ -27,6 +27,8 @@ private DcMotor br = null;
         br = hardwareMap.get(DrMotor.class, "br");
         telemetry.addData("Status", "Initialized");
 
+        fr.setDirection(DcMotorSimple.Direction.REVERSE);
+        br.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         // Tell the driver that initialization is complete.
@@ -53,9 +55,52 @@ private DcMotor br = null;
      */
     @Override
     public void loop() {
-    }
 
-    /*
+        //left stick goes forward and backward (y direction)
+        //     if (Math.abs(gamepad1.left_stick_y) > .05) {
+//            fl.setPower(gamepad1.left_stick_y);
+//            fr.setPower(gamepad1.left_stick_y);
+//            bl.setPower(gamepad1.left_stick_y);
+//            br.setPower(gamepad1.left_stick_y);
+//        } else {
+//            fl.setPower(0);
+//            fr.setPower(0);
+//            bl.setPower(0);
+//            br.setPower(0);
+//        }
+//
+//        //right stick is going to turn (x direction)
+//        if (Math.abs(gamepad1.right_stick_x) > .05) {
+//            fl.setPower(gamepad1.right_stick_x);
+//            fr.setPower(-gamepad1.right_stick_x);
+//            bl.setPower(gamepad1.right_stick_x);
+//            br.setPower(-gamepad1.right_stick_x);
+//        } else {
+//            fl.setPower(0);
+//            fr.setPower(0);
+//            bl.setPower(0);
+//            br.setPower(0);
+//        }
+
+        double left_power;
+        double right_power;
+
+        left_power = Range.clip(gamepad1.left_stick_y + gamepad1.right_stick_x, -1, 1);
+        right_power = Range.clip(gamepad1.left_stick_y - gamepad1.right_stick_x, -1, 1);
+
+        if(Math.abs(left_power) < 0.05) {
+            left_power = 0;
+        }
+
+        if(Math.abs(right_power) < 0.05) {
+            right_power = 0;
+        }
+
+        fl.setPower(left_power);
+        bl.setPower(left_power);
+        fr.setPower(right_power);
+        br.setPower(right_power);
+    }
      * Code to run ONCE after the driver hits STOP
      */
     @Override
