@@ -60,9 +60,6 @@ public class TeleOp_Template extends OpMode {
     public void loop() {
 
 
-        /*
-         * Code to run ONCE after the driver hits STOP
-         */
 
         //Left joystick goes forward and backward
 //        if (Math.abs(gamepad1.left_stick_y) > .05) {
@@ -91,7 +88,6 @@ public class TeleOp_Template extends OpMode {
 //        bl.setPower(0);
 //        br.setPower(0);
 
-
         double left_power;
         double right_power;
 
@@ -110,8 +106,11 @@ public class TeleOp_Template extends OpMode {
         bl.setPower(left_power);
         br.setPower(right_power);
     }
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
 
-//        @Override
-//        public void stop() {}
+    @Override
+       public void stop() {}
 }
 
