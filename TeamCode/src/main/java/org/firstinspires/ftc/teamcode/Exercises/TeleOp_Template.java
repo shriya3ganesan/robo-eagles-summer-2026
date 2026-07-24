@@ -61,7 +61,7 @@ public class TeleOp_Template extends OpMode {
 
 
 
-        //Left joystick goes forward and backward
+        // Left joystick-y(forward and backward)
 //        if (Math.abs(gamepad1.left_stick_y) > .05) {
 //            fl.setPower(gamepad1.left_stick_y);
 //            fr.setPower(gamepad1.left_stick_y);
@@ -74,7 +74,7 @@ public class TeleOp_Template extends OpMode {
 //        br.setPower(0);
 //    }
 //
-//        //right joystick turns
+//        //right joystick-x(left and right)
 //
 //        if (Math.abs(gamepad1.right_stick_x) > .05) {
 //            fl.setPower(gamepad1.right_stick_x);
