@@ -96,7 +96,7 @@ public class TeleOp_Template extends OpMode {
         double right_power;
 
         left_power = Range.clip(gamepad1.left_stick_y + gamepad1.right_stick_x, -1, 1);
-        right_power = Range.clip(gamepad1_left_stick_y - gamepad1.right_stick_x, -1, 1);
+        right_power = Range.clip(gamepad1.left_stick_y - gamepad1.right_stick_x, -1, 1);
 
         if (Math.abs(left_power) < .05) {
             left_power = 0;
