@@ -2,7 +2,11 @@ package org.firstinspires.ftc.teamcode.Exercises;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class DrivetrainBlank {
 
@@ -11,6 +15,7 @@ public class DrivetrainBlank {
     private final DcMotor frontRight;
     private final DcMotor backLeft;
     private final DcMotor backRight;
+    private final IMU imu;
 
     // Gives this class access to sleep(), telemetry, and opModeIsActive()
     private final LinearOpMode opMode;
@@ -34,6 +39,7 @@ public class DrivetrainBlank {
         backLeft = opMode.hardwareMap.get(DcMotor.class, "backLeft");
         backRight = opMode.hardwareMap.get(DcMotor.class, "backRight");
 
+        imu = opMode.hardwareMap.get(IMU.class, "imu");
 
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -48,41 +54,103 @@ public class DrivetrainBlank {
 
    //sets power to left and right
     public void setPower(double leftPower, double rightPower) {
+        frontLeft.setPower(leftPower);
+        backLeft.setPower(leftPower);
+        frontRight.setPower(rightPower);
+        backRight.setPower(rightPower);
 
     }
+
 
     //set power same
     public void setAllPower(double power) {
 
+        setPower(power, power);
 
     }
 
     //stop motors
     public void stop() {
-
+        setAllPower(0);
 
     }
 
     //drive for a certain time
     public void driveForTime(double power, long milliseconds) {
 
+        resetTime();
+
+        //set power, start moving, move for a certain amt of time, stop motors
+
+        while(runtime.milliseconds() <= milliseconds) {
+            setAllPower(power);
+        }
+
+        stop();
+
+        setAllPower(power);
+        while (runtime.milliseconds() <= milliseconds) {
+
+        }
+        stop();
+
+        setAllPower(power);
+        opMode.sleep(milliseconds);
+        stop();
+
     }
 
     //turn for a certain time
     public void turnForTime(double power, long milliseconds) {
 
+        while (runtime.milliseconds() <= milliseconds) {
+            setPower(power, -power);
+        }
+
+        stop();
     }
 
     //drive a certain amt of inches
-    public void driveInches(double inches, double power) {
+    public void driveInches(double inches, double power, double timeoutMs) {
 
+        //figure out how many encoder ticks corresponds to inches
+        double ticks = inchesToTicks(inches);
+        //resetting encoders
+        resetEncoders();
+        resetTime();
+        //set power to motors
+        //keep driving until we're at inches
+        //stop robot
 
+        while(getAverageEncoderPosition() <= ticks && runtime.milliseconds() <= timeoutMs) {
+            setAllPower(power);
+        }
+        stop();
+
+    }
+
+    public void turnDegrees(double degrees, double power, boolean isRight) {
+
+        //ideas for how to account for negative degrees
+        double scaledPower = 0;
+        if(isRight) {
+            scaledPower = -power;
+        }
+        else {
+            scaledPower = power;
+        }
+
+        while(getHeading() <= degrees) {
+            setPower(scaledPower, -scaledPower);
+        }
     }
 
     //get the encoder position of all motors
     private double getAverageEncoderPosition() {
 
-        return 0;
+
+        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+        + backRight.getCurrentPosition() + backLeft.getCurrentPosition()) / 4;
     }
     /*
      * Return true while at least one motor is moving
@@ -122,5 +190,10 @@ public class DrivetrainBlank {
 
     private void resetTime () {
         runtime.reset();
+    }
+
+    public double getHeading() {
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        return orientation.getYaw(AngleUnit.DEGREES);
     }
 }
