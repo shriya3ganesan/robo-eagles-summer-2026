@@ -4,7 +4,10 @@ package org.firstinspires.ftc.teamcode.Exercises.Kaius;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 
 @TeleOp(name="Basic: Iterative OpMode", group="Iterative OpMode")
@@ -23,8 +26,8 @@ private DcMotor br = null;
     public void init() {
         fl = hardwareMap.get(DcMotor.class, "fl");
         fr = hardwareMap.get(DcMotor.class, "fr");
-        bl = hardwareMap.get(DrMotor.class, "bl");
-        br = hardwareMap.get(DrMotor.class, "br");
+        bl = hardwareMap.get(DcMotor.class, "bl");
+        br = hardwareMap.get(DcMotor.class, "br");
         telemetry.addData("Status", "Initialized");
 
         fr.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -101,8 +104,7 @@ private DcMotor br = null;
         fr.setPower(right_power);
         br.setPower(right_power);
     }
-     * Code to run ONCE after the driver hits STOP
-     */
+
     @Override
     public void stop() {
     }
