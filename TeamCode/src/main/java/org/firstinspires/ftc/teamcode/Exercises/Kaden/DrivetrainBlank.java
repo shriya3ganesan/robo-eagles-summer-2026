@@ -48,41 +48,84 @@ public class DrivetrainBlank {
 
    //sets power to left and right
     public void setPower(double leftPower, double rightPower) {
+        frontLeft.setPower(leftPower);
+        backLeft.setPower(leftPower);
+        frontRight.setPower(rightPower);
+        backRight.setPower(rightPower);
 
     }
 
     //set power same
     public void setAllPower(double power) {
 
+        setPower(power, power);
+
 
     }
 
     //stop motors
     public void stop() {
+        setAllPower(0);
 
 
     }
 
     //drive for a certain time
     public void driveForTime(double power, long milliseconds) {
+        resetTime();
+
+        while(runtime.milliseconds() <= milliseconds) {
+            setAllPower(power);
+        }
+        stop();
 
     }
 
     //turn for a certain time
     public void turnForTime(double power, long milliseconds) {
 
+        while(runtime.milliseconds() <= milliseconds) {
+            setPower(power, -power);
+        }
+        stop();
+
     }
 
     //drive a certain amt of inches
-    public void driveInches(double inches, double power) {
+    public void driveInches(double inches, double power, double timeout) {
 
+        double ticks = inchesToTicks(inches);
+
+        resetEncoders();
+
+        while(getAverageEncoderPosition() <= ticks && runtime.milliseconds() <= timeout) {
+            setAllPower(power);
+        }
+        stop();
+
+
+    }
+
+    public void turnDegrees(double degrees, double power, boolean isRight) {
+
+        double scalePower = 0;
+        if(isRight) {
+            scalePower = -power;
+        }
+        else {
+            scalePower = power;
+        }
+
+        while(getHeading() <= degrees) {
+            setPower(scalePower, -scalePower);
+        }
 
     }
 
     //get the encoder position of all motors
     private double getAverageEncoderPosition() {
 
-        return 0;
+        return (frontLeft.getCurrentPosition(), frontRight.getCurrentPosition(), backLeft.getCurrentPosition(), backRight.getCurrentPosition());
     }
     /*
      * Return true while at least one motor is moving
