@@ -36,6 +36,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 /*
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -56,9 +59,7 @@ public class BasicOpMode_Iterative extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor fleftDrive = null;
-    private DcMotor rightDrive = null;
-
+    private DcMotor fleftDrive;
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -135,6 +136,10 @@ public class BasicOpMode_Iterative extends OpMode
      */
     @Override
     public void stop() {
+        public double getHeading() {
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            return orientation.getYaw(AngleUnit.DEGREES);
+
     }
 
 }
