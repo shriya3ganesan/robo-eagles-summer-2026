@@ -60,6 +60,7 @@ public class BasicOpMode_Iterative extends OpMode
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor fleftDrive;
+    private DcMotor rightDrive;
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -134,12 +135,5 @@ public class BasicOpMode_Iterative extends OpMode
     /*
      * Code to run ONCE after the driver hits STOP
      */
-    @Override
-    public void stop() {
-        public double getHeading() {
-            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            return orientation.getYaw(AngleUnit.DEGREES);
-
-    }
 
 }
