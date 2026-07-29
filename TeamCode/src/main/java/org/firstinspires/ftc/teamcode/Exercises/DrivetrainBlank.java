@@ -132,7 +132,7 @@ public class DrivetrainBlank {
     public void turnDegrees(double degrees, double power, boolean isRight) {
 
         //ideas for how to account for negative degrees
-        double scaledPower = 0;
+        /*double scaledPower = 0;
         if(isRight) {
             scaledPower = -power;
         }
@@ -142,7 +142,9 @@ public class DrivetrainBlank {
 
         while(getHeading() <= degrees) {
             setPower(scaledPower, -scaledPower);
-        }
+        }*/
+
+
     }
 
     //get the encoder position of all motors
