@@ -12,6 +12,7 @@ public class DrivetrainBlankAuto extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        DrivetrainBlank dt = new DrivetrainBlank(this);
         /*
          * Create a DrivetrainBlank object named drivetrain.
          *
@@ -41,8 +42,8 @@ public class DrivetrainBlankAuto extends LinearOpMode {
              * STEP 1:
              * Drive forward at 40% power for 1,000 milliseconds.
              *
-             * TODO: Call driveForTime().
              */
+            dt.driveForTime(.4, 1000);
 
 
 
@@ -60,8 +61,8 @@ public class DrivetrainBlankAuto extends LinearOpMode {
              * STEP 3:
              * Turn right at 30% power for 750 milliseconds.
              *
-             * TODO: Call turnForTime().
              */
+            dt.turnForTime(.3, 750);
 
 
 
@@ -78,8 +79,9 @@ public class DrivetrainBlankAuto extends LinearOpMode {
              *
              * Give the movement a 5,000-millisecond timeout.
              *
-             * TODO: Call driveInches().
              */
+            dt.driveInches(24, .5, 5000);
+
 
 
 
