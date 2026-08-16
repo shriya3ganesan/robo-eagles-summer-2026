@@ -1,5 +1,5 @@
 
-package org.firstinspires.ftc.teamcode.Exercises.Naisha;
+package org.firstinspires.ftc.teamcode.SampleCode.Naisha;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;

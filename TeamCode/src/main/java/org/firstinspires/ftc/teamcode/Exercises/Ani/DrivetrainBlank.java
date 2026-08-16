@@ -74,7 +74,7 @@ public class DrivetrainBlank {
     }
 
     //drive a certain amt of inches
-    public void driveInches(double inches, double power) {
+    public void driveInches(double inches, double power, double timeoutms) {
 
 
     }

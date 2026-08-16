@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode.Exercises;
+
+package org.firstinspires.ftc.teamcode.Exercises.Ani;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -112,9 +113,6 @@ public class TeleOp_Template extends OpMode
         br.setPower(right_power);
 
     }
-      if Math.abs(gamepad1)
-    double left_power;
-    double right_power;
 
     /*
      * Code to run ONCE after the driver hits STOP
